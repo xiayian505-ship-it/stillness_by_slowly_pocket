@@ -164,9 +164,7 @@ function render(){
   stage.appendChild(buildSheet(y,1,"上半年",startMon));
   stage.appendChild(buildSheet(y,7,"下半年",startMon));
 
-  // 背面
-  stage.appendChild(buildSheet(y,1,"上半年",startMon));
-  stage.appendChild(buildSheet(y,7,"下半年",startMon));
+
 }
 
   /* 事件 */
