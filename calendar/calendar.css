@@ -105,8 +105,8 @@ body{
 }
 
 .sheet{
-  width:calc(var(--w) + 18mm);
-  padding:12mm 9mm;
+  width:calc(var(--w) + 8mm);   /* 原本 +10 → 改 +8 */
+  padding:9mm 4mm;             /* 邊距微縮，日曆本體不變 */
   border:1px solid #000;
 }
 
@@ -151,7 +151,7 @@ body{
   grid-template-columns:repeat(2, 1fr);
   gap:var(--month-gap);
   padding:2mm 3mm 3mm;
-  width:86mm;
+  width:100%;
   height:120mm;
 }
 
@@ -286,8 +286,29 @@ body{
    🖨 列印模式
 =============================== */
 @media print{
+
   body{ background:#fff; }
   .topbar{ display:none; }
-  .stage{ padding:0; gap:0; }
-  .sheet{ border:none; margin:0 auto 8mm; }
+
+  .stage{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    column-gap:4mm;
+    row-gap:2mm;
+    padding:0;
+  }
+
+  .sheet{
+    border:none;
+    margin:0;
+    padding:8mm 4mm;     /* ⭐ 關鍵修正 */
+    flex:0 0 calc(50% - 2mm);
+  }
+
+}
+
+@page{
+  size:A4 portrait;
+  margin:8mm;
 }
