@@ -16,23 +16,28 @@ document.addEventListener("DOMContentLoaded", ()=>{
   const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
   /* 🇹🇼 台灣常見國定／紀念日（西元） */
-  const HOLIDAYS = {
-    "01-01": "元旦",
-    "02-28": "和平紀念日",
-    "03-08": "婦女節",
-    "03-12": "植樹節",
-    "03-29": "青年節",
-    "04-04": "兒童節",
-    "04-05": "清明節",
-    "05-01": "勞動節",
-    "06-03": "禁菸節",
-    "09-03": "軍人節",
-    "09-28": "教師節",
-    "10-10": "國慶日",
-    "10-25": "光復節",
-    "11-12": "國父誕辰",
-    "12-25": "聖誕節"
-  };
+const HOLIDAYS = {
+  "01-01": { name:"元旦", off:true },
+  "02-28": { name:"和平", off:true },
+  "03-08": { name:"婦女", off:false },
+  "03-12": { name:"植樹", off:false },
+  "03-29": { name:"青年", off:false },
+  "04-04": { name:"兒童", off:true },
+  "04-05": { name:"清明", off:true },
+  "05-01": { name:"勞動", off:true },
+  "06-03": { name:"禁菸", off:false },
+  "09-03": { name:"軍人", off:false },
+  "09-28": { name:"教師", off:false },
+  "10-10": { name:"國慶", off:true },
+  "10-25": { name:"光復", off:false },
+  "12-25": { name:"聖誕", off:false }, 
+
+  // 二分二至（不放假）
+"03-20": { name:"春分", off:false, term:true },
+"06-21": { name:"夏至", off:false, term:true },
+"09-23": { name:"秋分", off:false, term:true },
+"12-21": { name:"冬至", off:false, term:true },
+};
 
   function daysInMonth(y,m){ return new Date(y,m,0).getDate(); }
 
@@ -85,18 +90,27 @@ document.addEventListener("DOMContentLoaded", ()=>{
   num.textContent = d;
 
   const key = `${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-  if(HOLIDAYS[key]){
-    c.classList.add("holiday");
 
-    const tag = document.createElement("div");
-    tag.className = "holiday_tag";
-    tag.textContent = HOLIDAYS[key];
+if(HOLIDAYS[key]){
+  const h = HOLIDAYS[key];
 
-    c.appendChild(num);  // ⭐ 數字永遠在上
-    c.appendChild(tag);  // ⭐ 節日在下
-  } else {
-    c.appendChild(num);
+  if(h.off){
+    c.classList.add("offday");      // 放假
+  }else if(h.term){
+    c.classList.add("termday");     // ⭐ 節氣
+  }else{
+    c.classList.add("memoday");     // 紀念日
   }
+
+  const tag = document.createElement("div");
+  tag.className = "holiday_tag";
+  tag.textContent = h.name;
+
+  c.appendChild(num);
+  c.appendChild(tag);
+}else{
+  c.appendChild(num);
+}
 
   const jsDay = new Date(y,m-1,d).getDay();
   if(jsDay === 0) c.classList.add("sun");
@@ -137,16 +151,23 @@ document.addEventListener("DOMContentLoaded", ()=>{
     return sheet;
   }
 
-  function render(){
-    const y = Number(yearInput.value);
-    const startMon = (Number(weekStart.value)===1);
+function render(){
 
-    stage.innerHTML="";
-    stage.appendChild(buildSheet(y,1,"上半年",startMon));
-    stage.appendChild(buildSheet(y,7,"下半年",startMon));
-    stage.appendChild(buildSheet(y,1,"上半年",startMon));
-    stage.appendChild(buildSheet(y,7,"下半年",startMon));
-  }
+  if(!stage) return;
+
+  const y = yearInput ? Number(yearInput.value) : new Date().getFullYear();
+  const startMon = weekStart ? (Number(weekStart.value)===1) : true;
+
+  stage.innerHTML="";
+
+  // 正面
+  stage.appendChild(buildSheet(y,1,"上半年",startMon));
+  stage.appendChild(buildSheet(y,7,"下半年",startMon));
+
+  // 背面
+  stage.appendChild(buildSheet(y,1,"上半年",startMon));
+  stage.appendChild(buildSheet(y,7,"下半年",startMon));
+}
 
   /* 事件 */
   btnRender?.addEventListener("click", render);

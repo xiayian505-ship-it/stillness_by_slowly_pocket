@@ -1,24 +1,43 @@
+/* ===============================
+   🎛 基礎參數
+=============================== */
 :root{
   --w:85mm;
   --h:120mm;
   --month-gap:1.4mm;
   --cell-h:4.3mm;
   --fs-title:3.6mm;
-  --fs-week:4.9mm;
+  --fs-week:2.2mm;
   --fs-day:2mm;
-  font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
-  font-weight:500;
+
+  --ink:#000;
+  --bg:#e9ecef;
+  --card:#F7FAFB;
+
+  --line:#8FA3A9;
+  --month-title:#5f7b84;
+  --month-border:#C9D7DC;
+
+  --brand:#AEBFC4;
+
+  --offday:#4e6f78;
+  --memoday:#8aa4ac;
+  --termday:#6f8f98;
 }
 
 *{ box-sizing:border-box; }
 
 body{
   margin:0;
-  background:#e9ecef;
-  color:#000;
+  background:var(--bg);
+  color:var(--ink);
+  font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
+  font-weight:500;
 }
 
-/* ───── 上方控制列 ───── */
+/* ===============================
+   🔝 控制列
+=============================== */
 .topbar{
   display:flex;
   gap:16px;
@@ -28,11 +47,28 @@ body{
   border-bottom:1px solid #000;
 }
 
-.title h1{ margin:0; font-size:16px; }
-.sub{ font-size:12px; }
+.title h1{
+  margin:0;
+  font-size:15px;
+  letter-spacing:.15em;
+  color:#5f7b84;
+  font-weight:700;
+}
+
+.sub{
+  font-size:11px;
+  letter-spacing:.12em;
+  color:#8fa4ab;
+}
 
 .controls{ display:flex; gap:10px; flex-wrap:wrap; }
-.ctrl{ display:grid; gap:6px; font-size:12px; }
+.ctrl{
+  display:grid;
+  gap:4px;
+  font-size:11px;
+  letter-spacing:.12em;
+  color:#8fa4ab;
+}
 
 .ctrl input,.ctrl select{
   border:1px solid #000;
@@ -41,13 +77,26 @@ body{
 }
 
 .btn{
-  border:1px solid #000;
-  padding:8px 10px;
-  border-radius:6px;
+  height:32px;
+  padding:0 16px;
+  border:1px solid #7f9da6;
+  border-radius:8px;
+  background:#dfecef;
+  color:#4e6f78;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.1em;
   cursor:pointer;
+  transition:.15s ease;
 }
 
-/* ───── 預覽區 ───── */
+.btn:hover{
+  background:#cfe1e6;
+}
+
+/* ===============================
+   🖼 預覽區
+=============================== */
 .stage{
   display:grid;
   place-items:center;
@@ -66,12 +115,14 @@ body{
   height:130mm;
   margin:0 auto;
   border:1px solid #000;
-  background:#F7FAFB;
+  background:var(--card);
   overflow:hidden;
   position:relative;
 }
 
-/* ───── 標頭 ───── */
+/* ===============================
+   📌 標頭
+=============================== */
 .card_head{
   display:flex;
   justify-content:space-between;
@@ -80,8 +131,8 @@ body{
 }
 
 .card_head div:first-child{
-  color:#2F3E46;
-  font-weight:800;
+  color:#5f7b84;   /* ← 跟月份 Jan 同一色系 */
+  font-weight:700;
   letter-spacing:.2em;
 }
 
@@ -92,7 +143,9 @@ body{
   font-size:3mm;
 }
 
-/* ───── 月曆格 ───── */
+/* ===============================
+   📅 月曆區
+=============================== */
 .months{
   display:grid;
   grid-template-columns:repeat(2, 1fr);
@@ -102,21 +155,26 @@ body{
   height:120mm;
 }
 
-.month{ border:1px solid #8FA3A9; padding:.8mm; }
+.month{
+  border:1px solid var(--line);
+  padding:.8mm;
+}
 
 .month_title{
   display:flex;
   justify-content:space-between;
   font-size:var(--fs-title);
   margin-bottom:.5mm;
-  font-weight:800;
-  color:#52727C;
-  border-bottom:1px solid #C9D7DC;
+  font-weight:700;
+  color:var(--month-title);
+  border-bottom:1px solid var(--month-border);
   padding-bottom:.6mm;
   letter-spacing:.12em;
 }
 
-/* ───── 日期格 ───── */
+/* ===============================
+   🔢 日期格
+=============================== */
 .grid{
   display:grid;
   grid-template-columns:repeat(7, 1fr);
@@ -127,90 +185,109 @@ body{
   height:var(--cell-h);
   display:flex;
   flex-direction:column;
-  justify-content:space-between; /* ⭐ 關鍵：上下分區 */
   align-items:center;
-  padding:0.4mm 0 0.3mm;
+  justify-content:flex-start;
+  padding-top:0.5mm;
+}
+
+.solar{
   font-size:var(--fs-day);
   line-height:1;
+  margin-top:0.2mm;
 }
 
-/* 數字層 */
-.solar{
-  font-size:2mm;
-  line-height:1;
-}
-
-/* 節日層 */
 .holiday_tag{
-  font-size:0.1mm;
+  margin-top:auto;
+  font-size:1.3mm;
   line-height:1;
-  letter-spacing:-0.05em;
-  color:#c33;
-  opacity:.9;
-  white-space:nowrap;
-  margin-bottom:0.2mm;
+  font-weight:500;
 }
 
-/* 星期顏色 */
+/* ===============================
+   🗓 星期顏色
+=============================== */
 .cell.wd, .week.wd{ color:#000; }
-.cell.sat, .week.sat{ color:#c00; }
-.cell.sun, .week.sun{ color:#c00; }
+.cell.sat:not(.offday):not(.memoday):not(.termday),
+.week.sat{ color:#c00; }
 
-/* 節日 */
-.cell.holiday{
-  color:#d00;
+.cell.sun:not(.offday):not(.memoday):not(.termday),
+.week.sun{ color:#c00; }
+
+.week{
+  font-size:var(--fs-week);
+  font-weight:600;
+  opacity:.55;
+  letter-spacing:.1em;
+}
+
+/* ===============================
+   🧭 時間語意層級
+=============================== */
+
+/* 放假日 */
+.cell.offday{
+  color:var(--offday);
   font-weight:700;
 }
 
-/* 品牌標記 */
+/* 紀念日 */
+.cell.memoday{
+  color:var(--memoday);
+}
+
+/* 節氣 */
+.cell.termday{
+  color:var(--termday);
+  font-weight:600;
+}
+
+.cell.offday .holiday_tag,
+.cell.memoday .holiday_tag,
+.cell.termday .holiday_tag{
+  color:inherit;
+}
+
+/* ===============================
+   🏷 品牌
+=============================== */
 .brand{
   position:absolute;
   bottom:2.4mm;
   right:3mm;
   font-size:1.5mm;
-  letter-spacing:.25em;
-  color:#AEBFC4;
-  font-weight:400;
   letter-spacing:.18em;
+  color:var(--brand);
+  font-weight:400;
 }
 
-/* ───── 🖨 列印模式 ───── */
+/* ===== 輸入框 & 下拉選單（產品級） ===== */
+.ctrl input,
+.ctrl select{
+  height:32px;
+  padding:0 12px;
+  border:1px solid #b9cbd1;
+  border-radius:8px;
+  background:#f5f9fa;
+  color:#5f7b84;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.06em;
+  outline:none;
+  transition:.15s ease;
+}
+
+.ctrl input:focus,
+.ctrl select:focus{
+  border-color:#7f9da6;
+  background:#eef5f7;
+}
+
+/* ===============================
+   🖨 列印模式
+=============================== */
 @media print{
-
-  body{ background:#fff; font-family:Arial,"PMingLiU",sans-serif; }
-
+  body{ background:#fff; }
   .topbar{ display:none; }
-
-  .stage{ display:block; text-align:center; }
-
-  .sheet{
-    border:none;
-    padding:0;
-    margin:0 auto 10mm;
-    width:103mm;
-  }
-
-  .months{
-    display:block;
-    font-size:0;
-  }
-
-  .month{
-    display:inline-block;
-    width:48%;
-    margin:1%;
-    vertical-align:top;
-    font-size:initial;
-  }
-
-  .grid{ display:table; width:100%; }
-
-  .cell{
-    display:table-cell;
-    height:3.1mm;
-    vertical-align:middle;
-    font-size:2mm;
-  }
-
-  .cell.week{ font-size:2.9mm; }
+  .stage{ padding:0; gap:0; }
+  .sheet{ border:none; margin:0 auto 8mm; }
 }
