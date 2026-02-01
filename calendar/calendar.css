@@ -1,210 +1,210 @@
 /* ===============================
-   🎛 基礎參數
+🎛 基礎參數
 =============================== */
 :root{
-  --w:85mm;
-  --h:120mm;
-  --month-gap:1.4mm;
-  --cell-h:4.3mm;
-  --fs-title:3.6mm;
-  --fs-week:2.2mm;
-  --fs-day:2mm;
+--w:85mm;
+--h:120mm;
+--month-gap:1.4mm;
+--cell-h:4.3mm;
+--fs-title:3.6mm;
+--fs-week:2.2mm;
+--fs-day:2mm;
 
-  --ink:#000;
-  --bg:#e9ecef;
-  --card:#F7FAFB;
+--ink:#000;
+--bg:#e9ecef;
+--card:#F7FAFB;
 
-  --line:#8FA3A9;
-  --month-title:#5f7b84;
-  --month-border:#C9D7DC;
+--line:#8FA3A9;
+--month-title:#5f7b84;
+--month-border:#C9D7DC;
 
-  --brand:#AEBFC4;
+--brand:#AEBFC4;
 
-  --offday:#4e6f78;
-  --memoday:#8aa4ac;
-  --termday:#6f8f98;
+--offday:#4e6f78;
+--memoday:#8aa4ac;
+--termday:#6f8f98;
 }
 
 *{ box-sizing:border-box; }
 
 body{
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
-  font-weight:500;
+margin:0;
+background:var(--bg);
+color:var(--ink);
+font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
+font-weight:500;
 }
 
 /* ===============================
-   🔝 控制列
+🔝 控制列
 =============================== */
 .topbar{
-  display:flex;
-  gap:16px;
-  align-items:center;
-  justify-content:space-between;
-  padding:12px 16px;
-  border-bottom:1px solid #000;
+display:flex;
+gap:16px;
+align-items:center;
+justify-content:space-between;
+padding:12px 16px;
+border-bottom:1px solid #000;
 }
 
 .title h1{
-  margin:0;
-  font-size:15px;
-  letter-spacing:.15em;
-  color:#5f7b84;
-  font-weight:700;
+margin:0;
+font-size:15px;
+letter-spacing:.15em;
+color:#5f7b84;
+font-weight:700;
 }
 
 .sub{
-  font-size:11px;
-  letter-spacing:.12em;
-  color:#8fa4ab;
+font-size:11px;
+letter-spacing:.12em;
+color:#8fa4ab;
 }
 
 .controls{ display:flex; gap:10px; flex-wrap:wrap; }
 .ctrl{
-  display:grid;
-  gap:4px;
-  font-size:11px;
-  letter-spacing:.12em;
-  color:#8fa4ab;
+display:grid;
+gap:4px;
+font-size:11px;
+letter-spacing:.12em;
+color:#8fa4ab;
 }
 
 .ctrl input,.ctrl select{
-  border:1px solid #000;
-  border-radius:6px;
-  padding:6px 8px;
+border:1px solid #000;
+border-radius:6px;
+padding:6px 8px;
 }
 
 .btn{
-  height:32px;
-  padding:0 16px;
-  border:1px solid #7f9da6;
-  border-radius:8px;
-  background:#dfecef;
-  color:#4e6f78;
-  font-size:13px;
-  font-weight:700;
-  letter-spacing:.1em;
-  cursor:pointer;
-  transition:.15s ease;
+height:32px;
+padding:0 16px;
+border:1px solid #7f9da6;
+border-radius:8px;
+background:#dfecef;
+color:#4e6f78;
+font-size:13px;
+font-weight:700;
+letter-spacing:.1em;
+cursor:pointer;
+transition:.15s ease;
 }
 
 .btn:hover{
-  background:#cfe1e6;
+background:#cfe1e6;
 }
 
 /* ===============================
-   🖼 預覽區
+🖼 預覽區
 =============================== */
 .stage{
-  display:grid;
-  place-items:center;
-  gap:18px;
-  padding:18px 16px 30px;
+display:grid;
+place-items:center;
+gap:18px;
+padding:18px 16px 30px;
 }
 
 .sheet{
-  width:calc(var(--w) + 8mm);   /* 原本 +10 → 改 +8 */
-  padding:9mm 4mm;             /* 邊距微縮，日曆本體不變 */
-  border:1px solid #000;
+width:calc(var(--w) + 8mm);   /* 原本 +10 → 改 +8 /
+padding:9mm 4mm;             / 邊距微縮，日曆本體不變 */
+border:1px solid #000;
 }
 
 .card{
-  width:85mm;
-  height:130mm;
-  margin:0 auto;
-  border:1px solid #000;
-  background:var(--card);
-  overflow:hidden;
-  position:relative;
+width:85mm;
+height:130mm;
+margin:0 auto;
+border:1px solid #000;
+background:var(--card);
+overflow:hidden;
+position:relative;
 }
 
 /* ===============================
-   📌 標頭
+📌 標頭
 =============================== */
 .card_head{
-  display:flex;
-  justify-content:space-between;
-  padding:3mm 4mm 2mm;
-  background:linear-gradient(to right,#eef5f7,#f7fafb);
+display:flex;
+justify-content:space-between;
+padding:3mm 4mm 2mm;
+background:linear-gradient(to right,#eef5f7,#f7fafb);
 }
 
 .card_head div:first-child{
-  color:#5f7b84;   /* ← 跟月份 Jan 同一色系 */
-  font-weight:700;
-  letter-spacing:.2em;
+color:#5f7b84;   /* ← 跟月份 Jan 同一色系 */
+font-weight:700;
+letter-spacing:.2em;
 }
 
 .card_head div:last-child{
-  font-weight:500;
-  letter-spacing:.25em;
-  color:#7F949B;
-  font-size:3mm;
+font-weight:500;
+letter-spacing:.25em;
+color:#7F949B;
+font-size:3mm;
 }
 
 /* ===============================
-   📅 月曆區
+📅 月曆區
 =============================== */
 .months{
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:var(--month-gap);
-  padding:2mm 3mm 3mm;
-  width:100%;
-  height:120mm;
+display:grid;
+grid-template-columns:repeat(2, 1fr);
+gap:var(--month-gap);
+padding:2mm 3mm 3mm;
+width:100%;
+height:120mm;
 }
 
 .month{
-  border:1px solid var(--line);
-  padding:.8mm;
+border:1px solid var(--line);
+padding:.8mm;
 }
 
 .month_title{
-  display:flex;
-  justify-content:space-between;
-  font-size:var(--fs-title);
-  margin-bottom:.5mm;
-  font-weight:700;
-  color:var(--month-title);
-  border-bottom:1px solid var(--month-border);
-  padding-bottom:.6mm;
-  letter-spacing:.12em;
+display:flex;
+justify-content:space-between;
+font-size:var(--fs-title);
+margin-bottom:.5mm;
+font-weight:700;
+color:var(--month-title);
+border-bottom:1px solid var(--month-border);
+padding-bottom:.6mm;
+letter-spacing:.12em;
 }
 
 /* ===============================
-   🔢 日期格
+🔢 日期格
 =============================== */
 .grid{
-  display:grid;
-  grid-template-columns:repeat(7, 1fr);
-  gap:.2mm;
+display:grid;
+grid-template-columns:repeat(7, 1fr);
+gap:.2mm;
 }
 
 .cell{
-  height:var(--cell-h);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-start;
-  padding-top:0.5mm;
+height:var(--cell-h);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:flex-start;
+padding-top:0.5mm;
 }
 
 .solar{
-  font-size:var(--fs-day);
-  line-height:1;
-  margin-top:0.2mm;
+font-size:var(--fs-day);
+line-height:1;
+margin-top:0.2mm;
 }
 
 .holiday_tag{
-  margin-top:auto;
-  font-size:1.3mm;
-  line-height:1;
-  font-weight:500;
+margin-top:auto;
+font-size:1.3mm;
+line-height:1;
+font-weight:500;
 }
 
 /* ===============================
-   🗓 星期顏色
+🗓 星期顏色
 =============================== */
 .cell.wd, .week.wd{ color:#000; }
 .cell.sat:not(.offday):not(.memoday):not(.termday),
@@ -214,101 +214,115 @@ body{
 .week.sun{ color:#c00; }
 
 .week{
-  font-size:var(--fs-week);
-  font-weight:600;
-  opacity:.55;
-  letter-spacing:.1em;
+font-size:var(--fs-week);
+font-weight:600;
+opacity:.55;
+letter-spacing:.1em;
 }
 
 /* ===============================
-   🧭 時間語意層級
+🧭 時間語意層級
 =============================== */
 
 /* 放假日 */
 .cell.offday{
-  color:var(--offday);
-  font-weight:700;
+color:var(--offday);
+font-weight:700;
 }
 
 /* 紀念日 */
 .cell.memoday{
-  color:var(--memoday);
+color:var(--memoday);
 }
 
 /* 節氣 */
 .cell.termday{
-  color:var(--termday);
-  font-weight:600;
+color:var(--termday);
+font-weight:600;
 }
 
 .cell.offday .holiday_tag,
 .cell.memoday .holiday_tag,
 .cell.termday .holiday_tag{
-  color:inherit;
+color:inherit;
 }
 
 /* ===============================
-   🏷 品牌
+🏷 品牌
 =============================== */
 .brand{
-  position:absolute;
-  bottom:2.4mm;
-  right:3mm;
-  font-size:1.5mm;
-  letter-spacing:.18em;
-  color:var(--brand);
-  font-weight:400;
+position:absolute;
+bottom:2.4mm;
+right:3mm;
+font-size:1.5mm;
+letter-spacing:.18em;
+color:var(--brand);
+font-weight:400;
 }
 
 /* ===== 輸入框 & 下拉選單（產品級） ===== */
 .ctrl input,
 .ctrl select{
-  height:32px;
-  padding:0 12px;
-  border:1px solid #b9cbd1;
-  border-radius:8px;
-  background:#f5f9fa;
-  color:#5f7b84;
-  font-size:13px;
-  font-weight:600;
-  letter-spacing:.06em;
-  outline:none;
-  transition:.15s ease;
+height:32px;
+padding:0 12px;
+border:1px solid #b9cbd1;
+border-radius:8px;
+background:#f5f9fa;
+color:#5f7b84;
+font-size:13px;
+font-weight:600;
+letter-spacing:.06em;
+outline:none;
+transition:.15s ease;
 }
 
 .ctrl input:focus,
 .ctrl select:focus{
-  border-color:#7f9da6;
-  background:#eef5f7;
+border-color:#7f9da6;
+background:#eef5f7;
 }
 
 /* ===============================
-   🖨 列印模式
+🖨 列印模式
 =============================== */
 @media print{
 
-  body{ background:#fff; }
-  .topbar{ display:none; }
+  body{
+    background:#fff;
+  }
 
+  .topbar{
+    display:none;
+  }
+
+  /* 🖨 列印專用版面，不影響螢幕 */
   .stage{
     display:flex;
     flex-wrap:wrap;
     justify-content:space-between;
-    column-gap:4mm;
-    row-gap:2mm;
+
+    column-gap:4mm;   /* 左右卡片間距 */
+    row-gap:2mm;      /* 上下兩排間距 */
     padding:0;
   }
 
+  /* ⭐ 只在列印時縮外框，畫面不動 */
   .sheet{
     border:none;
     margin:0;
-    padding:8mm 4mm;     /* ⭐ 關鍵修正 */
+    padding:6mm 3mm;        /* ← 只在印刷時縮 */
     flex:0 0 calc(50% - 2mm);
+  }
+
+  /* 保證卡片不被縮放扭曲 */
+  .card{
+    width:85mm;
+    height:130mm;
   }
 
 }
 
 @page{
-  size:A4 portrait;
-  margin:8mm;
+size:A4 portrait;
+margin:8mm;
 }
