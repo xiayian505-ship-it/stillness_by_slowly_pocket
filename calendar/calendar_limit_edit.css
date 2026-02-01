@@ -210,16 +210,23 @@ body{
 .cell.lunar_ghost{ color:#6f8f70; }                   /* 中元 */
 
 /* ===============================
-🖨 列印模式
+🖨 列印模式（完全隔離操作區）
 =============================== */
 @media print{
-  body{ background:#fff; }
-  .topbar{ display:none; }
-  .paper{ box-shadow:none; }
-  .card{ border:none; }
-}
 
-@page{
-  size:A4 portrait;
-  margin:16mm 14mm;
+  /* 1️⃣ 整個頁面只留下紙張 */
+  body > *:not(.paper){
+    display:none !important;
+  }
+
+  /* 2️⃣ 紙張置頂，不受外界影響 */
+  .paper{
+    margin:0 auto;
+    box-shadow:none;
+  }
+
+  /* 3️⃣ 卡片邊框去除（可選） */
+  .card{
+    border:none;
+  }
 }
