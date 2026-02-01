@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>2026 名片小年曆（雙面 6+6）</title>
+  <link rel="stylesheet" href="./calendar.css" />
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="title">
+    <h1>名片小年曆</h1>
+    <div class="sub">雙面 6+6｜自動生成</div>
+  </div>
+
+  <div class="controls">
+    <label class="ctrl">
+      年份
+      <input id="yearInput" type="number" min="1900" max="2100" value="2026" />
+    </label>
+
+    <label class="ctrl">
+      週起始
+      <select id="weekStart">
+<option value="1">週一</option>
+<option value="0" selected>週日</option>
+      </select>
+    </label>
+
+    <button id="btnRender" class="btn">重新生成</button>
+    <button id="btnPrint" class="btn ghost">列印 / 存成 PDF</button>
+  </div>
+</header>
+
+<main class="stage" id="stage"></main>
+
+
+<script src="./calendar.js"></script>
+</body>
+</html>

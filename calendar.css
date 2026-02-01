@@ -1,0 +1,216 @@
+:root{
+  --w:85mm;
+  --h:120mm;
+  --month-gap:1.4mm;
+  --cell-h:4.3mm;
+  --fs-title:3.6mm;
+  --fs-week:4.9mm;
+  --fs-day:2mm;
+  font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
+  font-weight:500;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:#e9ecef;
+  color:#000;
+}
+
+/* ───── 上方控制列 ───── */
+.topbar{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid #000;
+}
+
+.title h1{ margin:0; font-size:16px; }
+.sub{ font-size:12px; }
+
+.controls{ display:flex; gap:10px; flex-wrap:wrap; }
+.ctrl{ display:grid; gap:6px; font-size:12px; }
+
+.ctrl input,.ctrl select{
+  border:1px solid #000;
+  border-radius:6px;
+  padding:6px 8px;
+}
+
+.btn{
+  border:1px solid #000;
+  padding:8px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* ───── 預覽區 ───── */
+.stage{
+  display:grid;
+  place-items:center;
+  gap:18px;
+  padding:18px 16px 30px;
+}
+
+.sheet{
+  width:calc(var(--w) + 18mm);
+  padding:12mm 9mm;
+  border:1px solid #000;
+}
+
+.card{
+  width:85mm;
+  height:130mm;
+  margin:0 auto;
+  border:1px solid #000;
+  background:#F7FAFB;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ───── 標頭 ───── */
+.card_head{
+  display:flex;
+  justify-content:space-between;
+  padding:3mm 4mm 2mm;
+  background:linear-gradient(to right,#eef5f7,#f7fafb);
+}
+
+.card_head div:first-child{
+  color:#2F3E46;
+  font-weight:800;
+  letter-spacing:.2em;
+}
+
+.card_head div:last-child{
+  font-weight:500;
+  letter-spacing:.25em;
+  color:#7F949B;
+  font-size:3mm;
+}
+
+/* ───── 月曆格 ───── */
+.months{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:var(--month-gap);
+  padding:2mm 3mm 3mm;
+  width:86mm;
+  height:120mm;
+}
+
+.month{ border:1px solid #8FA3A9; padding:.8mm; }
+
+.month_title{
+  display:flex;
+  justify-content:space-between;
+  font-size:var(--fs-title);
+  margin-bottom:.5mm;
+  font-weight:800;
+  color:#52727C;
+  border-bottom:1px solid #C9D7DC;
+  padding-bottom:.6mm;
+  letter-spacing:.12em;
+}
+
+/* ───── 日期格 ───── */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(7, 1fr);
+  gap:.2mm;
+}
+
+.cell{
+  height:var(--cell-h);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between; /* ⭐ 關鍵：上下分區 */
+  align-items:center;
+  padding:0.4mm 0 0.3mm;
+  font-size:var(--fs-day);
+  line-height:1;
+}
+
+/* 數字層 */
+.solar{
+  font-size:2mm;
+  line-height:1;
+}
+
+/* 節日層 */
+.holiday_tag{
+  font-size:0.1mm;
+  line-height:1;
+  letter-spacing:-0.05em;
+  color:#c33;
+  opacity:.9;
+  white-space:nowrap;
+  margin-bottom:0.2mm;
+}
+
+/* 星期顏色 */
+.cell.wd, .week.wd{ color:#000; }
+.cell.sat, .week.sat{ color:#c00; }
+.cell.sun, .week.sun{ color:#c00; }
+
+/* 節日 */
+.cell.holiday{
+  color:#d00;
+  font-weight:700;
+}
+
+/* 品牌標記 */
+.brand{
+  position:absolute;
+  bottom:2.4mm;
+  right:3mm;
+  font-size:1.5mm;
+  letter-spacing:.25em;
+  color:#AEBFC4;
+  font-weight:400;
+  letter-spacing:.18em;
+}
+
+/* ───── 🖨 列印模式 ───── */
+@media print{
+
+  body{ background:#fff; font-family:Arial,"PMingLiU",sans-serif; }
+
+  .topbar{ display:none; }
+
+  .stage{ display:block; text-align:center; }
+
+  .sheet{
+    border:none;
+    padding:0;
+    margin:0 auto 10mm;
+    width:103mm;
+  }
+
+  .months{
+    display:block;
+    font-size:0;
+  }
+
+  .month{
+    display:inline-block;
+    width:48%;
+    margin:1%;
+    vertical-align:top;
+    font-size:initial;
+  }
+
+  .grid{ display:table; width:100%; }
+
+  .cell{
+    display:table-cell;
+    height:3.1mm;
+    vertical-align:middle;
+    font-size:2mm;
+  }
+
+  .cell.week{ font-size:2.9mm; }
+}
