@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>名片小月曆（印刷優化版）</title>
+
+<style>
+:root{
+  --w:60mm;
+  --h:105mm;
+
+  --cell-h:3.2mm;
+  --fs-title:2.6mm;
+  --fs-week:1.5mm;
+  --fs-day:2.0mm;
+
+  --card:#ffffff;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:#e5e7ea;
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+}
+
+/* ===== 控制列 ===== */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 16px;
+  border-bottom:1px solid #000;
+}
+
+.ctrl input,.ctrl select{
+  padding:6px 8px;
+  border:1px solid #aaa;
+  border-radius:6px;
+}
+
+.btn{
+  padding:6px 14px;
+  border:1px solid #000;
+  border-radius:6px;
+  background:#fff;
+  cursor:pointer;
+}
+
+/* ===== A4 預覽紙 ===== */
+.paper{
+  width:210mm;
+  height:297mm;
+  background:#fff;
+  margin:30px auto;
+  box-shadow:0 10px 40px rgba(0,0,0,.15);
+
+  display:flex;
+  justify-content:center;
+  padding-top:18mm;
+}
+
+/* ===== 2×2 排列 ===== */
+.stage{
+  width:calc(var(--w)*2 + 18mm);
+  display:grid;
+  grid-template-columns:var(--w) var(--w);
+  column-gap:18mm;
+  row-gap:18mm;
+}
+
+/* ===== 卡片 ===== */
+.card{
+  width:var(--w);
+  height:var(--h);
+  border:1px solid #000; /* 裁切黑線 */
+  background:var(--card);
+  overflow:hidden;
+  position:relative;
+}
+
+/* 標頭 */
+.card_head{
+  display:flex;
+  justify-content:space-between;
+  padding:3mm 4mm 2mm;
+  font-weight:700;
+  font-size:var(--fs-title);
+  color:#000;
+}
+
+/* 月曆 */
+.months{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:2mm;
+  padding:2.2mm 3mm;
+}
+
+.month_title{
+  display:flex;
+  justify-content:space-between;
+  font-size:var(--fs-title);
+  font-weight:700;
+  margin-bottom:.6mm;
+  color:#000;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:.25mm;
+}
+
+.cell{
+  height:var(--cell-h);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+.week{
+  font-size:var(--fs-week);
+  font-weight:600;
+  color:#000;
+}
+
+.solar{
+  font-size:var(--fs-day);
+  font-weight:700;
+  letter-spacing:-0.1mm;
+  color:#000;
+}
+
+.sun,.sat{ color:#000; }
+
+.cell.sun,.week.sun{ color:#333; }  /* 星期日深灰 */
+.cell.sat,.week.sat{ color:#555; }  /* 星期六淺灰一點 */
+.cell.wd,.week.wd{ color:#000; }    /* 平日純黑 */
+
+/* ===== 印刷強制真實尺寸 ===== */
+@media print{
+  body{ background:#fff; }
+  .topbar{ display:none; }
+  .paper{
+    box-shadow:none;
+    margin:0;
+    width:210mm;
+    height:297mm;
+  }
+  .card{ border:1px solid #000; }
+}
+
+/* ⭐ 關鍵：避免被瀏覽器縮小 */
+@page{
+  size:A4;
+  margin:18mm;
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="title">
+    <h1>名片小月曆｜印刷版</h1>
+  </div>
+
+  <div class="controls">
+    <label class="ctrl">年份
+      <input id="yearInput" type="number" value="2026" />
+    </label>
+
+    <label class="ctrl">週起始
+      <select id="weekStart">
+        <option value="1">週一</option>
+        <option value="0" selected>週日</option>
+      </select>
+    </label>
+
+    <button id="btnPrint" class="btn">列印</button>
+  </div>
+</header>
+
+<main class="paper">
+  <div class="stage" id="stage"></div>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", ()=>{
+
+  const stage     = document.getElementById("stage");
+  const yearInput = document.getElementById("yearInput");
+  const weekStart = document.getElementById("weekStart");
+  const btnPrint  = document.getElementById("btnPrint");
+
+  const WEEK_LABELS = {
+    1: ["一","二","三","四","五","六","日"],
+    0: ["日","一","二","三","四","五","六"]
+  };
+
+  const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  function daysInMonth(y,m){ return new Date(y,m,0).getDate(); }
+  function firstIndex(y,m,startMon){
+    const js = new Date(y,m-1,1).getDay();
+    return startMon ? (js+6)%7 : js;
+  }
+
+  function buildMonth(y,m,startMon){
+    const el = document.createElement("div");
+    el.innerHTML = `<div class="month_title"><span>${MONTH_NAMES[m-1]}</span><span>${m}</span></div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "grid";
+
+    WEEK_LABELS[startMon?1:0].forEach((w,i)=>{
+      const c = document.createElement("div");
+      c.className = "cell week";
+      c.textContent = w;
+      grid.appendChild(c);
+    });
+
+    const start = firstIndex(y,m,startMon);
+    const dim   = daysInMonth(y,m);
+
+    for(let i=0;i<start;i++){
+      const c=document.createElement("div");
+      c.className="cell";
+      grid.appendChild(c);
+    }
+
+    for(let d=1; d<=dim; d++){
+      const c = document.createElement("div");
+      c.className = "cell solar";
+      c.textContent = d;
+      grid.appendChild(c);
+    }
+
+    el.appendChild(grid);
+    return el;
+  }
+
+  function buildCard(y,startM,label,startMon){
+    const card=document.createElement("div");
+    card.className="card";
+
+    const head = document.createElement("div");
+    head.className = "card_head";
+    head.innerHTML = `<div>${y}</div><div>${label}</div>`;
+    card.appendChild(head);
+
+    const months=document.createElement("div");
+    months.className="months";
+    for(let m=startM;m<startM+6;m++) months.appendChild(buildMonth(y,m,startMon));
+    card.appendChild(months);
+
+    return card;
+  }
+
+  function render(){
+    const y = Number(yearInput.value);
+    const startMon = Number(weekStart.value)===1;
+    stage.innerHTML="";
+    stage.appendChild(buildCard(y,1,"上半年",startMon));
+    stage.appendChild(buildCard(y,7,"下半年",startMon));
+  }
+
+  weekStart.addEventListener("change", render);
+  yearInput.addEventListener("change", render);
+  btnPrint.addEventListener("click", ()=>window.print());
+
+  render();
+});
+</script>
+</body>
+</html>

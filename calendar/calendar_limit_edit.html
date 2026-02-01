@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>名片年曆（雙面 6+6）</title>
+  <link rel="stylesheet" href="./calendar_limit_edit.css" />
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="title">
+    <h1>名片小年曆|限制編輯版</h1>
+    <div class="sub">雙面｜可自動生成</div>
+  </div>
+
+  <div class="controls">
+    <label class="ctrl">
+      年份
+      <input id="yearInput" type="number" min="1900" max="2100" value="2026" />
+    </label>
+
+    <label class="ctrl">
+      週起始
+      <select id="weekStart">
+<option value="1">週一</option>
+<option value="0" selected>週日</option>
+      </select>
+    </label>
+
+    <button id="btnPrint" class="btn ghost">列印</button>
+  </div>
+</header>
+
+<section class="lunar_panel">
+  <div class="lp_title">農曆節日指定（本次有效）</div>
+
+  <div class="lp_row">
+    <select id="lunarName">
+      <option>除夕</option><option>初一</option><option>初二</option>
+      <option>初三</option><option>初四</option><option>初五</option>
+      <option>春分</option><option>秋分</option><option>夏至</option><option>冬至</option>
+      <option>端午</option><option>中秋</option><option>中元</option><option>七夕</option>
+    </select>
+
+    <input id="lunarDate" type="date" />
+
+    <button id="btnAddLunar">加入</button>
+  </div>
+</section>
+
+<main class="paper">
+  <div class="stage" id="stage"></div>
+</main>
+
+
+<script src="./calendar_limit_edit.js"></script>
+</body>
+</html>

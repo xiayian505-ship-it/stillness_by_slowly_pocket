@@ -1,41 +1,219 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>2026 名片小年曆（雙面 6+6）</title>
-  <link rel="stylesheet" href="./calendar.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>慢慢銀河系｜年曆產生器</title>
+
+<style>
+/* ===============================
+🎛 慢慢宇宙色系（同步月曆工具）
+=============================== */
+:root{
+  --bg:#e5e7ea;
+  --paper:#F7FAFB;
+  --ink:#2f3f45;
+  --muted:#6b848c;
+  --line:rgba(80,100,110,.35);
+  --shadow:0 10px 40px rgba(60,80,90,.12);
+  --radius:18px;
+
+  --brand:#AEBFC4;
+  --month-title:#5f7b84;
+}
+
+/* ===============================
+基礎
+=============================== */
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+}
+
+.wrap{
+  width:min(760px, 92vw);
+  margin:32px auto;
+}
+
+/* ===============================
+🌌 表頭（銀河系入口）
+=============================== */
+.header{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:22px 20px 18px;
+}
+
+.h1{
+  margin:0 0 6px;
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:.3px;
+  color:var(--month-title);
+}
+
+.sub{
+  margin:0;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.55;
+}
+
+/* ===============================
+📦 主面板
+=============================== */
+.panel{
+  margin-top:16px;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px;
+}
+
+.grid{
+  display:grid;
+  gap:12px;
+}
+
+/* ===============================
+🔘 入口按鈕
+=============================== */
+.btn{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+
+  width:100%;
+  padding:16px 16px;
+  border:1px solid rgba(80,100,110,.45);
+  border-radius:16px;
+  background:linear-gradient(to right,#eef5f7,#f7fafb);
+  text-decoration:none;
+  color:inherit;
+}
+
+.btn:hover{
+  background:linear-gradient(to right,#e7f0f3,#f3f8fa);
+}
+
+.left{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.title{
+  font-weight:800;
+  font-size:15.5px;
+  color:var(--ink);
+}
+
+.desc{
+  font-size:12.8px;
+  color:var(--muted);
+  line-height:1.4;
+}
+
+.badge{
+  font-size:12px;
+  padding:6px 11px;
+  border:1px solid rgba(90,110,120,.4);
+  border-radius:999px;
+  color:#5f7b84;
+  white-space:nowrap;
+}
+
+/* ===============================
+📝 說明
+=============================== */
+.note{
+  margin-top:14px;
+  padding:12px 14px;
+  border:1px dashed rgba(90,110,120,.35);
+  border-radius:14px;
+  color:var(--muted);
+  font-size:12.8px;
+  line-height:1.55;
+}
+
+.footer{
+  margin-top:14px;
+  text-align:center;
+  font-size:12px;
+  color:var(--brand);
+  letter-spacing:.08em;
+}
+
+/* ===============================
+📱 小螢幕
+=============================== */
+@media (max-width:420px){
+  .btn{ padding:14px; }
+}
+</style>
 </head>
 
 <body>
 
-<header class="topbar">
-  <div class="title">
-    <h1>名片小年曆</h1>
-    <div class="sub">雙面｜可自動生成</div>
-  </div>
+<div class="wrap">
 
-  <div class="controls">
-    <label class="ctrl">
-      年份
-      <input id="yearInput" type="number" min="1900" max="2100" value="2026" />
-    </label>
+  <section class="header">
+    <h1 class="h1">慢慢銀河系｜年曆產生器</h1>
+    <p class="sub">
+      這裡是慢慢宇宙的時間模組入口。<br>
+      不同年曆系統分屬不同子功能，皆以新視窗開啟。
+    </p>
+  </section>
 
-    <label class="ctrl">
-      週起始
-      <select id="weekStart">
-<option value="1">週一</option>
-<option value="0" selected>週日</option>
-      </select>
-    </label>
+  <section class="panel">
+    <div class="grid">
 
-    <button id="btnPrint" class="btn ghost">列印</button>
-  </div>
-</header>
+      <a class="btn" href="./calendar_card_print.html" target="_blank" rel="noopener">
+        <div class="left">
+          <div class="title">年曆名片版</div>
+          <div class="desc">列印導向｜尺寸固定｜黑白雷射印表機用</div>
+        </div>
+        <div class="badge">新視窗</div>
+      </a>
 
-<main class="stage" id="stage"></main>
+      <a class="btn" href="./calendar_limit_edit.html" target="_blank" rel="noopener">
+        <div class="left">
+          <div class="title">年曆限制編輯版</div>
+          <div class="desc">可編但有限制｜穩定版面｜安全系統</div>
+        </div>
+        <div class="badge">新視窗</div>
+      </a>
 
+      <a class="btn" href="./calendar_free_edit.html" target="_blank" rel="noopener">
+        <div class="left">
+          <div class="title">年曆自由編輯版</div>
+          <div class="desc">自由改內容｜自由調整｜實驗與創作</div>
+        </div>
+        <div class="badge">新視窗</div>
+      </a>
 
-<script src="./calendar.js"></script>
+    </div>
+
+    <div class="note">
+      若你的檔名不同，只需把上方三個 href 改成對應檔名即可（同層級用 ./xxx.html）。
+    </div>
+
+    <div class="footer">Stillness by Slowly · Galaxy Time System</div>
+  </section>
+
+</div>
+
 </body>
 </html>

@@ -1,322 +1,225 @@
 /* ===============================
-🎛 基礎參數
+🎛 基礎參數（放大卡片）
 =============================== */
 :root{
---w:85mm;
---h:120mm;
---month-gap:1.4mm;
-  --cell-h:4.0mm;     /* 原 4.3 → 4.0 */
-  --fs-title:3.3mm;   /* 原 3.6 → 3.3 */
-  --fs-week:2.0mm;    /* 原 2.2 → 2.0 */
-  --fs-day:1.9mm;     /* 原 2.0 → 1.9 */
+  --w:92mm;      /* ⭐ 卡片變大 */
+  --h:150mm;
 
---ink:#000;
---bg:#e9ecef;
---card:#F7FAFB;
+  --gap-x:6mm;   /* 兩張卡中間距離 */
+  --gap-y:18mm;
 
---line:#8FA3A9;
---month-title:#5f7b84;
---month-border:#C9D7DC;
+  --cell-h:4.8mm;   /* ⭐ 每週行距再加大 */
+  --fs-title:3.9mm;
+  --fs-week:2.4mm;
+  --fs-day:2.4mm;
 
---brand:#AEBFC4;
+  --card:#F7FAFB;
+  --month-title:#5f7b84;
+  --brand:#AEBFC4;
 
---offday:#4e6f78;
---memoday:#8aa4ac;
---termday:#6f8f98;
+  --offday:#4e6f78;
+  --memoday:#8aa4ac;
+  --termday:#6f8f98;
 }
 
 *{ box-sizing:border-box; }
 
 body{
-margin:0;
-background:var(--bg);
-color:var(--ink);
-font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
-font-weight:500;
+  margin:0;
+  background:#e5e7ea;
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
 }
 
 /* ===============================
 🔝 控制列
 =============================== */
 .topbar{
-display:flex;
-gap:16px;
-align-items:center;
-justify-content:space-between;
-padding:12px 16px;
-border-bottom:1px solid #000;
-}
-
-.title h1{
-margin:0;
-font-size:15px;
-letter-spacing:.15em;
-color:#5f7b84;
-font-weight:700;
-}
-
-.sub{
-font-size:11px;
-letter-spacing:.12em;
-color:#8fa4ab;
-}
-
-.controls{ display:flex; gap:10px; flex-wrap:wrap; }
-.ctrl{
-display:grid;
-gap:4px;
-font-size:11px;
-letter-spacing:.12em;
-color:#8fa4ab;
-}
-
-.ctrl input,.ctrl select{
-border:1px solid #000;
-border-radius:6px;
-padding:6px 8px;
-}
-
-.btn{
-height:32px;
-padding:0 16px;
-border:1px solid #7f9da6;
-border-radius:8px;
-background:#dfecef;
-color:#4e6f78;
-font-size:13px;
-font-weight:700;
-letter-spacing:.1em;
-cursor:pointer;
-transition:.15s ease;
-}
-
-.btn:hover{
-background:#cfe1e6;
+  display:flex;
+  gap:16px;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid #000;
 }
 
 /* ===============================
-🖼 預覽區
+🧾 A4 紙張
+=============================== */
+.paper{
+  width:210mm;
+  height:297mm;
+  background:#fff;
+  box-shadow:0 10px 40px rgba(0,0,0,.15);
+  margin:30px auto;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* ===============================
+🖼 版心（兩張卡）
 =============================== */
 .stage{
-display:grid;
-place-items:center;
-gap:18px;
-padding:18px 16px 30px;
+  width:calc(var(--w)*2 + var(--gap-x));
+  display:grid;
+  grid-template-columns:var(--w) var(--w);
+  column-gap:var(--gap-x);
+  justify-content:center;
 }
 
-.sheet{
-width:calc(var(--w) + 8mm);   /* 原本 +10 → 改 +8 */
-padding:9mm 4mm;             / *邊距微縮，日曆本體不變 */
-border:1px solid #000;
-}
-
+/* ===============================
+🎴 卡片
+=============================== */
 .card{
-width:85mm;
-height:120mm;
-margin:0 auto;
-  border:1px solid rgba(80,100,110,.7);
-background:var(--card);
-overflow:hidden;
-position:relative;
+  width:var(--w);
+  height:var(--h);
+  border:1px solid rgba(80,100,110,.45);
+  background:var(--card);
+  overflow:hidden;
+  position:relative;
 }
 
 /* ===============================
 📌 標頭
 =============================== */
 .card_head{
-display:flex;
-justify-content:space-between;
-padding:3mm 4mm 2mm;
-background:linear-gradient(to right,#eef5f7,#f7fafb);
-}
-
-.card_head div:first-child{
-color:#5f7b84;   /* ← 跟月份 Jan 同一色系 */
-font-weight:700;
-letter-spacing:.2em;
-}
-
-.card_head div:last-child{
-font-weight:500;
-letter-spacing:.25em;
-color:#7F949B;
-font-size:3mm;
+  display:flex;
+  justify-content:space-between;
+  padding:4mm 5mm 2.2mm;
+  background:linear-gradient(to right,#eef5f7,#f7fafb);
+  font-weight:700;
+  color:#5f7b84;
 }
 
 /* ===============================
-📅 月曆區
+📅 月曆區（放大＋留白）
 =============================== */
 .months{
   display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:2.2mm;
-  padding:2mm 3mm 3mm;
-  width:100%;
-  height:105mm;  /* ⭐ A5橫式內安全高度 */
-}
-
-.month{
- border:none;
-padding:.6mm;
+  grid-template-columns:repeat(2,1fr);
+  gap:2.8mm;
+  padding:3mm 4.5mm 2.2mm;
+  margin-top:1.4mm;
 }
 
 .month_title{
-display:flex;
-justify-content:space-between;
-font-size:var(--fs-title);
-margin-bottom:.5mm;
-font-weight:700;
-color:var(--month-title);
-  border-bottom:0.3px solid #dfe6e9;
-padding-bottom:.6mm;
-letter-spacing:.12em;
+  display:flex;
+  justify-content:space-between;
+  font-size:var(--fs-title);
+  color:var(--month-title);
+  border-bottom:0.45px solid #e0e6e8;
+  padding-bottom:.7mm;
+  margin-bottom:.7mm;
 }
 
-/* ===============================
-🔢 日期格
-=============================== */
+/* ⭐ 星期與日期區的「週距離」來自這裡 */
 .grid{
-display:grid;
-grid-template-columns:repeat(7, 1fr);
-gap:.2mm;
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:.28mm;  /* 橫向微增加 */
 }
 
+/* ⭐ 固定兩列：上=日期、下=節日（就算沒節日也保留高度） */
 .cell{
-height:var(--cell-h);
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:flex-start;
-padding-top:0.5mm;
+  height:var(--cell-h);
+  display:grid;
+  grid-template-rows: 1fr 1fr;  /* 兩列固定 */
+  align-items:center;
+  justify-items:center;
 }
 
+/* 日期列 */
 .solar{
-font-size:var(--fs-day);
-line-height:1;
-margin-top:0.2mm;
+  font-size:var(--fs-day);
+  font-weight:600;
+  line-height:1;
 }
 
+/* 節日列（固定佔位高度） */
 .holiday_tag{
-margin-top:auto;
-font-size:1.09mm;
-line-height:1;
-font-weight:500;
+  font-size:1.35mm;  /* 你原本的值也行 */
+  line-height:1;
+  min-height:1.35mm; /* ⭐ 保證第二行高度存在 */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  white-space:nowrap; /* 節日不換行 */
+}
+
+/* 沒節日：字隱藏但保留高度 */
+.no_tag .holiday_tag{
+  visibility:hidden;  /* ⭐ 不佔字，但佔空間 */
 }
 
 /* ===============================
-🗓 星期顏色
+🗓 顏色層級
 =============================== */
-.cell.wd, .week.wd{ color:#000; }
-.cell.sat:not(.offday):not(.memoday):not(.termday),
-.week.sat{ color:#c00; }
-
-.cell.sun:not(.offday):not(.memoday):not(.termday),
-.week.sun{ color:#c00; }
-
 .week{
-font-size:var(--fs-week);
-font-weight:600;
-opacity:.55;
-letter-spacing:.1em;
+  font-size:var(--fs-week);
+  opacity:.55;
 }
 
-/* ===============================
-🧭 時間語意層級
-=============================== */
+.cell.sun,.week.sun{ color:#c00; }
+.cell.sat,.week.sat{ color:#c00; }
 
-/* 放假日 */
-.cell.offday{
-color:var(--offday);
-font-weight:700;
-}
-
-/* 紀念日 */
-.cell.memoday{
-color:var(--memoday);
-}
-
-/* 節氣 */
-.cell.termday{
-color:var(--termday);
-font-weight:600;
-}
-
-.cell.offday .holiday_tag,
-.cell.memoday .holiday_tag,
-.cell.termday .holiday_tag{
-color:inherit;
-}
+.cell.offday{ color:var(--offday); font-weight:700; }
+.cell.memoday{ color:var(--memoday); }
+.cell.termday{ color:var(--termday); font-weight:600; }
 
 /* ===============================
 🏷 品牌
 =============================== */
 .brand{
-position:absolute;
-bottom:1.0mm;
-right:3mm;
-font-size:1.5mm;
-letter-spacing:.18em;
-color:var(--brand);
-font-weight:400;
-}
-
-/* ===== 輸入框 & 下拉選單（產品級） ===== */
-.ctrl input,
-.ctrl select{
-height:32px;
-padding:0 12px;
-border:1px solid #b9cbd1;
-border-radius:8px;
-background:#f5f9fa;
-color:#5f7b84;
-font-size:13px;
-font-weight:600;
-letter-spacing:.06em;
-outline:none;
-transition:.15s ease;
-}
-
-.ctrl input:focus,
-.ctrl select:focus{
-border-color:#7f9da6;
-background:#eef5f7;
+  position:absolute;
+  bottom:2mm;
+  right:4.5mm;
+  font-size:1.8mm;
+  letter-spacing:.18em;
+  color:var(--brand);
 }
 
 /* ===============================
-🖨 A5 橫式印刷模式（卡片為單位）
+🌙 農曆指定面板
 =============================== */
-@media print{
-
-  body{
-    background:#fff;
-  }
-
-  .topbar{
-    display:none;
-  }
-
-  /* ⭐ 每張卡片是一頁 */
-  .stage{
-    display:block;
-    padding:0;
-  }
-
-  .sheet{
-    border:none;
-    margin:0;
-    padding:0;
-    page-break-after: always;   /* 一張卡片一頁 */
-  }
-
-  .card{
-    width:85mm;
-    height:120mm;   /* ⭐ 高度改為 A5 橫式內安全高度 */
-  }
-
+.lunar_panel{
+  padding:10px 16px;
+  background:#f2f6f7;
+  border-bottom:1px solid #cfd8dc;
 }
 
-/* ⭐ 真正的紙張尺寸 */
+.lp_title{
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:6px;
+  color:#506a72;
+}
+
+.lp_row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+/* ===============================
+🌙 農曆顏色系（柔和版）
+=============================== */
+.cell.lunar_main { color:#c15b4e; font-weight:700; }   /* 除夕初一端午中秋 */
+.cell.lunar_minor{ color:#8b6caa; }                   /* 初二三四五 七夕 */
+.cell.lunar_term { color:#5b8f9b; font-weight:600; }  /* 春分夏至秋分冬至 */
+.cell.lunar_ghost{ color:#6f8f70; }                   /* 中元 */
+
+/* ===============================
+🖨 列印模式
+=============================== */
+@media print{
+  body{ background:#fff; }
+  .topbar{ display:none; }
+  .paper{ box-shadow:none; }
+  .card{ border:none; }
+}
+
 @page{
-  size: A5 landscape;   /* 這就是關鍵 */
-  margin: 6mm;
+  size:A4 portrait;
+  margin:16mm 14mm;
 }
