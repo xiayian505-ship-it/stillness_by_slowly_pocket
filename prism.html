@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>慢慢稜鏡｜色票中控</title>
+
+<style>
+:root{
+  --bg:#ffffff;                 /* 🎯 色票工具基準白底 */
+  --card:#F7FAFB;
+  --ink:#2F3E46;
+  --muted:#7F949B;
+  --line:#D5DEE2;
+  --shadow:0 18px 45px rgba(0,0,0,.08);
+  --radius:18px;
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:var(--bg);
+  color:var(--ink);
+}
+.wrap{
+  width:min(600px, 92vw);
+  padding:24px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:22px;
+}
+h1{
+  margin:0 0 20px;
+  font-size:18px;
+  letter-spacing:.18em;
+  font-weight:800;
+  text-align:center;
+  color:#AEB6BA;
+}
+
+/* 模組區塊 */
+.section{
+  margin-bottom:18px;
+}
+.section-title{
+  margin:0 0 8px;
+  font-size:16px;
+  letter-spacing:.18em;
+  font-weight:800;
+  color:#9098A0;
+}
+.sub{
+  margin:0 0 12px;
+  color:var(--muted);
+  font-size:12px;
+  letter-spacing:.12em;
+}
+
+/* 工具按鈕 */
+a.tool{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  text-decoration:none;
+  color:inherit;
+  background:#fff;
+  transition:transform .12s ease, background .12s ease;
+}
+a.tool:active{ transform:scale(.99); }
+a.tool:hover{ background:#F0F3F5; }
+
+.name{
+  font-weight:700;
+  letter-spacing:.08em;
+}
+.hint{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.06em;
+  white-space:nowrap;
+}
+
+.footer{
+  margin-top:10px;
+  font-size:11px;
+  color:#B7C2C7;
+  letter-spacing:.18em;
+  text-align:right;
+}
+</style>
+</head>
+
+<body>
+
+<h1>慢 慢 | 稜 鏡</h1>
+
+<div class="wrap">
+  <div class="card">
+
+    <!-- 🌈 普通色系 -->
+    <div class="section">
+      <div class="section-title">普通色系</div>
+      <p class="sub">彩虹、黑白灰、金屬色、基礎工作色庫</p>
+
+      <a class="tool" href="./core/core.html" target="_blank">
+        <div class="name">基礎色票庫</div>
+        <div class="hint">開啟 →</div>
+      </a>
+    </div>
+
+    <!-- 🎭 各式風格色系 -->
+    <div class="section">
+      <div class="section-title">風格色系</div>
+      <p class="sub">北歐風、工業風、莫蘭迪等風格光譜</p>
+
+      <a class="tool" href="./style/style.html" target="_blank">
+        <div class="name">風格色票庫</div>
+        <div class="hint">開啟 →</div>
+      </a>
+    </div>
+
+    <!-- 🌌 慢慢專屬色系 -->
+    <div class="section">
+      <div class="section-title">慢慢專屬色系</div>
+      <p class="sub">慢慢宇宙氣候、情緒層、品牌核心色</p>
+
+      <a class="tool" href="./slowly/index.html" target="_blank">
+        <div class="name">慢慢宇宙色盤</div>
+        <div class="hint">開啟 →</div>
+      </a>
+    </div>
+
+    <div class="footer">Stillness by Slowly ｜ Color Control System</div>
+
+  </div>
+</div>
+
+</body>
+</html>
