@@ -26,6 +26,7 @@ body{
 .header{
   padding:20px;
   text-align:center;
+  position:relative;
 }
 
 h1{
@@ -152,3 +153,16 @@ button{
 .bg-switch button[data-bg="gray"] { background:#9EA3A6; }
 .bg-switch button[data-bg="warm"] { background:#E7E2DB; }
 .bg-switch button[data-bg="cool"] { background:#2F3438; }
+
+
+.back-btn{
+  position:absolute;
+  left:16px;
+  top:14px;
+  font-size:12px;
+  letter-spacing:.12em;
+  text-decoration:none;
+  color:#9AA7AD;
+}
+
+.back-btn:active{ opacity:.6; }
