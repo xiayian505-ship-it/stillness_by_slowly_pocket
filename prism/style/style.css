@@ -1,17 +1,40 @@
+/* =======================================================
+   🌐 Base Tokens / Global
+======================================================= */
 :root{
   --bg:#ffffff;
   --ink:#2F3E46;
   --muted:#8A98A1;
   font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
 }
-body{ margin:0; background:var(--bg); color:var(--ink); }
-.header{ padding:20px; text-align:center; }
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+
+/* =======================================================
+   🧱 Layout Structure
+======================================================= */
+#stage{
+  min-height:100vh;
+  transition: background .35s ease;
+}
+
+.header{
+  padding:20px;
+  text-align:center;
+}
+
 h1{
   font-size:18px;
   letter-spacing:.2em;
   font-weight:800;
   color:#9EA7AD;
 }
+
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
@@ -19,6 +42,10 @@ h1{
   padding:20px;
 }
 
+
+/* =======================================================
+   🎨 Swatch (色塊)
+======================================================= */
 .swatch{
   aspect-ratio:1/1;
   border-radius:14px;
@@ -31,26 +58,80 @@ h1{
   box-shadow:0 6px 14px rgba(0,0,0,.08);
   cursor:pointer;
 }
+
+
+/* =======================================================
+   🔘 General Buttons
+======================================================= */
 button{
   margin:6px;
   padding:8px 12px;
 }
 
-/* ===== 背景測試層 ===== */
 
-#stage{
-  min-height:100vh;
-  transition: background .35s ease;
+/* =========================
+   🎛 風格切換列（控制層）
+========================= */
+.style-switch{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  padding:12px 16px 6px;
 }
 
-/* 5種測試背景 */
+/* 按鈕本體 */
+.style-switch button{
+  font-size:12px;
+  padding:7px 12px;
+  border-radius:10px;
+
+  border:1px solid rgba(0,0,0,.08);
+  background:#ffffff;
+
+  color:#2F3E46;
+  letter-spacing:.04em;
+
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+  transition:all .15s ease;
+}
+
+/* hover（可互動的才亮） */
+.style-switch button:not([disabled]):hover{
+  background:#F4F6F7;
+  border-color:rgba(0,0,0,.12);
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  transform:translateY(-1px);
+}
+
+/* active 點下去 */
+.style-switch button:not([disabled]):active{
+  transform:translateY(0);
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+
+/* disabled（未實作風格） */
+.style-switch button[disabled]{
+  opacity:.38;
+  border-style:dashed;
+  box-shadow:none;
+  cursor:default;
+}
+
+
+/* =======================================================
+   🌈 Background System (舞台背景切換)
+======================================================= */
 .bg-white { background:#F6F6F6; }
 .bg-black { background:#121212; }
 .bg-gray  { background:#9EA3A6; }
 .bg-warm  { background:#E7E2DB; }
 .bg-cool  { background:#2F3438; }
 
-/* 背景切換按鈕列 */
+
+/* =======================================================
+   🎯 Background Switch Buttons (圓點)
+======================================================= */
 .bg-switch{
   display:flex;
   gap:10px;
@@ -65,6 +146,7 @@ button{
   border:2px solid #ccc;
   cursor:pointer;
 }
+
 .bg-switch button[data-bg="white"]{ background:#F6F6F6; }
 .bg-switch button[data-bg="black"]{ background:#121212; }
 .bg-switch button[data-bg="gray"] { background:#9EA3A6; }

@@ -13,31 +13,52 @@
 
 <div id="stage" class="bg-white">
 
-  <div class="header">
+  <!-- ================= HEADER ================= -->
+  <header class="header">
     <h1>風 格 色 系</h1>
-  </div>
+  </header>
 
-  <div class="style-switch">
-    <button data-style="morandi">莫藍迪</button>
-    <button data-style="nordic">北歐風</button>
-    <button data-style="industrial">工業風</button>
-  </div>
+  <!-- ================= STYLE NAV ================= -->
+  <section class="style-panel">
+    <div class="style-switch">
+      <button data-style="morandi">莫藍迪</button>
+      <button data-style="nordic">北歐風</button>
+      <button data-style="industrial">工業風</button>
 
-  <!-- 背景切換 -->
-  <div class="bg-switch">
-    <button data-bg="white"></button>
-    <button data-bg="black"></button>
-    <button data-bg="gray"></button>
-    <button data-bg="warm"></button>
-    <button data-bg="cool"></button>
-  </div>
+      <!-- 殼測試 -->
+      <button disabled>復古風</button>
+      <button disabled>懷舊風</button>
+      <button disabled>歌德風</button>
+      <button disabled>暗黑風</button>
+      <button disabled>奶油風</button>
+      <button disabled>低飽和</button>
+      <button disabled>自然系</button>
+      <button disabled>森林系</button>
+      <button disabled>沙漠系</button>
+      <button disabled>金屬感</button>
+      <button disabled>冷光感</button>
+      <button disabled>溫柔粉</button>
+      <button disabled>書房感</button>
+      <button disabled>霧面感</button>
+    </div>
+  </section>
 
-  <div id="grid" class="grid"></div>
+  <!-- ================= STAGE CONTROL ================= -->
+  <section class="stage-control">
+    <div class="bg-switch">
+      <button data-bg="white"></button>
+      <button data-bg="black"></button>
+      <button data-bg="gray"></button>
+      <button data-bg="warm"></button>
+      <button data-bg="cool"></button>
+    </div>
+  </section>
+
+  <!-- ================= COLOR GRID ================= -->
+  <main id="grid" class="grid"></main>
 
 </div>
 
-
 <script src="./style_loader.js"></script>
-
 </body>
 </html>
