@@ -1,0 +1,37 @@
+/* ===== 色票展示改為「測試樣本模式」 ===== */
+
+#grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap:14px;
+  padding:20px;
+  max-width:1000px;
+  margin:0 auto;
+}
+
+/* 單個色塊 */
+.swatch{
+  aspect-ratio:1/1;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.5px;
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,.18);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+
+/* hover 微浮起 */
+.swatch:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 18px rgba(0,0,0,.25);
+}
+
+/* 讓深色字自動反白（JS會加 class） */
+.light-text{
+  color:#222;
+}
