@@ -1,101 +1,142 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>慢慢｜小工具</title>
-  <style>
-    :root{
-      --bg:#E9ECEF;
-      --card:#F7FAFB;
-      --ink:#2F3E46;
-      --muted:#7F949B;
-      --line:#8FA3A9;
-      --shadow:0 18px 45px rgba(47,62,70,.10);
-      --radius:18px;
-      font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      min-height:100vh;
-      display:grid;
-      place-items:center;
-      background:var(--bg);
-      color:var(--ink);
-    }
-    .wrap{
-      width:min(520px, 92vw);
-      padding:22px;
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:18px 18px 16px;
-    }
-    h1{
-      margin:0 0 6px;
-      font-size:18px;
-      letter-spacing:.18em;
-      font-weight:800;
-    }
-    .sub{
-      margin:0 0 14px;
-      color:var(--muted);
-      font-size:12px;
-      letter-spacing:.12em;
-    }
-    a.tool{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:14px 14px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      text-decoration:none;
-      color:inherit;
-      background:rgba(255,255,255,.55);
-      transition:transform .12s ease, background .12s ease;
-    }
-    a.tool:active{ transform:scale(.99); }
-    .name{
-      font-weight:700;
-      letter-spacing:.08em;
-    }
-    .hint{
-      font-size:12px;
-      color:var(--muted);
-      letter-spacing:.06em;
-      white-space:nowrap;
-    }
-    .footer{
-      margin-top:12px;
-      font-size:11px;
-      color:#A0B0B6;
-      letter-spacing:.18em;
-      text-align:right;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>慢慢｜小工具</title>
+
+<style>
+:root{
+  --bg:#E9ECEF;
+  --card:#F7FAFB;
+  --card-glass:rgba(255,255,255,.55);
+  --ink:#2F3E46;
+  --muted:#7F949B;
+  --line:#8FA3A9;
+  --footer:#A0B0B6;
+  --shadow:0 18px 45px rgba(47,62,70,.10);
+  --radius:18px;
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:var(--bg);
+  color:var(--ink);
+}
+.wrap{
+  width:min(520px, 92vw);
+  padding:22px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px;
+}
+h1{
+  margin:0 0 20px;
+  font-size:18px;
+  letter-spacing:.18em;
+  font-weight:800;
+  text-align:center;
+  color:#BFC2CB;
+}
+
+/* ===== 模組區塊 ===== */
+.section{
+  margin-bottom:18px;
+}
+.section-title{
+  margin:0 0 8px;
+  font-size:16px;
+  letter-spacing:.18em;
+  font-weight:800;
+  color:#B7B7BD;
+}
+.sub{
+  margin:0 0 12px;
+  color:var(--muted);
+  font-size:12px;
+  letter-spacing:.12em;
+}
+
+/* ===== 工具按鈕 ===== */
+a.tool{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  text-decoration:none;
+  color:inherit;
+  background:var(--card-glass);
+  transition:transform .12s ease, background .12s ease;
+}
+a.tool:active{ transform:scale(.99); }
+a.tool:hover{ background:rgba(255,255,255,.75); }
+
+.name{
+  font-weight:700;
+  letter-spacing:.08em;
+  color:#B7B7BD;
+}
+.hint{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.06em;
+  white-space:nowrap;
+}
+
+.footer{
+  margin-top:10px;
+  font-size:11px;
+  color:var(--footer);
+  letter-spacing:.18em;
+  text-align:right;
+}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>慢慢｜小工具</h1>
-      <p class="sub">Stillness by Slowly</p>
 
-      <!-- ✅ 把 href 改成你月曆那個檔名，例如 ./pocket_calendar_2026.html 或 ./calendar.html -->
+<h1>慢 慢 | 實用小工具</h1>
+
+<div class="wrap">
+  <div class="card">
+
+    <!-- 🌌 時間中控 -->
+    <div class="section">
+      <div class="section-title">慢 慢 | 銀河系</div>
+      <p class="sub">寸寸光陰</p>
+
       <a class="tool" href="./calendar/calendar.html">
-        <div class="name">名片小年曆（雙面 6+6）</div>
+        <div class="name">年曆產生器</div>
         <div class="hint">開啟 →</div>
       </a>
-
-      <div class="footer">慢慢｜Stillness by Slowly</div>
     </div>
-  </div>
-</body>
 
+    <!-- 🎨 色彩中控 -->
+    <div class="section">
+      <div class="section-title">慢 慢 | 稜鏡</div>
+      <p class="sub">色彩光譜控制</p>
+
+      <a class="tool" href="./prism/prism.html">
+        <div class="name">色票控制台</div>
+        <div class="hint">開啟 →</div>
+      </a>
+    </div>
+
+    <div class="footer">慢慢｜Stillness by Slowly</div>
+
+  </div>
+</div>
+
+</body>
 </html>
