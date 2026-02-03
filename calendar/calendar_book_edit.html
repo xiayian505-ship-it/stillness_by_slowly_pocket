@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>名片年曆｜書頁編輯版</title>
+<link rel="stylesheet" href="./calendar_book_edit.css" />
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="title">
+    <h1>名片小年曆｜書頁大小編輯</h1>
+    <div class="sub">A4橫式｜一頁兩張</div>
+  </div>
+
+  <div class="controls">
+    <label class="ctrl">年份
+      <input id="yearInput" type="number" value="2026">
+    </label>
+
+    <label class="ctrl">週起始
+      <select id="weekStart">
+        <option value="1">週一</option>
+        <option value="0" selected>週日</option>
+      </select>
+    </label>
+
+    <button id="btnPrint" class="btn ghost">列印</button>
+  </div>
+</header>
+
+<section class="lunar_panel">
+  <div class="lp_title">自訂標註</div>
+  <div class="lp_row">
+    <input id="noteDate" type="date" />
+    <input id="noteText" type="text" maxlength="2" placeholder="標註(2字內)" />
+    <button id="btnAddNote">加入</button>
+  </div>
+</section>
+
+<main class="paper">
+  <div class="book_page">
+<div id="stage" class="stage"></div>
+  </div>
+</main>
+
+<script src="./calendar_book_edit.js"></script>
+</body>
+</html>
