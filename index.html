@@ -72,14 +72,43 @@ a.tool{
   justify-content:space-between;
   gap:12px;
   padding:14px;
-  border:1px solid var(--line);
+  border:1px solid rgba(143,163,169,.55);
   border-radius:14px;
   text-decoration:none;
   color:inherit;
-  background:var(--card-glass);
-  transition:transform .12s ease, background .12s ease;
+
+  /* ✨ 空氣玻璃層 */
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,.85),
+    rgba(255,255,255,.55)
+  );
+
+  /* ✨ 漂浮感 */
+  box-shadow:
+    0 6px 14px rgba(47,62,70,.06),
+    inset 0 1px 0 rgba(255,255,255,.6);
+
+  transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
 }
-a.tool:active{ transform:scale(.99); }
+
+/* 滑過：輕微抬起 */
+a.tool:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    0 10px 22px rgba(47,62,70,.10),
+    inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+/* 點擊：下沉 */
+a.tool:active{
+  transform:translateY(0);
+  box-shadow:
+    0 4px 10px rgba(47,62,70,.05),
+    inset 0 2px 4px rgba(0,0,0,.05);
+}
+
+
 a.tool:hover{ background:rgba(255,255,255,.75); }
 
 .name{
@@ -101,6 +130,41 @@ a.tool:hover{ background:rgba(255,255,255,.75); }
   letter-spacing:.18em;
   text-align:right;
 }
+
+.section .tool + .sub{
+  margin-top:6px;
+  margin-bottom:14px;
+}
+
+.tool{
+  align-items:center;
+}
+
+.tool .text{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.name{
+  font-weight:700;
+  letter-spacing:.08em;
+  color:#B7B7BD;
+}
+
+.desc{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.08em;
+}
+
+.tool{
+  margin-bottom:14px;   /* ⭐ 控制按鈕之間距離 */
+}
+
+.section .tool:last-of-type{
+  margin-bottom:0;      /* 最後一顆不要多出空隙 */
+}
 </style>
 </head>
 
@@ -111,16 +175,28 @@ a.tool:hover{ background:rgba(255,255,255,.75); }
 <div class="wrap">
   <div class="card">
 
-    <!-- 🌌 時間中控 -->
-    <div class="section">
-      <div class="section-title">慢 慢 | 銀河系</div>
-      <p class="sub">寸寸光陰</p>
+<!-- 🌌 時間中控 -->
+<div class="section">
+  <div class="section-title">慢 慢 | 銀河系</div>
+  <p class="sub">寸寸光陰</p>
 
-      <a class="tool" href="./calendar/calendar.html">
-        <div class="name">年曆產生器</div>
-        <div class="hint">開啟 →</div>
-      </a>
-    </div>
+  <!-- 年曆 -->
+<a class="tool" href="./calendar/calendar.html">
+  <div class="text">
+    <div class="name">年曆產生器</div>
+    <div class="desc">月份版型生成工具</div>
+  </div>
+  <div class="hint">開啟 →</div>
+</a>
+
+  <!-- 共付日常 -->
+<a class="tool" href="./account/acc_duo_book.html">
+  <div class="text">
+    <div class="name">共付日常</div>
+    <div class="desc">雙人記帳本</div>
+  </div>
+  <div class="hint">開啟 →</div>
+</a>
 
     <!-- 🎨 色彩中控 -->
     <div class="section">
