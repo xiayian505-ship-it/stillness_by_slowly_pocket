@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>名片小年曆｜A6印刷版</title>
+<link rel="stylesheet" href="./calendar_card_print_a6.css" />
+</head>
+
+<body>
+
+<header class="print_controls">
+  <label>年份
+    <input id="yearInput" type="number" value="2026">
+  </label>
+
+  <label>週起始
+    <select id="weekStart">
+      <option value="0">週日</option>
+      <option value="1">週一</option>
+    </select>
+  </label>
+
+  <button onclick="window.print()">列印</button>
+</header>
+
+<main class="paper">
+  <div class="book_page">
+    <div id="stage" class="stage"></div>
+  </div>
+</main>
+
+<script src="./calendar_card_print_a6.js"></script>
+</body>
+</html>

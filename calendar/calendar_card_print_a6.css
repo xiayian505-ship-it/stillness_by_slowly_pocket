@@ -1,0 +1,221 @@
+:root{
+  /* ✅ 保留原版比例（不要砍半） */
+  --card-w:87mm;
+  --card-h:141mm;
+
+  --cell-h:5mm;
+  --fs-title:3.8mm;
+  --fs-week:2.3mm;
+  --fs-day:2.7mm;
+
+--card:#F2F4EF;          /* 淡紙色 */
+  --month-title:#4F5A50;   /* 深茶灰綠 */
+  --brand:#6C766C;         /* 低飽和綠灰 */
+  --offday:#2B2B2B;
+
+  --frame:#5A635B;         /* 外框深色 */
+  --inner:#E2E7DF;         /* 書頁底色 */
+
+  /* ✅ A6 縮放比例 */
+  --a6-scale: 0.5;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:#e5e7ea;
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+}
+
+.print_controls{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  justify-content:center;
+  font-size:14px;
+}
+
+@media print{
+  .print_controls{ display:none; }
+}
+
+/* 🌿 舊印刷感週末顏色 */
+.cell.sun .solar,
+.week.sun{
+  color:#9B5E5E;   /* 褪色磚紅 */
+}
+
+.cell.sat .solar,
+.week.sat{
+  color:#5E6F8F;   /* 舊墨藍 */
+}
+
+
+/* ✅ A6 紙（橫式） */
+.paper{
+  width:148mm;
+  height:105mm;
+  background:#fff;
+  margin:20px auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+/* ✅ 書頁外框：保留原尺寸，但整組縮放 */
+.book_page{
+  width:max-content;
+  height:max-content;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+ border:2.2mm solid var(--frame);
+background:
+    linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)),
+    var(--inner);
+  box-shadow: inset 0 0 0 0.8mm #F2F4EF;
+
+  padding:6mm 6mm;
+
+
+  transform: scale(var(--a6-scale));
+  transform-origin: center;
+}
+
+/* 兩張卡 */
+.stage{
+  display:flex;
+  gap:8mm;
+background:var(--inner);
+  padding:0 3mm;
+}
+
+/* 卡片 */
+.card{
+  width:var(--card-w);
+
+  min-height:var(--card-h);  /* 至少原本高度 */
+  height:auto;               /* 允許因 6 週月份變高 */
+
+  border:0.45mm solid var(--frame);
+box-shadow:
+    inset 0 0 0 0.25mm #FFFFFF,
+    0 0.6mm 1.2mm rgba(0,0,0,0.08);
+  padding:2.4mm;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+background:
+    linear-gradient(rgba(0,0,0,0.015), rgba(0,0,0,0.015)),
+    #E6EBE3;
+  border-radius:2mm;
+}
+
+.card_head{
+  display:flex;
+  justify-content:space-between;
+  padding:1.6mm 3mm .8mm;
+  color:var(--month-title);
+  font-weight:700;
+}
+
+/* 月曆區 */
+.months{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:1.6mm;
+  align-content:center;
+  padding:1.6mm 2.6mm 1.2mm;
+  background:var(--card);
+  border-radius:2mm;
+  align-content:start;
+}
+
+.month_title{
+  position:relative;
+  display:flex;
+  justify-content:space-between;
+  font-size:calc(var(--fs-title) - 0.4mm);
+  margin-bottom:.6mm; /* 線下方留距 */
+  color:var(--month-title);
+  padding-bottom:.3mm;
+}
+
+/* 🔥 真正滿寬的線 */
+.month_title::after{
+  content:"";
+  position:absolute;
+  left:-0.8mm;   /* 向外延伸，吃掉 padding 視覺差 */
+  right:-0.8mm;
+  bottom:0;
+  height:0.35px;
+background:#C8D0C6;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:.6mm;
+}
+
+.cell{
+  min-height:var(--cell-h);
+  height:auto;
+  display:grid;
+  align-items:center;
+  justify-items:center;
+}
+
+.solar{
+  font-size:calc(var(--fs-day) + .4mm);
+  font-weight:600;
+  line-height:1;
+}
+
+/* 星期 */
+.week{
+  font-size:var(--fs-week);
+  opacity:.6;
+color:#556058;
+  line-height:1;
+}
+
+/* 品牌 */
+.brand{
+  position:absolute;
+  bottom:1.2mm;
+  width:100%;
+  text-align:center;
+  font-size:1.8mm;
+  letter-spacing:.2em;
+  opacity:.85;
+  color:var(--brand);
+}
+
+
+
+/* 列印 */
+@page{
+  size:A6 landscape;
+  margin:0;
+}
+
+@media print{
+  *{
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body{ background:#fff; }
+  .paper{
+    width:148mm;
+    height:105mm;
+    margin:0;
+    box-shadow:none;
+  }
+}
