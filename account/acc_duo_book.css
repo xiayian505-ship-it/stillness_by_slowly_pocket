@@ -295,6 +295,241 @@ button:hover{
   opacity:.85;
 }
 
+/* =========================================================
+   ✏️ 明細區：行為語意層級系統
+   （純 UI，無 JS）
+========================================================= */
+
+/* ---------- 每筆明細變成小工具卡 ---------- */
+.detail-section .list > div{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  margin-bottom:8px;
+  background:#f8fafc;
+  border-radius:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
+}
+
+/* 左邊文字 */
+.detail-section .list span{
+  font-size:14px;
+  color:#334155;
+}
+
+/* 右邊按鈕群容器效果 */
+.detail-section .list button{
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:12px;
+  box-shadow:none;
+}
+
+
+/* ---------- 主要行為：修改會覆蓋 ---------- */
+button[data-m="overwrite"]{
+  background:linear-gradient(180deg,#fff7f0,#ffe8d6);
+  color:var(--sideA-deep);
+  border:1px solid #f3d2bb;
+  font-weight:600;
+}
+
+button[data-m="overwrite"]:hover{
+  box-shadow:0 0 0 2px rgba(229,138,75,.18);
+}
+
+
+/* ---------- 次要行為：修改仍保留 ---------- */
+button[data-m="preserve"]{
+  background:white;
+  color:#64748b;
+  border:1px solid #e2e8f0;
+  font-weight:500;
+}
+
+button[data-m="preserve"]:hover{
+  background:#f1f5f9;
+}
+
+
+/* =========================================================
+   ➕ 「新增」按鈕降階（從主按鈕變輔助）
+========================================================= */
+
+.detail-section .add{
+  margin-top:10px;
+  background:transparent;
+  color:#94a3b8;
+  border:1px dashed #cbd5e1;
+  box-shadow:none;
+  font-weight:500;
+}
+
+.detail-section .add:hover{
+  background:#f1f5f9;
+  color:#475569;
+}
+
+
+/* =========================================================
+   🧊 modal 內標題層級優化
+========================================================= */
+
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+
+.modal-head .close{
+  background:#f1f5f9;
+  color:#64748b;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  font-size:16px;
+  padding:0;
+}
+
+
+/* =========================================================
+   ✨ 細節微質感（慢慢宇宙風格統一）
+========================================================= */
+
+.modal-content{
+  background:linear-gradient(180deg,#ffffff,#fbfdff);
+}
+
+.detail-section h3{
+  margin-bottom:6px;
+  font-size:15px;
+  letter-spacing:.5px;
+}
+
+
+
+/* =========================================================
+   🧊 通用 Modal 卡片升級（取代生硬白色）
+========================================================= */
+
+.modal-content,
+.danger-card{
+  background:linear-gradient(180deg,#ffffff,#f8fbff);
+  border:1px solid #e8eef6;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.18),
+    0 4px 10px rgba(0,0,0,.04);
+}
+
+/* 標題 */
+.danger-title{
+  font-size:18px;
+  font-weight:600;
+  color:#334155;
+  margin-bottom:14px;
+}
+
+
+/* =========================================================
+   🧩 Modal 內按鈕語意層級
+========================================================= */
+
+.btn-cancel{
+  background:#f1f5f9;
+  color:#64748b;
+  border:1px solid #e2e8f0;
+  box-shadow:none;
+}
+
+.btn-cancel:hover{
+  background:#e8eef6;
+}
+
+/* 確認（非危險） */
+#editOk{
+  background:linear-gradient(180deg,#fff7f0,#ffe8d6);
+  color:var(--sideA-deep);
+  border:1px solid #f3d2bb;
+  font-weight:600;
+  box-shadow:none;
+}
+
+/* 危險確認（刪除） */
+#dangerOkBtn{
+  background:linear-gradient(180deg,#ffecec,#ffdede);
+  color:#b03a3a;
+  border:1px solid #f5bcbc;
+  font-weight:600;
+  box-shadow:none;
+}
+
+
+/* =========================================================
+   ✏️ 編輯視窗輸入框風格化
+========================================================= */
+
+#editItem,
+#editAmount{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid #e2e8f0;
+  background:linear-gradient(180deg,#ffffff,#f8fbff);
+  font-size:14px;
+  margin-bottom:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
+}
+
+#editItem:focus{
+  outline:none;
+  border-color:var(--sideA);
+  box-shadow:0 0 0 3px rgba(229,138,75,.18);
+}
+
+#editAmount:focus{
+  outline:none;
+  border-color:var(--sideB);
+  box-shadow:0 0 0 3px rgba(138,121,214,.18);
+}
+
+
+/* =========================================================
+   ⚠ 清空確認視窗的氣氛分級
+========================================================= */
+
+#dangerModal .danger-card{
+  background:linear-gradient(180deg,#fff9f9,#fff3f3);
+  border:1px solid #f2dede;
+}
+
+
+/* =========================================================
+   ✨ 明細 Modal 整體氣氛
+========================================================= */
+
+#detailModal .modal-content{
+  background:linear-gradient(180deg,#ffffff,#f6f9ff);
+}
+
+
+/* =========================================================
+   ⭕ 關閉按鈕更柔和
+========================================================= */
+
+.modal-head .close{
+  background:#f1f5f9;
+  color:#64748b;
+  box-shadow:none;
+}
+
+.modal-head .close:hover{
+  background:#e8eef6;
+}
+
+
 @keyframes pop{
   from{ transform:scale(.96); opacity:.5; }
   to{ transform:scale(1); opacity:1; }

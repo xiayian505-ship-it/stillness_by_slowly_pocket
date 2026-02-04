@@ -159,34 +159,39 @@ const dangerConfirm= document.getElementById("dangerOkBtn");
     return {A,B};
   }
 
-  function updateSummary(){
-    let A=0, B=0;
-    Object.values(records).forEach(day=>{
-      day.forEach(r=>{
-        if(r.deleted) return;
-        if(r.type==="a_to_b") A += r.amount;
-        if(r.type==="b_to_a") B += r.amount;
-      });
+function updateSummary(){
+  let A=0, B=0;
+  const prefix = currentMonthPrefix();   // ⭐ 本月 key 開頭
+
+  Object.keys(records).forEach(date=>{
+    if(!date.startsWith(prefix)) return;  // ⭐ 只算本月
+
+    records[date].forEach(r=>{
+      if(r.deleted) return;
+      if(r.type==="a_to_b") A += r.amount;
+      if(r.type==="b_to_a") B += r.amount;
     });
+  });
 
-    if(adjust.side==="A") A += (adjust.amount||0);
-    else B += (adjust.amount||0);
+  // 帳外調整仍然適用（它本來就是跨月手動修正）
+  if(adjust.side==="A") A += (adjust.amount||0);
+  else B += (adjust.amount||0);
 
-    if(sumAB) sumAB.textContent = A;
-    if(sumBA) sumBA.textContent = B;
+  if(sumAB) sumAB.textContent = A;
+  if(sumBA) sumBA.textContent = B;
 
-if(finalResult){
-  if(A > B){
-    finalResult.innerHTML =
-      `<span class="sideB">${names.B}</span> 應給 <span class="sideA">${names.A}</span> $${A-B}`;
-  }else if(B > A){
-    finalResult.innerHTML =
-      `<span class="sideA">${names.A}</span> 應給 <span class="sideB">${names.B}</span> $${B-A}`;
-  }else{
-    finalResult.textContent = "目前平衡";
+  if(finalResult){
+    if(A > B){
+      finalResult.innerHTML =
+        `<span class="sideB">${names.B}</span> 應給 <span class="sideA">${names.A}</span> $${A-B}`;
+    }else if(B > A){
+      finalResult.innerHTML =
+        `<span class="sideA">${names.A}</span> 應給 <span class="sideB">${names.B}</span> $${B-A}`;
+    }else{
+      finalResult.textContent = "目前平衡";
+    }
   }
 }
-  }
 
   /* =========================================================
      Calendar Render
