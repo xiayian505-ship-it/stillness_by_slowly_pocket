@@ -1,122 +1,148 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>慢 慢｜共付日常</title>
-<link rel="stylesheet" href="./acc_duo_book.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>慢慢｜記帳本中控</title>
+
+<style>
+:root{
+  --bg:#ffffff;
+  --card:#F7FAFB;
+  --ink:#2F3E46;
+  --muted:#7F949B;
+  --line:#D5DEE2;
+  --shadow:0 18px 45px rgba(0,0,0,.08);
+  --radius:18px;
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:var(--bg);
+  color:var(--ink);
+}
+.wrap{
+  width:min(600px, 92vw);
+  padding:24px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:22px;
+}
+h1{
+  margin:0 0 20px;
+  font-size:18px;
+  letter-spacing:.18em;
+  font-weight:800;
+  text-align:center;
+  color:#AEB6BA;
+}
+
+/* 區塊 */
+.section{ margin-bottom:18px; }
+.section-title{
+  margin:0 0 8px;
+  font-size:16px;
+  letter-spacing:.18em;
+  font-weight:800;
+  color:#9098A0;
+}
+.sub{
+  margin:0 0 12px;
+  color:var(--muted);
+  font-size:12px;
+  letter-spacing:.12em;
+}
+
+/* 工具卡 */
+a.tool{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  text-decoration:none;
+  color:inherit;
+  background:#fff;
+  transition:transform .12s ease, background .12s ease;
+}
+a.tool:active{ transform:scale(.99); }
+a.tool:hover{ background:#F0F3F5; }
+
+.name{
+  font-weight:700;
+  letter-spacing:.08em;
+}
+.hint{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.06em;
+  white-space:nowrap;
+}
+
+.footer{
+  margin-top:10px;
+  font-size:11px;
+  color:#B7C2C7;
+  letter-spacing:.18em;
+  text-align:right;
+}
+</style>
 </head>
 
 <body>
 
-<div class="app">
+<h1>慢 慢 ｜ 記 帳 本</h1>
 
-  <!-- 🌈 表頭 -->
-  <header class="app-header">
-    <div class="logo">慢 慢 <span> | </span> 共付日常</div>
-    <div class="brand-sub">Stillness by Slowly</div>
-  </header>
+<div class="wrap">
+  <div class="card">
 
-  <!-- ===== 身份 ===== -->
-  <header class="topbar">
-<div class="names">
-  <input id="nameA">
-  <input id="nameB">
-</div>
-  </header>
+    <!-- 🧾 基礎記帳 -->
+    <div class="section">
+      <div class="section-title">基礎記帳</div>
+      <p class="sub">單幣值、輕量、日常快速記錄模式</p>
 
-  <!-- ===== 月份控制 ===== -->
-<section class="month-bar">
-  <div class="system-buttons">
-    <button id="exportBtn">匯出</button>
-    <button id="importBtn">匯入</button>
-    <input type="file" id="fileInput" accept=".json" hidden>
-  </div>
-
-  <button class="nav-btn">◀</button>
-  <div class="month-title">2026 年 1 月</div>
-  <button class="nav-btn">▶</button>
-
-  <button class="refresh soft-orange">清空本月</button>
-  <button id="clearAllBtn" class="danger">清空帳本</button>
-</section>
-
-  <!-- ===== 結算面板 ===== -->
-  <section class="summary">
-    <div>A 先付：$<span id="sumAB">0</span></div>
-    <div>B 先付：$<span id="sumBA">0</span></div>
-    <div class="result" id="finalResult">目前平衡</div>
-
-    <div class="adjust">
-      <div class="adjust-title">帳外調整</div>
-      <div class="adjust-row">
-        <select id="adjustSide">
-          <option value="A">A 多付</option>
-          <option value="B">B 多付</option>
-        </select>
-        <input type="number" id="adjustAmount" placeholder="0">
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== 日曆帳本 ===== -->
-<section class="calendar">
-  <div class="row head">
-    <div class="date">日期</div>
-    <div class="colA">A先付</div>
-    <div class="colB">B先付</div>
-  </div>
-</section>
-
-</div>
-
-<!-- 明細視窗 -->
-<div class="modal hidden" id="detailModal">
-  <div class="modal-content">
-    <div class="modal-head">
-      <span id="modalDate">明細</span>
-      <button class="close">×</button>
+      <a class="tool" href="./acc_duo_book_v1.html">
+        <div class="name">基礎記帳模式</div>
+        <div class="hint">單幣版 →</div>
+      </a>
     </div>
 
-    <div class="detail-section">
-      <h3>A 先付</h3>
-      <div class="list" id="listA"></div>
-      <button class="add soft-blue">+新增</button>
+    <!-- 🌍 多幣模式 -->
+    <div class="section">
+      <div class="section-title">多幣模式</div>
+      <p class="sub">旅行、代購、跨幣別結算模式</p>
+
+      <a class="tool" href="./acc_duo_book_v2.html">
+        <div class="name">多幣結算模式</div>
+        <div class="hint">進階版 →</div>
+      </a>
     </div>
 
-    <div class="detail-section">
-      <h3>B 先付</h3>
-      <div class="list" id="listB"></div>
-      <button class="add soft-purple">+新增</button>
+    <!-- 🚀 未來擴充區 -->
+    <div class="section">
+      <div class="section-title">未來擴充</div>
+      <p class="sub">朋友分帳、專案帳本、公司帳本…</p>
+
+      <a class="tool" href="#" onclick="return false;">
+        <div class="name">（預留模組位置）</div>
+        <div class="hint">Coming Soon</div>
+      </a>
     </div>
+
+    <div class="footer">Stillness by Slowly ｜ Account Control System</div>
+
   </div>
 </div>
 
-<!-- 新增/編輯視窗 -->
-<div id="editModal" class="danger-modal hidden">
-  <div class="danger-card">
-    <div class="danger-title">新增紀錄</div>
-    <input id="editItem" placeholder="項目名稱">
-    <input id="editAmount" placeholder="金額" type="number">
-    <div class="danger-actions">
-      <button id="editCancel" class="btn-cancel">取消</button>
-      <button id="editOk" class="btn-confirm">確認</button>
-    </div>
-  </div>
-</div>
-
-<!-- 清空帳本視窗 -->
-<div id="dangerModal" class="danger-modal hidden">
-  <div class="danger-card">
-    <div class="danger-title">清空帳本</div>
-
-    <div class="danger-actions">
-      <button id="dangerCancelBtn" class="btn-cancel">取消</button>
-      <button id="dangerOkBtn" class="btn-confirm">確認刪除</button>
-    </div>
-  </div>
-</div>
-
-<script src="./acc_duo_book.js"></script>
 </body>
 </html>

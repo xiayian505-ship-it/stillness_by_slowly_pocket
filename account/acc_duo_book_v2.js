@@ -7,9 +7,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
      ✅ UI：新增/編輯改用 editModal（不再用 prompt）
   ========================================================= */
 
-  const STORAGE_KEY = "sbs_duo_book_records_v1";
-  const NAME_KEY    = "sbs_duo_book_names_v1";
-  const ADJUST_KEY  = "sbs_duo_book_adjust_v1";
+  const STORAGE_KEY = "sbs_duo_book_records_v2";
+  const NAME_KEY    = "sbs_duo_book_names_v2";
+  const ADJUST_KEY  = "sbs_duo_book_adjust_v2";
   const RETAIN_DAYS = 365;
 
   /* ===== DOM ===== */
@@ -264,31 +264,49 @@ function updateSummary(){
     });
   }
 
-  function applyEditRecord(date, index, mode, item, amount){
-    const r = (records[date]||[])[index];
-    if(!r) return;
+function applyEditRecord(date, index, mode, item, amount){
+  const r = (records[date]||[])[index];
+  if(!r) return;
 
-    if(mode==="overwrite"){
-      r.item = item;
-      r.amount = amount;
-      r.deleted = false;
-    }else{
-      // preserve：舊的劃掉，新增一筆新的
-      r.deleted = true;
-      records[date].push({ type:r.type, item, amount, deleted:false });
+  if(mode==="overwrite"){
+    r.item = item;
+    r.amount = amount;
+    r.deleted = false;
+
+    // ⭐⭐⭐ 這裡是修正關鍵 ⭐⭐⭐
+    const c = currencyBook[date]?.[index];
+    if(c){
+      const newBase = amount * c.rate;
+      currencyBook[date][index].baseTWD = newBase;
+      saveCurrencyBook();
     }
 
-    saveRecords();
-    renderDetail(date);
-    renderCalendar();
+  }else{
+    // preserve：舊的劃掉，新增一筆新的
+    r.deleted = true;
+
+    records[date].push({ type:r.type, item, amount, deleted:false });
+
+    const newIndex = records[date].length-1;
+
+    // ⭐⭐⭐ 新紀錄也要鎖匯 ⭐⭐⭐
+    const currency = document.getElementById("editCurrency")?.value || "TWD";
+    const userRate = document.getElementById("editRate")?.value || null;
+
+    lockRateAndStore(date, newIndex, currency, userRate, amount);
   }
+
+  saveRecords();
+  renderDetail(date);
+  renderCalendar();
+}
 
   /* =========================================================
      editModal：新增/編輯（不再用 prompt）
   ========================================================= */
   let editAction = null;
 
-  function openEditModal({title, item, amount, onOk}){
+function openEditModal({title, item, amount, onOk, onOpen}){
     if(!editModal || !editItem || !editAmount || !editOk) return;
 
     if(editTitleEl) editTitleEl.textContent = title || "新增紀錄";
@@ -299,7 +317,8 @@ function updateSummary(){
     editAction = { onOk };
 
     editModal.classList.remove("hidden");
-    setTimeout(()=>{ editItem.focus(); }, 0);
+if(onOpen) onOpen();   // ⭐ 新增這行
+setTimeout(()=>{ editItem.focus(); }, 0);
   }
 
   function closeEditModal(){
@@ -568,6 +587,203 @@ if(adjustSide){
       updateSummary();
     };
   }
+
+/* =========================================================
+   🌍 多幣鎖匯模組 v1（TWD基準）
+   插在原檔最底部、updateLabels(); 之前
+========================================================= */
+
+const CURRENCY_KEY = "sbs_duo_book_currency_v1";
+let currencyBook = safeParse(localStorage.getItem(CURRENCY_KEY), {});
+
+function saveCurrencyBook(){
+  localStorage.setItem(CURRENCY_KEY, JSON.stringify(currencyBook));
+}
+
+/* ================================
+   📌 系統匯率（之後可改API）
+================================ */
+function getSystemRate(currency){
+  const table = {
+    TWD:1,
+    USD:32,
+    EUR:35,
+    JPY:0.22,
+    CNY:4.4,
+    HKD:4.1
+  };
+  return table[currency] || 1;
+}
+
+/* ================================
+   🌐 抓即時匯率（TWD基準）
+================================ */
+async function fetchLiveRates(){
+  try{
+    const res  = await fetch("https://open.er-api.com/v6/latest/TWD");
+    const data = await res.json();
+    return data.rates || null;
+  }catch(e){
+    return null;
+  }
+}
+
+/* ================================
+   🔒 鎖定匯率並寫入
+================================ */
+function lockRateAndStore(date, recordIndex, currency, userRate, amount){
+  const rate = userRate ? Number(userRate) : getSystemRate(currency);
+  const baseTWD = amount * rate;
+
+  currencyBook[date] = currencyBook[date] || [];
+  currencyBook[date][recordIndex] = {
+    currency,
+    rate,
+    baseTWD
+  };
+
+  saveCurrencyBook();
+}
+
+/* ================================
+   🧮 TWD 結算核心
+================================ */
+function calculateTWDSettlement(){
+  let A_TWD = 0;
+  let B_TWD = 0;
+  const prefix = currentMonthPrefix();
+
+  Object.keys(currencyBook).forEach(date=>{
+    if(!date.startsWith(prefix)) return;
+
+    currencyBook[date].forEach((c,i)=>{
+      const r = records[date]?.[i];
+      if(!r || r.deleted) return;
+
+      if(r.type==="a_to_b") A_TWD += c.baseTWD;
+      if(r.type==="b_to_a") B_TWD += c.baseTWD;
+    });
+  });
+
+  if(adjust.side==="A") A_TWD += adjust.amount;
+  else B_TWD += adjust.amount;
+
+  return { A_TWD, B_TWD, diffTWD: A_TWD - B_TWD };
+}
+
+/* ================================
+   💱 顯示幣別轉換
+================================ */
+function convertForDisplay(diffTWD, currency){
+  const rate = getSystemRate(currency);
+  return diffTWD / rate;
+}
+
+/* ================================
+   🔁 升級 updateSummary
+================================ */
+const _oldSummary = updateSummary;
+updateSummary = function(){
+
+  const { A_TWD, B_TWD, diffTWD } = calculateTWDSettlement();
+
+  if(sumAB) sumAB.textContent = Math.round(A_TWD);
+  if(sumBA) sumBA.textContent = Math.round(B_TWD);
+
+  const sel = document.getElementById("settleCurrency")?.value || "TWD";
+  const final = convertForDisplay(Math.abs(diffTWD), sel).toFixed(2);
+
+  if(finalResult){
+    if(diffTWD>0)
+      finalResult.textContent = `${names.B} 應給 ${names.A} ${final} ${sel}`;
+    else if(diffTWD<0)
+      finalResult.textContent = `${names.A} 應給 ${names.B} ${final} ${sel}`;
+    else
+      finalResult.textContent = "目前平衡";
+  }
+};
+
+/* ================================
+   ➕ 攔截新增紀錄
+================================ */
+const _oldAddRecord = addRecord;
+addRecord = function(type){
+  const date = modal?.dataset?.date;
+  if(!date) return _oldAddRecord(type);
+
+  openEditModal({
+    title:"新增紀錄",
+    item:"",
+    amount:"",
+    onOpen: async ()=>{
+      const currencySel = document.getElementById("editCurrency");
+      const rateInput   = document.getElementById("editRate");
+      if(!currencySel || !rateInput) return;
+
+      const live = await fetchLiveRates();
+      if(!live) return;
+
+      const cur = currencySel.value;
+      if(live[cur]){
+        const rateToTWD = 1 / live[cur];  // 轉成「1外幣 = 幾台幣」
+        rateInput.value = rateToTWD.toFixed(3);
+      }
+    },
+    onOk:({item, amount})=>{
+      const currency = document.getElementById("editCurrency")?.value || "TWD";
+      const userRate = document.getElementById("editRate")?.value || null;
+
+      records[date] = records[date] || [];
+      records[date].push({ type, item, amount, deleted:false });
+
+      const index = records[date].length-1;
+      lockRateAndStore(date, index, currency, userRate, amount);
+
+      saveRecords();
+      renderDetail(date);
+      renderCalendar();
+    }
+  });
+};
+
+/* ================================
+   🗑 清空同步
+================================ */
+function syncDeleteMonth(){
+  const p = currentMonthPrefix();
+  Object.keys(currencyBook).forEach(k=>{
+    if(k.startsWith(p)) delete currencyBook[k];
+  });
+  saveCurrencyBook();
+}
+
+function syncDeleteAll(){
+  currencyBook = {};
+  saveCurrencyBook();
+}
+
+const _oldRefresh = refreshBtn?.onclick;
+if(refreshBtn){
+  refreshBtn.onclick = ()=>{
+    syncDeleteMonth();
+    _oldRefresh?.();
+  };
+}
+
+const _oldClearAll = clearAllBtn?.onclick;
+if(clearAllBtn){
+  clearAllBtn.onclick = ()=>{
+    syncDeleteAll();
+    _oldClearAll?.();
+  };
+}
+
+const applyBtn = document.getElementById("applyCurrencyBtn");
+if(applyBtn){
+  applyBtn.onclick = ()=>{
+    updateSummary();   // 重新計算並刷新畫面
+  };
+}
 
   /* =========================================================
      Init

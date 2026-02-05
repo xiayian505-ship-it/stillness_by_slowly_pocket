@@ -473,7 +473,7 @@ button[data-m="preserve"]:hover{
 
 #editItem,
 #editAmount{
-  width:100%;
+width:auto;
   padding:10px 12px;
   border-radius:12px;
   border:1px solid #e2e8f0;
@@ -528,6 +528,77 @@ button[data-m="preserve"]:hover{
 .modal-head .close:hover{
   background:#e8eef6;
 }
+
+.money-row{
+  display:flex;
+  gap:10px;
+}
+
+.money-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+/* 金額：主角，占最多 */
+#editAmount{
+  flex:2;
+  min-width:0;
+}
+
+/* 幣別：中等 */
+#editCurrency{
+  flex:1.2;
+  min-width:90px;
+}
+
+/* 匯率：配角 */
+#editRate{
+  flex:1;
+  min-width:70px;
+}
+
+#editCurrency{
+
+  border-radius:12px;
+  border:1px solid #e2e8f0;
+  background:white;
+  font-size:14px;
+}
+
+.currency-stats{
+  margin-top:10px;
+  font-size:13px;
+  line-height:1.6;
+  color:#475569;
+}
+
+.settle-row{
+  margin-top:8px;
+}
+
+#setttleCurrency, #settleCurrency{
+  padding:6px 10px;
+  border-radius:10px;
+  border:1px solid #e2e8f0;
+  background:white;
+}
+
+.currency-row,
+.settle-row{
+  margin-top:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.currency-row input,
+.currency-row select,
+.settle-row select{
+  flex:1;
+}
+
+
 
 
 @keyframes pop{
