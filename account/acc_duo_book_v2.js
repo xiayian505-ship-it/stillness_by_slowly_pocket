@@ -275,11 +275,11 @@ function applyEditRecord(date, index, mode, item, amount){
 
     // ⭐⭐⭐ 這裡是修正關鍵 ⭐⭐⭐
     const c = currencyBook[date]?.[index];
-    if(c){
-      const newBase = amount * c.rate;
-      currencyBook[date][index].baseTWD = newBase;
-      saveCurrencyBook();
-    }
+const currency = document.getElementById("editCurrency")?.value || c?.currency || "TWD";
+const userRate = document.getElementById("editRate")?.value || null;
+
+// 重新鎖匯（⚠️ 不是只算 base）
+lockRateAndStore(date, index, currency, userRate, amount);
 
   }else{
     // preserve：舊的劃掉，新增一筆新的
@@ -318,6 +318,32 @@ function openEditModal({title, item, amount, onOk, onOpen}){
 
     editModal.classList.remove("hidden");
 if(onOpen) onOpen();   // ⭐ 新增這行
+// ⭐ 幣別改變時即時更新匯率
+const currencySel = document.getElementById("editCurrency");
+const rateInput   = document.getElementById("editRate");
+
+let rateTouched = false;
+
+if(rateInput){
+  rateInput.oninput = ()=>{
+    rateTouched = true;
+  };
+}
+
+if(currencySel && rateInput){
+  currencySel.onchange = async ()=>{
+    if(rateTouched) return;
+
+    const live = await fetchLiveRates();
+    if(!live) return;
+
+    const cur = currencySel.value;
+    if(live[cur]){
+      const rateToTWD = 1 / live[cur];
+      rateInput.value = rateToTWD.toFixed(3);
+    }
+  };
+}
 setTimeout(()=>{ editItem.focus(); }, 0);
   }
 
@@ -653,15 +679,18 @@ function calculateTWDSettlement(){
   let B_TWD = 0;
   const prefix = currentMonthPrefix();
 
-  Object.keys(currencyBook).forEach(date=>{
+  Object.keys(records).forEach(date=>{
     if(!date.startsWith(prefix)) return;
 
-    currencyBook[date].forEach((c,i)=>{
-      const r = records[date]?.[i];
-      if(!r || r.deleted) return;
+    records[date].forEach((r,i)=>{
+      if(r.deleted) return;
 
-      if(r.type==="a_to_b") A_TWD += c.baseTWD;
-      if(r.type==="b_to_a") B_TWD += c.baseTWD;
+      // ⭐ 關鍵：優先用鎖匯，沒有就 fallback
+      const c = currencyBook[date]?.[i];
+      const base = c ? c.baseTWD : r.amount; // ← 沒鎖匯就當 TWD
+
+      if(r.type==="a_to_b") A_TWD += base;
+      if(r.type==="b_to_a") B_TWD += base;
     });
   });
 
