@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>慢 慢 | 委圖紀錄表</title>
+
+<style>
+:root{
+  --bg:#f5f5f3; --card:#fff; --ink:#2a2a2a;
+  --muted:#777; --line:#ddd;
+}
+body{
+  margin:0;background:var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+  color:var(--ink);
+}
+.wrap{max-width:1200px;margin:32px auto;padding:16px;}
+h1{margin:0;}
+.sub{color:var(--muted);font-size:14px;margin-bottom:8px;}
+.notice{font-size:13px;color:#777;margin:8px 0;}
+button{
+  padding:8px 14px;border:1px solid var(--line);
+  background:#fff;border-radius:6px;cursor:pointer;
+}
+table{
+  width:100%;border-collapse:collapse;background:#fff;
+  border:1px solid var(--line);
+}
+th,td{
+  padding:10px;border-bottom:1px solid var(--line);
+  font-size:14px;
+}
+th{background:#f0f0ee;text-align:left;}
+tr.clickable{cursor:pointer;}
+tr.clickable:hover{background:#f9f9f7;}
+tr.deleted{
+  color:#aaa;
+  text-decoration:line-through;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:16px;
+  margin-top:20px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+label{font-size:13px;color:var(--muted);}
+input,select,textarea{
+  width:100%;
+  padding:8px;
+  border:1px solid var(--line);
+  border-radius:6px;
+}
+textarea{resize:vertical;}
+.hidden{display:none;}
+@media print{
+  button,.no-print,.notice{display:none;}
+  body{background:#fff;}
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<h1>委圖紀錄表</h1>
+<div class="sub">慢 慢｜Stillness by Slowly</div>
+<div class="notice">資料僅存於本機瀏覽器，需備份時可使用JSON</div>
+
+<button onclick="openNew()">+新增委託</button>
+<button onclick="toggleTotal()">快沒錢吃飯了不要再委圖了！！</button>
+<button onclick="exportBackup()">匯出JSON</button>
+<button onclick="importBackup()">匯入JSON</button>
+<div id="totalBox" class="card hidden"></div>
+
+<table style="margin-top:12px">
+<thead>
+<tr>
+  <th>繪師</th>
+  <th>平台</th>
+  <th>委託日</th>
+  <th>付款</th>
+  <th>金額</th>
+</tr>
+</thead>
+<tbody id="list"></tbody>
+</table>
+
+<div id="detail" class="card hidden"></div>
+
+<div id="form" class="card hidden">
+<h2 id="formTitle">新增委託</h2>
+
+<div class="grid">
+  <div><label>繪師</label><input id="artist"></div>
+
+  <div>
+    <label>平台</label>
+    <select id="platform"></select>
+    <input id="platform_other" class="hidden" placeholder="輸入新平台">
+  </div>
+
+  <div><label>聯絡方式</label><textarea id="contact"></textarea></div>
+
+  <div>
+    <label>委託用途</label>
+    <select id="usage"></select>
+    <input id="usage_other" class="hidden" placeholder="輸入其他用途">
+  </div>
+
+  <div><label>委託日期</label><input type="date" id="date_request"></div>
+  <div><label>確認接單</label><input type="date" id="date_accept"></div>
+  <div><label>收到稿件</label><input type="date" id="date_receive"></div>
+
+  <div>
+    <label>已付金額</label>
+    <div style="display:flex;gap:8px">
+      <select id="currency">
+        <option>新台幣 TWD</option>
+        <option>人民幣 CNY</option>
+        <option>港幣 HKD</option>
+        <option>美金 USD</option>
+        <option>日幣 JPY</option>
+        <option>歐元 EUR</option>
+      </select>
+      <input type="number" id="amount">
+    </div>
+  </div>
+
+  <div>
+    <label>付款狀態</label>
+    <select id="payment_status">
+      <option>訂金</option>
+      <option>尾款</option>
+      <option>定尾</option>
+    </select>
+  </div>
+
+  <div><label>付款方式備註</label><input id="payment_method"></div>
+  <div><label>完稿總額</label><input type="number" id="final_amount"></div>
+
+  <div><label>繪師特殊要求</label><textarea id="artist_rules"></textarea></div>
+
+  <div>
+    <label>是否拖稿</label>
+    <select id="delay">
+      <option>無</option>
+      <option>輕微</option>
+      <option>嚴重</option>
+    </select>
+  </div>
+
+  <div>
+    <label>整體印象</label>
+    <select id="impression">
+      <option>喜歡</option>
+      <option>普通</option>
+      <option>不推薦</option>
+    </select>
+  </div>
+
+  <div>
+    <label>
+      <input type="checkbox" id="include_in_total" checked>
+      這筆金額要算進總額
+    </label>
+  </div>
+</div>
+
+<label style="margin-top:12px">私密備註（不顯示）</label>
+<textarea id="private_note"></textarea>
+
+<button style="margin-top:12px" onclick="save()">儲存</button>
+</div>
+
+</div>
+
+<script>
+const STORAGE_KEY="sbs_commission_log_records_v2";
+const OPTION_KEY="sbs_commission_log_options_v1";
+
+let records=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+let options=JSON.parse(localStorage.getItem(OPTION_KEY)||JSON.stringify({
+  platform:["米畫師","X","噗浪","Discord"],
+  usage:["自用","商稿"]
+}));
+
+let editIndex=null;
+
+function initSelect(id,list){
+  const s=document.getElementById(id);
+  s.innerHTML=list.map(v=>`<option>${v}</option>`).join("")+"<option>其他</option>";
+}
+initSelect("platform",options.platform);
+initSelect("usage",options.usage);
+
+["platform","usage"].forEach(k=>{
+  document.getElementById(k).onchange=()=>{
+    document.getElementById(k+"_other").classList.toggle(
+      "hidden",document.getElementById(k).value!=="其他"
+    );
+  };
+});
+
+function openNew(){
+  editIndex=null;
+  formTitle.innerText="新增委託";
+  form.classList.remove("hidden");
+  include_in_total.checked=true;
+}
+
+function save(){
+  ["platform","usage"].forEach(k=>{
+    const sel=document.getElementById(k);
+    const other=document.getElementById(k+"_other");
+    if(sel.value==="其他"&&other.value){
+      options[k].push(other.value);
+      sel.value=other.value;
+      other.value="";
+    }
+  });
+  localStorage.setItem(OPTION_KEY,JSON.stringify(options));
+
+  const data={
+    artist:artist.value,
+    platform:platform.value,
+    contact:contact.value,
+    usage:usage.value,
+    date_request:date_request.value,
+    date_accept:date_accept.value,
+    date_receive:date_receive.value,
+    currency:currency.value,
+    amount:amount.value,
+    payment_status:payment_status.value,
+    payment_method:payment_method.value,
+    final_amount:final_amount.value,
+    artist_rules:artist_rules.value,
+    delay:delay.value,
+    impression:impression.value,
+    private_note:private_note.value,
+    include_in_total:include_in_total.checked,
+    is_deleted:false,
+    delete_reason:""
+  };
+
+  if(editIndex===null){
+    records.push(data);
+  }else{
+    records[editIndex]=Object.assign(records[editIndex],data);
+  }
+
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(records));
+  location.reload();
+}
+
+function exportBackup(){
+  const data={
+    records: records,
+    options: options,
+    exported_at: new Date().toISOString()
+  };
+
+  const blob=new Blob(
+    [JSON.stringify(data,null,2)],
+    {type:"application/json"}
+  );
+
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="commission_backup.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importBackup(){
+  const input=document.createElement("input");
+  input.type="file";
+  input.accept="application/json";
+
+  input.onchange=()=>{
+    const file=input.files[0];
+    if(!file) return;
+
+    if(!confirm("匯入後會【完全覆蓋】目前資料，確定要繼續嗎？")){
+      return;
+    }
+
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const data=JSON.parse(reader.result);
+
+        if(!data.records || !data.options){
+          alert("備份格式不正確");
+          return;
+        }
+
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(data.records));
+        localStorage.setItem(OPTION_KEY,JSON.stringify(data.options));
+
+        alert("匯入完成，頁面即將重新整理");
+        location.reload();
+      }catch(e){
+        alert("讀取失敗，請確認檔案格式");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  input.click();
+}
+
+
+function render(){
+  list.innerHTML="";
+  records.forEach((r,i)=>{
+    const tr=document.createElement("tr");
+    tr.className="clickable"+(r.is_deleted?" deleted":"");
+    tr.onclick=()=>showDetail(i);
+    tr.innerHTML=`
+      <td>${r.artist||"-"}</td>
+      <td>${r.platform||"-"}</td>
+      <td>${r.date_request||"-"}</td>
+      <td>${r.payment_status||"-"}</td>
+      <td>${r.currency||""} ${r.amount||""}</td>`;
+    list.appendChild(tr);
+  });
+}
+
+function showDetail(i){
+  const r=records[i];
+  editIndex=i;
+  detail.classList.remove("hidden");
+  detail.innerHTML=`
+    <h2>委託詳細</h2>
+    
+    <p><b>繪師名字：</b>${r.artist}</p>
+    <p><b>從哪裡委託：</b>${r.platform}</p>
+    <p><b>聯絡方式：</b>${r.contact || "-"}</p>
+    <p><b>時間(委託→接單→收稿)：</b>${r.date_request} → ${r.date_accept} → ${r.date_receive}</p>
+    <p><b>是否拖稿：</b>${r.delay || "-"}</p>
+<p><b>整體印象：</b>${r.impression || "-"}</p>
+<div class="no-print" style="margin:8px 0;padding-top:8px;border-top:1px dashed #ddd">
+  <b>特殊備註：</b><br>${r.private_note}
+</div>
+    <p><b>付款類型｜付款方式：</b>${r.payment_status}｜${r.payment_method}</p>
+    <p><b>已付金額：</b>${r.currency} ${r.amount}</p>
+    ${r.is_deleted
+      ? `<p><b>註銷原因：</b>${r.delete_reason}</p>`
+      : `<button onclick="startDelete()">註銷這筆委託</button>`
+    }
+    <button onclick="loadEdit()">編輯</button>
+    
+  `;
+}
+
+function loadEdit(){
+  const r=records[editIndex];
+  formTitle.innerText="編輯委託";
+  form.classList.remove("hidden");
+  Object.keys(r).forEach(k=>{
+    if(document.getElementById(k)) document.getElementById(k).value=r[k];
+  });
+}
+
+function startDelete(){
+  const reason=prompt("請輸入註銷原因（給未來的自己看）");
+  if(!reason) return;
+  records[editIndex].is_deleted=true;
+  records[editIndex].delete_reason=reason;
+  records[editIndex].include_in_total=false;
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(records));
+  location.reload();
+}
+
+function toggleTotal(){
+  if(!totalBox.classList.contains("hidden")){
+    totalBox.classList.add("hidden");return;
+  }
+  const sum=records
+    .filter(r=>!r.is_deleted && r.include_in_total)
+    .reduce((t,r)=>t+(Number(r.amount)||0),0);
+  totalBox.innerText=`目前總支出：${sum}`;
+  totalBox.classList.remove("hidden");
+}
+
+render();
+</script>
+
+</body>
+</html>
