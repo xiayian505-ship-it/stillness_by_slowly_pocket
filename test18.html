@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API 取得測試</title>
+<style>
+body{
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+  padding:16px;
+}
+pre{
+  white-space:pre-wrap;
+  background:#f5f5f3;
+  padding:12px;
+  border-radius:8px;
+}
+.error{color:#b00020;}
+</style>
+</head>
+<body>
+
+<h1>API 取得測試</h1>
+<div id="status">讀取中…</div>
+<pre id="output"></pre>
+
+<script>
+/*
+  使用 allorigins proxy
+  它只轉送 response，不會改內容
+*/
+const TARGET =
+  "https://tisvcloud.freeway.gov.tw/api/v1/traffic/speed";
+
+const PROXY =
+  "https://api.allorigins.win/raw?url=" + encodeURIComponent(TARGET);
+
+fetch(PROXY)
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("status").textContent = "✅ 成功取得資料";
+    document.getElementById("output").textContent =
+      JSON.stringify(data.slice(0,5), null, 2);
+  })
+  .catch(err => {
+    document.getElementById("status").innerHTML =
+      '<span class="error">❌ 取得失敗</span>';
+    document.getElementById("output").textContent = err.toString();
+  });
+</script>
+
+</body>
+</html>
