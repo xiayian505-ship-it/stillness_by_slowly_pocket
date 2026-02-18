@@ -3,48 +3,52 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>API 取得測試</title>
+<title>fetch 確認測試</title>
 <style>
 body{
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
-  padding:16px;
+  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+  padding:20px;
 }
+.ok{color:#0a7;}
+.bad{color:#b00020;}
 pre{
-  white-space:pre-wrap;
   background:#f5f5f3;
   padding:12px;
   border-radius:8px;
+  white-space:pre-wrap;
+  font-size:13px;
 }
-.error{color:#b00020;}
 </style>
 </head>
 <body>
 
-<h1>API 取得測試</h1>
+<h1>fetch 環境確認 test</h1>
 <div id="status">讀取中…</div>
 <pre id="output"></pre>
 
 <script>
 /*
-  使用 allorigins proxy
-  它只轉送 response，不會改內容
+  政府資料開放平臺（CORS 正常）
+  這筆是「高速公路即時壅塞路段（範例集）」
+  注意：這只是測 fetch，不是正式資料使用
 */
-const TARGET =
-  "https://tisvcloud.freeway.gov.tw/api/v1/traffic/speed";
+const API =
+  "https://data.gov.tw/api/v2/rest/datastore/382000000A-000146-001";
 
-const PROXY =
-  "https://api.allorigins.win/raw?url=" + encodeURIComponent(TARGET);
-
-fetch(PROXY)
-  .then(res => res.json())
+fetch(API)
+  .then(res => {
+    if(!res.ok) throw new Error(res.status);
+    return res.json();
+  })
   .then(data => {
-    document.getElementById("status").textContent = "✅ 成功取得資料";
+    document.getElementById("status").innerHTML =
+      "<span class='ok'>✅ fetch 成功（環境正常）</span>";
     document.getElementById("output").textContent =
-      JSON.stringify(data.slice(0,5), null, 2);
+      JSON.stringify(data.records.slice(0,3), null, 2);
   })
   .catch(err => {
     document.getElementById("status").innerHTML =
-      '<span class="error">❌ 取得失敗</span>';
+      "<span class='bad'>❌ fetch 失敗</span>";
     document.getElementById("output").textContent = err.toString();
   });
 </script>
