@@ -1,0 +1,135 @@
+:root{
+  --bg:#E9ECEF;
+  --card:#F7FAFB;
+  --card-glass:rgba(255,255,255,.55);
+  --ink:#2F3E46;
+  --muted:#7F949B;
+  --line:#8FA3A9;
+  --footer:#A0B0B6;
+  --shadow:0 18px 45px rgba(47,62,70,.10);
+  --radius:18px;
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:var(--bg);
+  color:var(--ink);
+}
+.wrap{
+  width:min(520px, 92vw);
+  padding:22px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px;
+}
+h1{
+  margin:0 0 20px;
+  font-size:18px;
+  letter-spacing:.18em;
+  font-weight:800;
+  text-align:center;
+  color:#BFC2CB;
+}
+
+/* ===== 模組區塊 ===== */
+.section{
+  margin-bottom:18px;
+}
+.section-title{
+  margin:0 0 8px;
+  font-size:16px;
+  letter-spacing:.18em;
+  font-weight:800;
+  color:#B7B7BD;
+}
+.sub{
+  margin:0 0 12px;
+  color:var(--muted);
+  font-size:12px;
+  letter-spacing:.12em;
+}
+
+/* ===== 工具按鈕 ===== */
+a.tool{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px;
+  border:1px solid rgba(143,163,169,.55);
+  border-radius:14px;
+  text-decoration:none;
+  color:inherit;
+
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,.85),
+    rgba(255,255,255,.55)
+  );
+
+  box-shadow:
+    0 6px 14px rgba(47,62,70,.06),
+    inset 0 1px 0 rgba(255,255,255,.6);
+
+  transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+a.tool:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    0 10px 22px rgba(47,62,70,.10),
+    inset 0 1px 0 rgba(255,255,255,.7);
+}
+a.tool:active{
+  transform:translateY(0);
+  box-shadow:
+    0 4px 10px rgba(47,62,70,.05),
+    inset 0 2px 4px rgba(0,0,0,.05);
+}
+a.tool:hover{ background:rgba(255,255,255,.75); }
+
+.tool{
+  align-items:center;
+  margin-bottom:14px;
+}
+.section .tool:last-of-type{
+  margin-bottom:0;
+}
+
+.tool .text{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.name{
+  font-weight:700;
+  letter-spacing:.08em;
+  color:#B7B7BD;
+}
+.desc{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.08em;
+}
+.hint{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.06em;
+  white-space:nowrap;
+}
+
+.footer{
+  margin-top:10px;
+  font-size:11px;
+  color:var(--footer);
+  letter-spacing:.18em;
+  text-align:right;
+}

@@ -5,167 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>慢慢｜小工具</title>
 
-<style>
-:root{
-  --bg:#E9ECEF;
-  --card:#F7FAFB;
-  --card-glass:rgba(255,255,255,.55);
-  --ink:#2F3E46;
-  --muted:#7F949B;
-  --line:#8FA3A9;
-  --footer:#A0B0B6;
-  --shadow:0 18px 45px rgba(47,62,70,.10);
-  --radius:18px;
-  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
-}
-*{ box-sizing:border-box; }
-body{
-  margin:0;
-  min-height:100vh;
-  display:grid;
-  place-items:center;
-  background:var(--bg);
-  color:var(--ink);
-}
-.wrap{
-  width:min(520px, 92vw);
-  padding:22px;
-}
-.card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  padding:20px;
-}
-h1{
-  margin:0 0 20px;
-  font-size:18px;
-  letter-spacing:.18em;
-  font-weight:800;
-  text-align:center;
-  color:#BFC2CB;
-}
-
-/* ===== 模組區塊 ===== */
-.section{
-  margin-bottom:18px;
-}
-.section-title{
-  margin:0 0 8px;
-  font-size:16px;
-  letter-spacing:.18em;
-  font-weight:800;
-  color:#B7B7BD;
-}
-.sub{
-  margin:0 0 12px;
-  color:var(--muted);
-  font-size:12px;
-  letter-spacing:.12em;
-}
-
-/* ===== 工具按鈕 ===== */
-a.tool{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:14px;
-  border:1px solid rgba(143,163,169,.55);
-  border-radius:14px;
-  text-decoration:none;
-  color:inherit;
-
-  /* ✨ 空氣玻璃層 */
-  background:linear-gradient(
-    180deg,
-    rgba(255,255,255,.85),
-    rgba(255,255,255,.55)
-  );
-
-  /* ✨ 漂浮感 */
-  box-shadow:
-    0 6px 14px rgba(47,62,70,.06),
-    inset 0 1px 0 rgba(255,255,255,.6);
-
-  transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
-}
-
-/* 滑過：輕微抬起 */
-a.tool:hover{
-  transform:translateY(-2px);
-  box-shadow:
-    0 10px 22px rgba(47,62,70,.10),
-    inset 0 1px 0 rgba(255,255,255,.7);
-}
-
-/* 點擊：下沉 */
-a.tool:active{
-  transform:translateY(0);
-  box-shadow:
-    0 4px 10px rgba(47,62,70,.05),
-    inset 0 2px 4px rgba(0,0,0,.05);
-}
-
-
-a.tool:hover{ background:rgba(255,255,255,.75); }
-
-.name{
-  font-weight:700;
-  letter-spacing:.08em;
-  color:#B7B7BD;
-}
-.hint{
-  font-size:12px;
-  color:var(--muted);
-  letter-spacing:.06em;
-  white-space:nowrap;
-}
-
-.footer{
-  margin-top:10px;
-  font-size:11px;
-  color:var(--footer);
-  letter-spacing:.18em;
-  text-align:right;
-}
-
-.section .tool + .sub{
-  margin-top:6px;
-  margin-bottom:14px;
-}
-
-.tool{
-  align-items:center;
-}
-
-.tool .text{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-
-.name{
-  font-weight:700;
-  letter-spacing:.08em;
-  color:#B7B7BD;
-}
-
-.desc{
-  font-size:12px;
-  color:var(--muted);
-  letter-spacing:.08em;
-}
-
-.tool{
-  margin-bottom:14px;   /* ⭐ 控制按鈕之間距離 */
-}
-
-.section .tool:last-of-type{
-  margin-bottom:0;      /* 最後一顆不要多出空隙 */
-}
-</style>
+<link rel="stylesheet" href="./index.css">
 </head>
 
 <body>
@@ -175,28 +15,29 @@ a.tool:hover{ background:rgba(255,255,255,.75); }
 <div class="wrap">
   <div class="card">
 
-<!-- 🌌 時間中控 -->
-<div class="section">
-  <div class="section-title">慢 慢 | 銀河系</div>
-  <p class="sub">寸寸光陰</p>
+    <!-- 🌌 時間中控 -->
+    <div class="section">
+      <div class="section-title">慢 慢 | 銀河系</div>
+      <p class="sub">寸寸光陰</p>
 
-  <!-- 年曆 -->
-<a class="tool" href="./calendar/calendar.html">
-  <div class="text">
-    <div class="name">年曆產生器</div>
-    <div class="desc">月份版型生成工具</div>
-  </div>
-  <div class="hint">開啟 →</div>
-</a>
+      <!-- 年曆 -->
+      <a class="tool" href="./calendar/calendar.html">
+        <div class="text">
+          <div class="name">年曆產生器</div>
+          <div class="desc">月份版型生成工具</div>
+        </div>
+        <div class="hint">開啟 →</div>
+      </a>
 
-  <!-- 共付日常 -->
-<a class="tool" href="./account/acc_duo_book.html">
-  <div class="text">
-    <div class="name">共付日常</div>
-    <div class="desc">雙人記帳本</div>
-  </div>
-  <div class="hint">開啟 →</div>
-</a>
+      <!-- 共付日常 -->
+      <a class="tool" href="./account/acc_duo_book.html">
+        <div class="text">
+          <div class="name">共付日常</div>
+          <div class="desc">雙人記帳本</div>
+        </div>
+        <div class="hint">開啟 →</div>
+      </a>
+    </div>
 
     <!-- 🎨 色彩中控 -->
     <div class="section">
@@ -205,6 +46,17 @@ a.tool:hover{ background:rgba(255,255,255,.75); }
 
       <a class="tool" href="./prism/prism.html">
         <div class="name">色票控制台</div>
+        <div class="hint">開啟 →</div>
+      </a>
+    </div>
+    
+        <!-- 🎨 地圖中控 -->
+    <div class="section">
+      <div class="section-title">慢 慢 | 地圖</div>
+      <p class="sub">地圖控制</p>
+
+      <a class="tool" href="./hiway/hiway.html">
+        <div class="name">路況控制台</div>
         <div class="hint">開啟 →</div>
       </a>
     </div>
