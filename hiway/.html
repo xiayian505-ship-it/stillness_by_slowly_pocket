@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>路況即時通</title>
+
+<link rel="stylesheet" href="./hiway.css">
+</head>
+
+<body>
+<div class="wrap">
+
+<h1>路況即時通</h1>
+<div class="time" id="timeText">—</div>
+
+<!-- 目前狀態列 -->
+<div class="card">
+  <div class="toolbar">
+    <div id="currentText">目前路況｜台北</div>
+    <button class="primary" id="refreshBtn">重新整理</button>
+  </div>
+</div>
+
+<!-- 地區 / 縣市選擇 -->
+<div class="card">
+  <button class="primary" id="toggleRegionBtn">選擇地區</button>
+
+  <div id="regions" class="hidden">
+    <div class="group">
+      <button data-region="north">北北基</button>
+      <button data-region="taozhu">桃竹苗</button>
+      <button data-region="central">中彰投</button>
+      <button data-region="yunjia">雲嘉南</button>
+      <button data-region="south">高屏</button>
+      <button data-region="east">宜花東</button>
+    </div>
+
+    <div id="north" class="city-list hidden">
+      <button data-city="台北">台北</button>
+      <button data-city="新北">新北</button>
+      <button data-city="基隆">基隆</button>
+    </div>
+
+    <div id="taozhu" class="city-list hidden">
+      <button data-city="桃園">桃園</button>
+      <button data-city="新竹">新竹</button>
+      <button data-city="苗栗">苗栗</button>
+    </div>
+
+    <div id="central" class="city-list hidden">
+      <button data-city="台中">台中</button>
+      <button data-city="彰化">彰化</button>
+      <button data-city="南投">南投</button>
+    </div>
+
+    <div id="yunjia" class="city-list hidden">
+      <button data-city="雲林">雲林</button>
+      <button data-city="嘉義">嘉義</button>
+      <button data-city="台南">台南</button>
+    </div>
+
+    <div id="south" class="city-list hidden">
+      <button data-city="高雄">高雄</button>
+      <button data-city="屏東">屏東</button>
+    </div>
+
+    <div id="east" class="city-list hidden">
+      <button data-city="宜蘭">宜蘭</button>
+      <button data-city="花蓮">花蓮</button>
+      <button data-city="台東">台東</button>
+    </div>
+  </div>
+</div>
+
+<!-- ⭐ 系統交流道 -->
+<div class="card hidden" id="interchangeCard">
+  <div class="group" id="interchangeList"></div>
+</div>
+
+<!-- 地圖區 -->
+<div class="card">
+  <div id="map" class="map">
+    <div>
+      <strong>Google 地圖未載入</strong><br>
+      請在 HTML 中填入 API Key
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- 行為邏輯 -->
+<script src="./hiway.js"></script>
+
+<!-- Google Maps（刻意使用佔位 key） -->
+<script>
+let map;   // ✅ 全域
+
+function initMap(){
+
+  // ⭐ 台灣邊界（大概即可，不用很準）
+  const TAIWAN_BOUNDS = {
+    north: 25.35,
+    south: 21.85,
+    west: 119.3,
+    east: 122.2
+  };
+
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 25.03, lng: 121.56 },
+    zoom: 10,
+    disableDefaultUI: true,
+
+    // ⭐ 只新增這三個設定
+    restriction: {
+      latLngBounds: TAIWAN_BOUNDS,
+      strictBounds: true
+    }
+  });
+
+  const trafficLayer = new google.maps.TrafficLayer();
+  trafficLayer.setMap(map);
+}
+</script>
+
+<script async
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBDcesO0Z98iWmCVIpG7bALVTpaj6dBWT8&callback=initMap">
+</script>
+
+</body>
+</html>  return "slow";
+}
+
+fetch(API)
+  .then(res => res.json())
+  .then(data => {
+    data.highways.forEach(h => {
+
+      const col = h.road.includes("1") 
+        ? document.getElementById("col1")
+        : document.getElementById("col3");
+
+      const sec = document.createElement("div");
+      sec.className = "section";
+
+      const title = document.createElement("h3");
+      title.textContent = 
+        (h.direction === "northbound" ? "北上" : "南下") +
+        "｜" + h.section;
+      sec.appendChild(title);
+
+      h.points.forEach(p => {
+        const row = document.createElement("div");
+        row.className = "point";
+
+        const name = document.createElement("span");
+        name.textContent = p.interchange;
+
+        const speed = document.createElement("span");
+        speed.className = "speed " + speedClass(p.speed);
+        speed.textContent = p.speed + " km/h";
+
+        row.appendChild(name);
+        row.appendChild(speed);
+        sec.appendChild(row);
+      });
+
+      col.appendChild(sec);
+    });
+  })
+  .catch(err => {
+    document.body.innerHTML = "<h1>資料讀取失敗</h1>";
+    console.error(err);
+  });
+</script>
+
+</body>
+
+</html>
