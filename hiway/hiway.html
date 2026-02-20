@@ -78,6 +78,8 @@
   <div class="group" id="interchangeList"></div>
 </div>
 
+
+
 <!-- 地圖區 -->
 <div class="card">
   <div id="map" class="map">
@@ -88,6 +90,9 @@
   </div>
 </div>
 
+
+
+
 </div>
 
 <!-- 行為邏輯 -->
@@ -95,7 +100,64 @@
 
 <!-- Google Maps（刻意使用佔位 key） -->
 <script>
-let map;   // ✅ 全域
+let map;
+
+// ⭐ 國道極簡樣式（只留下高速公路）
+const MAP_STYLE_HIGHWAY_ONLY = [
+  { elementType: "geometry", stylers: [{ color: "#f4f4f2" }] },
+
+  // 全部標籤先關
+  { elementType: "labels", stylers: [{ visibility: "off" }] },
+
+{
+  featureType: "administrative.locality",
+  elementType: "labels.text",
+  stylers: [
+    { visibility: "on" },
+    { color: "#8a8a8a" },
+    { weight: 0.5 }
+  ]
+},
+
+{
+  featureType: "administrative.sublocality",
+  elementType: "labels.text",
+  stylers: [
+    { visibility: "on" },
+    { color: "#b0b0b0" },
+    { weight: 0.4 }
+  ]
+},
+
+
+  // ⭐ 只開「國道盾牌 icon」
+  {
+    featureType: "road.highway",
+    elementType: "labels.icon",
+    stylers: [{ visibility: "on" }]
+  },
+
+  // 不要 POI / 大眾運輸
+  { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+
+  // 一般道路淡化
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#e6e6e3" }]
+  },
+
+  // 國道本體
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [
+      { color: "#9ecfd9" },
+      { weight: 2.5 }
+    ]
+  }
+];
 
 function initMap(){
 
@@ -116,7 +178,8 @@ function initMap(){
     restriction: {
       latLngBounds: TAIWAN_BOUNDS,
       strictBounds: true
-    }
+    },
+    styles: MAP_STYLE_HIGHWAY_ONLY
   });
 
   const trafficLayer = new google.maps.TrafficLayer();
@@ -129,52 +192,4 @@ function initMap(){
 </script>
 
 </body>
-</html>  return "slow";
-}
-
-fetch(API)
-  .then(res => res.json())
-  .then(data => {
-    data.highways.forEach(h => {
-
-      const col = h.road.includes("1") 
-        ? document.getElementById("col1")
-        : document.getElementById("col3");
-
-      const sec = document.createElement("div");
-      sec.className = "section";
-
-      const title = document.createElement("h3");
-      title.textContent = 
-        (h.direction === "northbound" ? "北上" : "南下") +
-        "｜" + h.section;
-      sec.appendChild(title);
-
-      h.points.forEach(p => {
-        const row = document.createElement("div");
-        row.className = "point";
-
-        const name = document.createElement("span");
-        name.textContent = p.interchange;
-
-        const speed = document.createElement("span");
-        speed.className = "speed " + speedClass(p.speed);
-        speed.textContent = p.speed + " km/h";
-
-        row.appendChild(name);
-        row.appendChild(speed);
-        sec.appendChild(row);
-      });
-
-      col.appendChild(sec);
-    });
-  })
-  .catch(err => {
-    document.body.innerHTML = "<h1>資料讀取失敗</h1>";
-    console.error(err);
-  });
-</script>
-
-</body>
-
 </html>
