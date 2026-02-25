@@ -624,7 +624,7 @@
       // 每跨一個萬分門檻觸發一次（可連續跨越）
       playBomSound();
       bomFlashEl.classList.add("show");
-      setTimeout(()=>bomFlashEl.classList.remove("show"), 220);
+      setTimeout(()=>bomFlashEl.classList.remove("show"), 15000);
       toast(`💥 BOM! 分數突破 ${nextBom.toLocaleString()}！`);
       nextBom += 10000;
     }
