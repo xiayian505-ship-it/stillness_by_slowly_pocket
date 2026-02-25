@@ -1,0 +1,1085 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>簡易三消 v2（單檔｜iOS）</title>
+<style>
+  :root{
+    --bg:#f5f5f3;
+    --card:#ffffff;
+    --ink:#1f1f1f;
+    --muted:#6b6b6b;
+    --line:#d9d9d6;
+    --shadow:0 10px 24px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+  }
+  h1{
+    font-size:18px;
+    margin:0;
+    letter-spacing:.2px;
+  }
+  .sub{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:4px;
+    line-height:1.45;
+  }
+  .panel{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:12px;
+  }
+  .topbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:flex-start;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .stats{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .chip{
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:13px;
+    background:#fafafa;
+    white-space:nowrap;
+  }
+  .chip b{font-weight:800}
+  .btns{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+  }
+  button{
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    border-radius:10px;
+    padding:8px 10px;
+    font-size:14px;
+  }
+  button:active{transform:translateY(1px)}
+  button[disabled]{opacity:.45; pointer-events:none}
+  .hint{
+    font-size:12px;
+    color:var(--muted);
+    margin: 10px 2px 0;
+    line-height:1.5;
+  }
+
+  /* Board */
+  .boardWrap{
+    display:flex;
+    justify-content:center;
+    position:relative;
+  }
+  .board{
+    --size: 8;
+    --cell: 42px;
+    display:grid;
+    grid-template-columns: repeat(var(--size), var(--cell));
+    grid-template-rows: repeat(var(--size), var(--cell));
+    gap:8px;
+    padding:12px;
+    background:#fbfbfb;
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+    touch-action: manipulation;
+    user-select:none;
+  }
+  @media (max-width: 420px){
+    .board{ --cell: 34px; gap:7px; padding:10px; }
+  }
+  @media (min-width: 900px){
+    .board{ --cell: 46px; gap:9px; }
+  }
+
+  .tile{
+    width:var(--cell);
+    height:var(--cell);
+    border-radius:12px;
+    border:1px solid rgba(0,0,0,.08);
+    box-shadow: 0 6px 14px rgba(0,0,0,.10);
+    position:relative;
+    transition: transform 120ms ease, outline 120ms ease, filter 120ms ease, opacity 120ms ease;
+  }
+  .tile:active{transform:scale(.98)}
+  .tile.sel{
+    outline: 3px solid rgba(30,30,30,.35);
+    transform: translateY(-1px) scale(1.02);
+    filter: brightness(1.02);
+  }
+  .tile.bad{
+    animation: shake 180ms linear;
+  }
+  @keyframes shake{
+    0%{transform:translateX(0)}
+    25%{transform:translateX(-3px)}
+    50%{transform:translateX(3px)}
+    75%{transform:translateX(-2px)}
+    100%{transform:translateX(0)}
+  }
+
+  /* Color set (soft) */
+  .c0{background:linear-gradient(145deg,#ffd6d6,#ff9aa8)}
+  .c1{background:linear-gradient(145deg,#ffe9c7,#ffc46d)}
+  .c2{background:linear-gradient(145deg,#fff7c9,#ffe25a)}
+  .c3{background:linear-gradient(145deg,#d9f7dc,#69d07a)}
+  .c4{background:linear-gradient(145deg,#d7efff,#66b6ff)}
+  .c5{background:linear-gradient(145deg,#e8dcff,#a98bff)}
+
+  .toast{
+    margin-top:10px;
+    font-size:13px;
+    color:var(--muted);
+    min-height:18px;
+  }
+
+  /* Overlay */
+  .overlay{
+    position:absolute;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:14px;
+    border-radius:16px;
+    background: rgba(245,245,243,.78);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .overlay.show{display:flex}
+  .overlayCard{
+    width:min(420px, 95%);
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:14px;
+    text-align:center;
+  }
+  .overlayCard .big{
+    font-size:22px;
+    font-weight:900;
+    letter-spacing:.5px;
+    margin:2px 0 6px;
+  }
+  .overlayCard .mini{
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.45;
+  }
+
+  /* Best list */
+  .best{
+    margin-top:12px;
+    border-top:1px dashed var(--line);
+    padding-top:12px;
+  }
+  .bestTitle{
+    font-weight:900;
+    font-size:13px;
+    letter-spacing:.2px;
+    margin-bottom:6px;
+  }
+  .bestList{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size:12px;
+    color:#2c2c2c;
+    background:#fafafa;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 10px;
+    line-height:1.55;
+    white-space:pre;
+  }
+  .bomFlash{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background: rgba(255,255,255,.65);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 999;
+  }
+  .bomFlash.show{display:flex}
+  .bomText{
+    font-size:44px;
+    font-weight:1000;
+    letter-spacing:1px;
+    text-shadow: 0 8px 22px rgba(0,0,0,.16);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>簡易三消 v2</h1>
+        <div class="sub">點兩顆相鄰方塊交換 → 連成 3 顆（含以上）就會消除。<br>若盤面完全沒得消（任何交換都不會成三消）→ GAME OVER。</div>
+      </div>
+    </header>
+
+    <div class="panel">
+      <div class="topbar">
+        <div class="stats">
+          <div class="chip">狀態：<b id="stateText">待機</b></div>
+          <div class="chip">分數：<b id="score">0</b></div>
+          <div class="chip">時間：<b id="time">00:00</b></div>
+          <div class="chip">步數：<b id="moves">0</b></div>
+          <div class="chip">連鎖：<b id="combo">0</b></div>
+          <div class="chip">重整：<b id="reshuffleLeft">1</b></div>
+        </div>
+
+        <div class="btns">
+          <button id="btnStart" type="button">開始遊戲</button>
+          <button id="btnEnd" type="button" disabled>遊戲結束（記錄）</button>
+          <button id="btnReshuffle" type="button" disabled>重整畫面（一次）</button>
+          <button id="btnRestart" type="button">重新開始</button>
+        </div>
+      </div>
+
+      <div class="boardWrap">
+        <div id="board" class="board" aria-label="三消棋盤"></div>
+
+        <div id="overlay" class="overlay" aria-hidden="true">
+          <div class="overlayCard">
+            <div class="big" id="overlayTitle">GAME OVER</div>
+            <div class="mini" id="overlayDesc">盤面沒有任何可形成三消的交換。<br>你可以按「遊戲結束」記錄分數，或重新開始。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hint">
+        建議用「點一下選取 → 再點相鄰交換」最穩。<br>
+        紀錄：只保存最高前 3 次（含遊玩時間）
+      </div>
+
+      <div id="toast" class="toast"></div>
+
+      <div class="best">
+        <div class="bestTitle">🏆 BEST（最高前 3 次）</div>
+        <div id="bestList" class="bestList">尚無紀錄</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="bomFlash" class="bomFlash" aria-hidden="true">
+    <div class="bomText">💥 BOM!</div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* =========================
+     Config
+  ========================= */
+  const SIZE = 8;
+  const COLORS = 6;
+  const STORAGE_KEY = "sbs_match3_log_v1";
+
+  /* =========================
+     DOM
+  ========================= */
+  const boardEl = document.getElementById("board");
+  const scoreEl = document.getElementById("score");
+  const movesEl = document.getElementById("moves");
+  const comboEl = document.getElementById("combo");
+  const timeEl  = document.getElementById("time");
+  const toastEl = document.getElementById("toast");
+  const stateTextEl = document.getElementById("stateText");
+  const reshuffleLeftEl = document.getElementById("reshuffleLeft");
+
+  const btnStart = document.getElementById("btnStart");
+  const btnEnd = document.getElementById("btnEnd");
+  const btnReshuffle = document.getElementById("btnReshuffle");
+  const btnRestart = document.getElementById("btnRestart");
+
+  const overlayEl = document.getElementById("overlay");
+  const overlayTitleEl = document.getElementById("overlayTitle");
+  const overlayDescEl = document.getElementById("overlayDesc");
+
+  const bestListEl = document.getElementById("bestList");
+  const bomFlashEl = document.getElementById("bomFlash");
+
+  /* =========================
+     State
+  ========================= */
+  let grid = [];               // 2D: [r][c] -> 0..COLORS-1, or -1 empty
+  let selected = null;         // {r,c}
+  let locked = false;
+
+  let score = 0;
+  let moves = 0;
+  let combo = 0;
+
+  let running = false;
+  let ended = false;
+
+  let reshuffleLeft = 1;
+  let nextBom = 10000;
+
+  // Timer
+  let startTs = 0;
+  let timerId = null;
+
+  /* =========================
+     Audio (WebAudio, iOS-friendly)
+  ========================= */
+  let audioCtx = null;
+
+  function ensureAudio(){
+    if (!audioCtx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+    }
+    if (audioCtx.state === "suspended"){
+      audioCtx.resume().catch(()=>{});
+    }
+  }
+
+  function beep(freq=660, dur=0.06, type="sine", gain=0.05){
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(g);
+    g.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  }
+
+  function playClearSound(count){
+    // count influences pitch a bit, but keep gentle
+    ensureAudio();
+    const base = 520 + Math.min(12, count) * 10;
+    beep(base, 0.055, "sine", 0.045);
+    beep(base + 140, 0.045, "triangle", 0.035);
+  }
+
+  function playBadSwapSound(){
+    ensureAudio();
+    beep(220, 0.07, "square", 0.03);
+  }
+
+  function playBomSound(){
+    ensureAudio();
+    beep(880, 0.08, "sawtooth", 0.06);
+    setTimeout(()=>beep(660, 0.09, "sawtooth", 0.06), 70);
+  }
+
+  /* =========================
+     Helpers
+  ========================= */
+  function toast(msg){
+    toastEl.textContent = msg || "";
+  }
+  function setStateText(s){
+    stateTextEl.textContent = s;
+  }
+  function showOverlay(title, desc){
+    overlayTitleEl.textContent = title;
+    overlayDescEl.innerHTML = desc;
+    overlayEl.classList.add("show");
+    overlayEl.setAttribute("aria-hidden","false");
+  }
+  function hideOverlay(){
+    overlayEl.classList.remove("show");
+    overlayEl.setAttribute("aria-hidden","true");
+  }
+
+  function inBounds(r,c){
+    return r>=0 && r<SIZE && c>=0 && c<SIZE;
+  }
+  function idx(r,c){ return r*SIZE + c; }
+  function randColor(){ return Math.floor(Math.random() * COLORS); }
+
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function fmtMMSS(ms){
+    const sec = Math.max(0, Math.floor(ms/1000));
+    const m = Math.floor(sec/60);
+    const s = sec % 60;
+    return `${pad2(m)}:${pad2(s)}`;
+  }
+
+  function getTileEl(r,c){
+    return boardEl.children[idx(r,c)] || null;
+  }
+  function setTileClass(el, color){
+    el.className = "tile c" + color;
+  }
+
+  function updateUI(){
+    scoreEl.textContent = String(score);
+    movesEl.textContent = String(moves);
+    comboEl.textContent = String(combo);
+    reshuffleLeftEl.textContent = String(reshuffleLeft);
+  }
+
+  function clearSelection(){
+    if (!selected) return;
+    const el = getTileEl(selected.r, selected.c);
+    if (el) el.classList.remove("sel");
+    selected = null;
+  }
+  function select(r,c){
+    clearSelection();
+    selected = {r,c};
+    const el = getTileEl(r,c);
+    if (el) el.classList.add("sel");
+  }
+  function areAdjacent(a,b){
+    const dr = Math.abs(a.r - b.r);
+    const dc = Math.abs(a.c - b.c);
+    return (dr + dc) === 1;
+  }
+
+  /* =========================
+     Grid Init (avoid starting matches)
+  ========================= */
+  function makeEmptyGrid(){
+    grid = Array.from({length: SIZE}, () => Array.from({length: SIZE}, () => -1));
+  }
+
+  function matchLenH(r,c){
+    const v = grid[r][c];
+    if (v < 0) return 0;
+    let cnt = 1;
+    for (let cc=c-1; cc>=0 && grid[r][cc]===v; cc--) cnt++;
+    for (let cc=c+1; cc<SIZE && grid[r][cc]===v; cc++) cnt++;
+    return cnt;
+  }
+  function matchLenV(r,c){
+    const v = grid[r][c];
+    if (v < 0) return 0;
+    let cnt = 1;
+    for (let rr=r-1; rr>=0 && grid[rr][c]===v; rr--) cnt++;
+    for (let rr=r+1; rr<SIZE && grid[rr][c]===v; rr++) cnt++;
+    return cnt;
+  }
+  function isMatchAt(r,c){
+    return matchLenH(r,c) >= 3 || matchLenV(r,c) >= 3;
+  }
+
+  function fillNoStartingMatches(){
+    for (let r=0; r<SIZE; r++){
+      for (let c=0; c<SIZE; c++){
+        let tries = 0;
+        do{
+          grid[r][c] = randColor();
+          tries++;
+        } while (isMatchAt(r,c) && tries < 30);
+      }
+    }
+  }
+
+  function render(){
+    boardEl.style.setProperty("--size", String(SIZE));
+    boardEl.innerHTML = "";
+
+    for (let r=0; r<SIZE; r++){
+      for (let c=0; c<SIZE; c++){
+        const color = grid[r][c];
+        const cell = document.createElement("div");
+        cell.className = "tile c" + color;
+        cell.dataset.r = String(r);
+        cell.dataset.c = String(c);
+        cell.setAttribute("role","button");
+        cell.setAttribute("aria-label", `方塊 ${r+1},${c+1}`);
+        boardEl.appendChild(cell);
+      }
+    }
+    updateUI();
+  }
+
+  function repaintAll(){
+    for (let r=0; r<SIZE; r++){
+      for (let c=0; c<SIZE; c++){
+        const el = getTileEl(r,c);
+        if (el) setTileClass(el, grid[r][c]);
+      }
+    }
+  }
+
+  /* =========================
+     Match / Clear / Drop
+  ========================= */
+  function findMatches(){
+    const toClear = new Set();
+
+    // horizontal
+    for (let r=0; r<SIZE; r++){
+      let c=0;
+      while (c < SIZE){
+        const v = grid[r][c];
+        let run = 1;
+        while (c+run < SIZE && grid[r][c+run] === v) run++;
+        if (v >= 0 && run >= 3){
+          for (let k=0; k<run; k++) toClear.add(`${r},${c+k}`);
+        }
+        c += run;
+      }
+    }
+
+    // vertical
+    for (let c=0; c<SIZE; c++){
+      let r=0;
+      while (r < SIZE){
+        const v = grid[r][c];
+        let run = 1;
+        while (r+run < SIZE && grid[r+run][c] === v) run++;
+        if (v >= 0 && run >= 3){
+          for (let k=0; k<run; k++) toClear.add(`${r+k},${c}`);
+        }
+        r += run;
+      }
+    }
+
+    return Array.from(toClear).map(s => {
+      const [r,c] = s.split(",").map(Number);
+      return {r,c};
+    });
+  }
+
+  function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+  async function animateClear(list){
+    for (const p of list){
+      const el = getTileEl(p.r,p.c);
+      if (el) el.style.opacity = "0.15";
+    }
+    await wait(110);
+    for (const p of list){
+      const el = getTileEl(p.r,p.c);
+      if (el) el.style.opacity = "";
+    }
+  }
+
+  function applyClear(list){
+    for (const {r,c} of list) grid[r][c] = -1;
+  }
+
+  function dropAndRefill(){
+    for (let c=0; c<SIZE; c++){
+      const col = [];
+      for (let r=SIZE-1; r>=0; r--){
+        if (grid[r][c] >= 0) col.push(grid[r][c]);
+      }
+      let r = SIZE-1;
+      for (const v of col){
+        grid[r][c] = v;
+        r--;
+      }
+      while (r >= 0){
+        grid[r][c] = randColor();
+        r--;
+      }
+    }
+  }
+
+  function tryBomCheck(){
+    while (score >= nextBom){
+      // 每跨一個萬分門檻觸發一次（可連續跨越）
+      playBomSound();
+      bomFlashEl.classList.add("show");
+      setTimeout(()=>bomFlashEl.classList.remove("show"), 220);
+      toast(`💥 BOM! 分數突破 ${nextBom.toLocaleString()}！`);
+      nextBom += 10000;
+    }
+  }
+
+  async function resolveBoard({allowComboReset=true} = {}){
+    if (allowComboReset) combo = 0;
+
+    let loopGuard = 0;
+    while (true){
+      const matches = findMatches();
+      if (matches.length === 0) break;
+
+      combo++;
+      updateUI();
+
+      playClearSound(matches.length);
+
+      const gained = matches.length * 10 * combo;
+      score += gained;
+      tryBomCheck();
+
+      toast(`消除 ${matches.length} 顆 +${gained}（連鎖 x${combo}）`);
+      updateUI();
+
+      await animateClear(matches);
+      applyClear(matches);
+      dropAndRefill();
+      repaintAll();
+
+      loopGuard++;
+      if (loopGuard > 40) break;
+      await wait(80);
+    }
+
+    if (combo === 0) toast("");
+  }
+
+  /* =========================
+     Move availability (Game Over)
+  ========================= */
+  function swapGrid(a,b){
+    const t = grid[a.r][a.c];
+    grid[a.r][a.c] = grid[b.r][b.c];
+    grid[b.r][b.c] = t;
+  }
+
+  function wouldMakeMatchBySwap(a,b){
+    swapGrid(a,b);
+    const ok = isMatchAt(a.r,a.c) || isMatchAt(b.r,b.c);
+    swapGrid(a,b);
+    return ok;
+  }
+
+  function hasAnyPossibleMove(){
+    for (let r=0; r<SIZE; r++){
+      for (let c=0; c<SIZE; c++){
+        const a = {r,c};
+        if (c+1 < SIZE){
+          const b = {r,c:c+1};
+          if (wouldMakeMatchBySwap(a,b)) return true;
+        }
+        if (r+1 < SIZE){
+          const b = {r:r+1,c};
+          if (wouldMakeMatchBySwap(a,b)) return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function triggerGameOver(){
+    if (!running || ended) return;
+    running = false;
+    ended = true;
+    locked = true;
+    clearSelection();
+    setStateText("Game Over");
+    showOverlay("GAME OVER", "盤面沒有任何可形成三消的交換。<br>請按「遊戲結束」記錄分數，或按「重新開始」。");
+    stopTimer();
+    btnEnd.disabled = false;     // 讓你能按結束記錄
+    btnStart.disabled = true;
+    btnReshuffle.disabled = true;
+  }
+
+  async function postActionCheckGameOver(){
+    // 先確保盤面已無現成三消
+    //（正常流程 resolveBoard 會清完）
+    if (!hasAnyPossibleMove()){
+      triggerGameOver();
+    }
+  }
+
+  /* =========================
+     Swap + validation
+  ========================= */
+  function markBadSwap(a,b){
+    const elA = getTileEl(a.r,a.c);
+    const elB = getTileEl(b.r,b.c);
+    if (elA) { elA.classList.add("bad"); setTimeout(()=>elA.classList.remove("bad"), 220); }
+    if (elB) { elB.classList.add("bad"); setTimeout(()=>elB.classList.remove("bad"), 220); }
+  }
+
+  function swapVisual(a,b){
+    const elA = getTileEl(a.r,a.c);
+    const elB = getTileEl(b.r,b.c);
+    if (elA) setTileClass(elA, grid[a.r][a.c]);
+    if (elB) setTileClass(elB, grid[b.r][b.c]);
+  }
+
+  async function trySwap(a,b){
+    if (locked || !running || ended) return;
+    locked = true;
+
+    swapGrid(a,b);
+    swapVisual(a,b);
+    await wait(70);
+
+    const matches = findMatches();
+    if (matches.length === 0){
+      playBadSwapSound();
+      markBadSwap(a,b);
+      swapGrid(a,b);
+      swapVisual(a,b);
+      locked = false;
+      toast("沒有形成消除（換回來）");
+      return;
+    }
+
+    moves++;
+    updateUI();
+    clearSelection();
+
+    await resolveBoard({allowComboReset:true});
+    locked = false;
+
+    await postActionCheckGameOver();
+  }
+
+  /* =========================
+     Reshuffle once (auto clear if has 3)
+  ========================= */
+  async function reshuffleOnce(){
+    if (!running || ended || locked) return;
+    if (reshuffleLeft <= 0) return;
+
+    locked = true;
+    reshuffleLeft--;
+    updateUI();
+    btnReshuffle.disabled = (reshuffleLeft <= 0);
+
+    // Flatten & shuffle
+    const arr = [];
+    for (let r=0; r<SIZE; r++) for (let c=0; c<SIZE; c++) arr.push(grid[r][c]);
+
+    function fyShuffle(a){
+      for (let i=a.length-1; i>0; i--){
+        const j = Math.floor(Math.random() * (i+1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+    }
+
+    let tries = 0;
+    do{
+      fyShuffle(arr);
+      let k=0;
+      for (let r=0; r<SIZE; r++){
+        for (let c=0; c<SIZE; c++){
+          grid[r][c] = arr[k++];
+        }
+      }
+      tries++;
+      // 我們希望「至少有得走」；不然重整完直接 Game Over 太靠北
+      // 也避免盤面一出來就完全死盤
+    } while (!hasAnyPossibleMove() && tries < 12);
+
+    repaintAll();
+    clearSelection();
+
+    toast("已重整（若有三消會自動消除）");
+
+    // 你要求：重整畫面如有3個就自動消除
+    await resolveBoard({allowComboReset:true});
+
+    locked = false;
+
+    await postActionCheckGameOver();
+  }
+
+  /* =========================
+     Timer
+  ========================= */
+  function startTimer(){
+    stopTimer();
+    startTs = Date.now();
+    timerId = setInterval(() => {
+      const ms = Date.now() - startTs;
+      timeEl.textContent = fmtMMSS(ms);
+    }, 250);
+  }
+  function stopTimer(){
+    if (timerId){
+      clearInterval(timerId);
+      timerId = null;
+    }
+  }
+  function getElapsedMs(){
+    if (!startTs) return 0;
+    return Math.max(0, Date.now() - startTs);
+  }
+
+  /* =========================
+     Records (Top 3)
+     - user said "不用 json" (no export/import). localStorage still uses string.
+  ========================= */
+  function loadRecords(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      // sanitize minimal
+      return arr
+        .map(x => ({
+          score: Number(x?.score ?? 0),
+          time: String(x?.time ?? "00:00")
+        }))
+        .filter(x => Number.isFinite(x.score) && typeof x.time === "string");
+    }catch{
+      return [];
+    }
+  }
+
+  function saveRecords(arr){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }catch{
+      // ignore
+    }
+  }
+
+  function updateBestUI(){
+    const recs = loadRecords();
+    if (!recs.length){
+      bestListEl.textContent = "尚無紀錄";
+      return;
+    }
+    const lines = recs.slice(0,3).map((r,i) => {
+      const rank = i+1;
+      const s = String(r.score).padStart(5, " ");
+      return `${rank}. ${s} 分｜${r.time}`;
+    });
+    bestListEl.textContent = lines.join("\n");
+  }
+
+  function recordThisRun(){
+    const elapsed = fmtMMSS(getElapsedMs());
+    const recs = loadRecords();
+
+    recs.push({ score, time: elapsed });
+
+    // Sort: score desc; if tie, shorter time first (optional). We'll parse mm:ss.
+    function timeToSec(t){
+      const m = Number((t||"").split(":")[0] || 0);
+      const s = Number((t||"").split(":")[1] || 0);
+      return m*60 + s;
+    }
+
+    recs.sort((a,b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return timeToSec(a.time) - timeToSec(b.time);
+    });
+
+    const top3 = recs.slice(0,3);
+    saveRecords(top3);
+    updateBestUI();
+
+    toast(`已記錄：${score} 分｜${elapsed}（只保留最高前 3 次）`);
+  }
+
+  /* =========================
+     Game control
+  ========================= */
+  function setButtonsForStandby(){
+    btnStart.disabled = false;
+    btnEnd.disabled = true;
+    btnReshuffle.disabled = true;
+  }
+
+  function setButtonsForRunning(){
+    btnStart.disabled = true;
+    btnEnd.disabled = false;
+    btnReshuffle.disabled = (reshuffleLeft <= 0);
+  }
+
+  function setButtonsForEnded(){
+    btnStart.disabled = true;
+    btnEnd.disabled = false;
+    btnReshuffle.disabled = true;
+  }
+
+  function resetBoardFresh(){
+    makeEmptyGrid();
+    fillNoStartingMatches();
+    render();
+
+    // 如果剛好洗到沒得走，重洗幾次（不算你的「重整」）
+    let guard = 0;
+    while (!hasAnyPossibleMove() && guard < 12){
+      fillNoStartingMatches();
+      repaintAll();
+      guard++;
+    }
+  }
+
+  function restartAll(){
+    locked = false;
+    running = false;
+    ended = false;
+    selected = null;
+
+    score = 0;
+    moves = 0;
+    combo = 0;
+    reshuffleLeft = 1;
+    nextBom = 10000;
+
+    timeEl.textContent = "00:00";
+    stopTimer();
+
+    hideOverlay();
+    toast("");
+    setStateText("待機");
+    setButtonsForStandby();
+    updateUI();
+
+    resetBoardFresh();
+    updateBestUI();
+  }
+
+  function startGame(){
+    ensureAudio(); // iOS needs user gesture here
+    if (running || ended) return;
+
+    running = true;
+    ended = false;
+    locked = false;
+    hideOverlay();
+
+    score = 0;
+    moves = 0;
+    combo = 0;
+    nextBom = 10000;
+
+    timeEl.textContent = "00:00";
+    startTimer();
+
+    setStateText("遊戲中");
+    setButtonsForRunning();
+    updateUI();
+    toast("開始！");
+
+    // 開局保證沒有現成三消（我們本來就避免），但保險檢查：若有就清掉
+    (async () => {
+      locked = true;
+      await resolveBoard({allowComboReset:true});
+      locked = false;
+      await postActionCheckGameOver();
+    })();
+  }
+
+  function endGameAndRecord(){
+    if (!running && !ended){
+      // standby: nothing to record
+      toast("尚未開始遊戲");
+      return;
+    }
+
+    // stop game
+    running = false;
+    ended = true;
+    locked = true;
+    clearSelection();
+    stopTimer();
+
+    setStateText("已結束");
+    setButtonsForEnded();
+
+    hideOverlay(); // 你按結束就回到正常畫面
+    recordThisRun();
+  }
+
+  /* =========================
+     Board interaction
+  ========================= */
+  boardEl.addEventListener("click", async (e) => {
+    const t = e.target.closest(".tile");
+    if (!t) return;
+    if (locked || !running || ended) return;
+
+    const r = Number(t.dataset.r);
+    const c = Number(t.dataset.c);
+
+    if (!selected){
+      select(r,c);
+      toast("已選取一顆，點相鄰方塊交換");
+      return;
+    }
+
+    const a = selected;
+    const b = {r,c};
+
+    if (a.r === b.r && a.c === b.c){
+      clearSelection();
+      toast("");
+      return;
+    }
+
+    if (!areAdjacent(a,b)){
+      select(r,c);
+      toast("請選相鄰方塊交換");
+      return;
+    }
+
+    await trySwap(a,b);
+  });
+
+  /* =========================
+     Buttons
+  ========================= */
+  btnRestart.addEventListener("click", () => {
+    // restart always resets everything, not recording
+    restartAll();
+  });
+
+  btnStart.addEventListener("click", () => {
+    // start uses existing board; but you can restart to get a new board
+    startGame();
+  });
+
+  btnEnd.addEventListener("click", () => {
+    endGameAndRecord();
+  });
+
+  btnReshuffle.addEventListener("click", async () => {
+    ensureAudio(); // user gesture
+    await reshuffleOnce();
+  });
+
+  /* =========================
+     Init
+  ========================= */
+  restartAll();
+
+})();
+</script>
+</body>
+</html>
