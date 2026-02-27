@@ -375,7 +375,7 @@
     }
   }
 
-  function beep(freq=660, dur=0.06, type="sine", gain=0.05){
+  function beep(freq=660, dur=0.06, type="sine", gain=0.25){
     if (!audioCtx) return;
     const t0 = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
