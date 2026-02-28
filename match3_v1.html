@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>無限消消樂（Candy風）｜v1</title>
+<link rel="stylesheet" href="./match3_v1.css" />
+</head>
+
+<body>
+<div id="bombOverlay">BOM！恭喜破萬</div>
+
+<div id="gameOverOverlay" aria-hidden="true">
+  <div class="go_card">
+    <div class="go_title">遊戲結束</div>
+    <div class="go_meta" id="goMeta">—</div>
+    <div class="go_btns">
+      <button class="btn" id="btnStart2">開始遊戲</button>
+      <button class="btn" id="btnCloseGO">關閉</button>
+    </div>
+  </div>
+</div>
+
+<div id="comboFloat"></div>
+
+<div class="wrap">
+  <header>
+    <div class="titlebox">
+      <h1>無限消消樂（Candy風）</h1>
+      <div class="sub" id="statusText">未開始</div>
+    </div>
+
+    <div class="panel">
+      <button class="btn" id="btnStart">開始遊戲</button>
+      <button class="btn" id="btnEnd" disabled>遊戲結束</button>
+      <button class="btn" id="btnNew">重新開局</button>
+      <button class="btn" id="btnHint">提示</button>
+      <button class="btn" id="btnShuffle">洗牌</button>
+      <label class="toggle" title="開/關音效（第一次點擊後才會啟動音訊）">
+        <input type="checkbox" id="soundOn" checked>
+        音效
+      </label>
+    </div>
+  </header>
+
+  <div class="hud">
+    <div class="card">
+      <div class="metric">
+        <div class="label">分數</div>
+        <div class="value" id="score">0</div>
+      </div>
+      <div class="mini">連鎖越多分越高</div>
+    </div>
+
+    <div class="card">
+      <div class="metric">
+        <div class="label">連鎖</div>
+        <div class="value" id="combo">0</div>
+      </div>
+      <div class="mini">每次連續消除 +1</div>
+    </div>
+
+    <div class="card">
+      <div class="metric">
+        <div class="label">最高前三</div>
+        <div class="value" id="best">0</div>
+      </div>
+      <div class="mini" id="top3Text">—</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="boardWrap">
+      <div class="board" id="board" aria-label="match3 board"></div>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <div class="how">
+          <b>特殊糖</b><br/>
+          4連 → 條紋（清整行/整列）<br/>
+          5連 → 彩球（清同色全部）<br/>
+          T/L形 → 包裝（爆 3×3）
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="how">
+          <b>備註</b><br/>
+          ・破萬只提示，繼續玩<br/>
+          ・按「遊戲結束」才紀錄分數+時間
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./match3_v1.js"></script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+:root{
+  --bg:#f7f3f7;
+  --card:#ffffff;
+  --ink:#1f1f1f;
+  --muted:#6b6b6b;
+  --line:#e6d8e6;
+  --shadow:0 12px 30px rgba(0,0,0,.10);
+
+  --tile: 52px;
+  --gap: 8px;
+  --radius: 14px;
+  --board-pad: 12px;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
+  background: radial-gradient(1200px 600px at 20% 0%, #ffffff 0%, var(--bg) 55%, #f0e7f0 100%);
+  color:var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wrap{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-bottom: 28px;
+}
+
+header{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  margin-bottom: 14px;
+}
+
+.titlebox{ display:flex; flex-direction:column; gap:6px; }
+h1{ margin:0; font-size: 20px; letter-spacing: .2px; }
+.sub{ color:var(--muted); font-size: 12.5px; line-height: 1.35; }
+
+.panel{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:flex-end;
+}
+
+.btn{
+  appearance:none;
+  border:1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.06);
+  cursor:pointer;
+  user-select:none;
+}
+.btn:active{ transform: translateY(1px); }
+.btn[disabled]{ opacity:.45; cursor:not-allowed; }
+
+.toggle{
+  display:flex; align-items:center; gap:8px;
+  border:1px solid var(--line);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 8px 10px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.06);
+  user-select:none;
+}
+.toggle input{ width:18px; height:18px; }
+
+.hud{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:10px;
+  margin: 10px 0 14px;
+}
+
+.card{
+  background: var(--card);
+  border:1px solid var(--line);
+  border-radius: 16px;
+  padding: 10px 12px;
+  box-shadow: var(--shadow);
+  min-height: 56px;
+}
+
+.metric{
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap:10px;
+}
+.label{ color: var(--muted); font-size: 12px; }
+.value{ font-weight: 800; font-size: 18px; letter-spacing: .2px; }
+
+.mini{
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.main{
+  display:grid;
+  grid-template-columns: 1fr 260px;
+  gap: 14px;
+  align-items:start;
+}
+
+.boardWrap{
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfa 100%);
+  border:1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: var(--board-pad);
+  overflow:hidden;
+}
+
+.board{
+  display:grid;
+  grid-template-columns: repeat(8, var(--tile));
+  grid-template-rows: repeat(8, var(--tile));
+  gap: var(--gap);
+  justify-content:center;
+  align-content:center;
+  user-select:none;
+  touch-action: manipulation;
+}
+
+.cell{
+  width: var(--tile);
+  height: var(--tile);
+  border-radius: var(--radius);
+  position:relative;
+  cursor:pointer;
+  outline: none;
+}
+
+/* 糖果基礎 */
+.candy{
+  width:100%;
+  height:100%;
+  border-radius: var(--radius);
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow:
+    inset 0 10px 18px rgba(255,255,255,.55),
+    inset 0 -10px 18px rgba(0,0,0,.10),
+    0 10px 18px rgba(0,0,0,.10);
+  position:relative;
+}
+
+/* 粉嫩顏色 */
+.t0{ background: linear-gradient(180deg,#ff78a2,#ff3c6d);}
+.t1{ background: linear-gradient(180deg,#ffd08a,#ff9a3a);}
+.t2{ background: linear-gradient(180deg,#8eeaff,#2cc8ff);}
+.t3{ background: linear-gradient(180deg,#b8ffb0,#4fe07b);}
+.t4{ background: linear-gradient(180deg,#d3a3ff,#9a5bff);}
+.t5{ background: linear-gradient(180deg,#fff2a6,#ffd86a);}
+
+.selected{
+  outline: 3px solid rgba(20,20,20,.35);
+}
+
+.badge{
+  position:absolute;
+  right:6px;
+  bottom:6px;
+  font-size:11px;
+  font-weight:900;
+  background:rgba(255,255,255,.85);
+  border-radius:999px;
+  padding:2px 6px;
+}
+
+/* 特殊糖效果 */
+.striped-h::before,
+.striped-v::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.8;
+}
+.striped-h::before{
+  background: repeating-linear-gradient(90deg, transparent 0 8px, #fff 8px 14px);
+}
+.striped-v::before{
+  background: repeating-linear-gradient(0deg, transparent 0 8px, #fff 8px 14px);
+}
+
+.wrapped::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(45deg, transparent 40%, #fff 45%, transparent 50%),
+    linear-gradient(-45deg, transparent 40%, #fff 45%, transparent 50%);
+  opacity:.8;
+}
+
+.colorbomb{
+  background: linear-gradient(180deg,#3b2b22,#2c1d16);
+}
+
+/* 破萬提示 */
+#bombOverlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.8);
+  color:#fff;
+  font-size:40px;
+  z-index:9999;
+}
+
+/* combo */
+#comboFloat{
+  position:fixed;
+  left:50%;
+  top:40%;
+  transform:translate(-50%,-50%);
+  font-weight:900;
+  font-size:28px;
+  color:#ff3c6d;
+  opacity:0;
+  pointer-events:none;
+}
+
+/* game over */
+#gameOverOverlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.55);
+  z-index:9998;
+}
+
+.go_card{
+  background:#fff;
+  padding:16px;
+  border-radius:16px;
+  width:320px;
+  text-align:center;
+}
+.go_title{ font-weight:900; margin-bottom:8px; }
+.go_meta{ font-size:14px; margin-bottom:12px; }
+
+@media (max-width:420px){
+  :root{ --tile: 44px; }
+  .hud{ grid-template-columns:1fr; }
+}
