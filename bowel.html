@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>排便紀錄｜健康追蹤</title>
+
+<style>
+:root{
+  --bg:#f4f4f2;
+  --card:#ffffff;
+  --ink:#222;
+  --muted:#666;
+  --line:#ddd;
+  --accent:#5c7c77;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+.wrap{
+  max-width:600px;
+  margin:40px auto;
+  padding:16px;
+}
+
+h1{
+  font-size:22px;
+  margin-bottom:8px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  padding:16px;
+  margin-bottom:16px;
+  border-radius:12px;
+}
+
+.status{
+  font-size:18px;
+  font-weight:600;
+}
+
+.muted{
+  color:var(--muted);
+  font-size:14px;
+}
+
+button{
+  padding:8px 12px;
+  border:1px solid var(--line);
+  background:#fff;
+  cursor:pointer;
+  border-radius:8px;
+  margin-right:6px;
+}
+
+button.primary{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+}
+
+input{
+  padding:6px;
+  border:1px solid var(--line);
+  border-radius:6px;
+}
+
+.record{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 0;
+  border-bottom:1px solid var(--line);
+  font-size:14px;
+}
+
+.footer{
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+  margin-top:24px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<h1>排便紀錄</h1>
+<div class="muted">用於日常健康追蹤</div>
+
+<div class="card">
+  <div id="status" class="status">尚無紀錄</div>
+</div>
+
+<div class="card">
+  <button class="primary" id="addNow">新增現在時間</button>
+  <br><br>
+  <input type="datetime-local" id="manualTime">
+  <button id="addManual">新增指定時間</button>
+</div>
+
+<div class="card">
+  <div class="muted">紀錄列表</div>
+  <div id="recordList"></div>
+  <br>
+  <button id="clearAll">清空全部紀錄</button>
+</div>
+
+<div class="footer">資料僅儲存在本機裝置</div>
+
+</div>
+
+<script>
+const STORAGE_KEY = "health_bowel_records_v1";
+
+let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+function formatTime(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,"0");
+  const d = String(date.getDate()).padStart(2,"0");
+  const h = String(date.getHours()).padStart(2,"0");
+  const min = String(date.getMinutes()).padStart(2,"0");
+  return `${y}-${m}-${d} ${h}:${min}`;
+}
+
+function updateStatus(){
+  if(records.length === 0){
+    document.getElementById("status").textContent = "尚無紀錄";
+    return;
+  }
+
+  const last = new Date(records[records.length-1]);
+  const now = new Date();
+  const diff = now - last;
+
+  const minutes = Math.floor(diff/60000)%60;
+  const hours = Math.floor(diff/3600000)%24;
+  const days = Math.floor(diff/86400000);
+
+  document.getElementById("status").textContent =
+    `距離上次排便已過 ${days} 天 ${hours} 小時 ${minutes} 分鐘`;
+}
+
+function render(){
+  const list = document.getElementById("recordList");
+  list.innerHTML = "";
+
+  records.forEach((time, index)=>{
+    const div = document.createElement("div");
+    div.className = "record";
+
+    const span = document.createElement("span");
+    span.textContent = formatTime(new Date(time));
+
+    const btn = document.createElement("button");
+    btn.textContent = "刪除";
+    btn.onclick = ()=>{
+      records.splice(index,1);
+      save();
+      render();
+      updateStatus();
+    };
+
+    div.appendChild(span);
+    div.appendChild(btn);
+    list.appendChild(div);
+  });
+}
+
+document.getElementById("addNow").onclick = ()=>{
+  records.push(new Date().toISOString());
+  records.sort();
+  save();
+  render();
+  updateStatus();
+};
+
+document.getElementById("addManual").onclick = ()=>{
+  const value = document.getElementById("manualTime").value;
+  if(!value) return;
+
+  records.push(new Date(value).toISOString());
+  records.sort();
+  save();
+  render();
+  updateStatus();
+};
+
+document.getElementById("clearAll").onclick = ()=>{
+  if(confirm("確定要清空所有紀錄嗎？")){
+    records = [];
+    save();
+    render();
+    updateStatus();
+  }
+};
+
+render();
+updateStatus();
+</script>
+
+</body>
+</html>
