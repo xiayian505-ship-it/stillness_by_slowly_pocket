@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>無限消消樂（Candy風）｜單檔</title>
+<title>無限消消樂（Candy風）｜單檔 v3</title>
 <style>
   :root{
     --bg:#f5f5f3;
@@ -123,6 +123,8 @@
     color: var(--muted);
     font-size: 12px;
     margin-top: 6px;
+    line-height: 1.35;
+    word-break: break-word;
   }
 
   .main{
@@ -341,10 +343,50 @@
     60%{ transform: scale(1.10); }
     100%{ transform: scale(0.92); opacity:.35; }
   }
+
+  /* ===== v3 新增：萬分 BOM 與 combo 浮字 ===== */
+  #bombOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.86);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:44px;
+    font-weight:900;
+    color:#fff;
+    z-index:9999;
+    padding:24px;
+  }
+  #comboFloat{
+    position:fixed;
+    left:50%;
+    top:38%;
+    transform:translate(-50%,-50%);
+    opacity:0;
+    pointer-events:none;
+    z-index:9998;
+    font-weight:900;
+    letter-spacing:.6px;
+    color:#ff2a55;
+    text-shadow: 0 8px 22px rgba(0,0,0,.20);
+  }
+  .comboShow{
+    animation: comboPop .45s ease-out;
+  }
+  @keyframes comboPop{
+    0%{ opacity:0; transform:translate(-50%,-50%) scale(.85); filter:brightness(1); }
+    40%{ opacity:1; transform:translate(-50%,-55%) scale(1.08); filter:brightness(1.05); }
+    100%{ opacity:0; transform:translate(-50%,-62%) scale(1.02); filter:brightness(1); }
+  }
 </style>
 </head>
 
 <body>
+<div id="bombOverlay">BOM！恭喜破萬</div>
+<div id="comboFloat"></div>
+
 <div class="wrap">
   <header>
     <div class="titlebox">
@@ -381,12 +423,14 @@
       </div>
       <div class="mini">每次連續消除 +1</div>
     </div>
+
+    <!-- v3：維持原本「最高分」卡片位置，但改成顯示「前三名（含時間）」 -->
     <div class="card">
       <div class="metric">
-        <div class="label">最高分</div>
+        <div class="label">最高前三</div>
         <div class="value" id="best">0</div>
       </div>
-      <div class="mini">本機保存（localStorage）</div>
+      <div class="mini" id="top3Text">—</div>
     </div>
   </div>
 
@@ -436,29 +480,30 @@
 <script>
 (() => {
   /* =========================
-     無限消消樂（Candy風）｜單檔
-     - 8x8
-     - 普通糖 6 色
-     - 特殊糖：條紋(行/列)、包裝(3x3)、彩球(清色)
-     - WebAudio 音效（無外部檔）
-     - 無步自動洗牌
+     無限消消樂（Candy風）｜單檔 v3
+     - 原玩法全保留
+     - v3：TOP3(含時間)、破萬BOM、combo浮字、key隔離
   ========================= */
 
   const SIZE = 8;
   const COLORS = 6;
 
-  // localStorage key（專案隔離 + 版本）
-  const BEST_KEY = "sbs_endless_match3_best_v1";
+  // ===== v3 localStorage key（專案隔離 + 版本）=====
+  const TOP3_KEY = "sbs_endless_match3_top3_v3";
 
   const boardEl = document.getElementById("board");
   const scoreEl = document.getElementById("score");
   const comboEl = document.getElementById("combo");
   const bestEl  = document.getElementById("best");
+  const top3TextEl = document.getElementById("top3Text");
 
   const btnNew = document.getElementById("btnNew");
   const btnHint = document.getElementById("btnHint");
   const btnShuffle = document.getElementById("btnShuffle");
   const soundOnEl = document.getElementById("soundOn");
+
+  const bombOverlayEl = document.getElementById("bombOverlay");
+  const comboFloatEl  = document.getElementById("comboFloat");
 
   // cell model:
   // { c: 0..COLORS-1 | null, sp: null|"sh"|"sv"|"w"|"b" }  sh=striped-h, sv=striped-v, w=wrapped, b=colorbomb
@@ -470,11 +515,11 @@
 
   let score = 0;
   let combo = 0;
-  let best = Number(localStorage.getItem(BEST_KEY) || 0);
 
-  bestEl.textContent = best;
-
-  /* ===== WebAudio（簡單合成音效）===== */
+  // v3：用「本局開始時間」記錄秒數
+  let runStartMs = Date.now();
+  let bombTriggered = false;
+	  /* ===== WebAudio（簡單合成音效）===== */
   let audioCtx = null;
   function ensureAudio(){
     if(!soundOnEl.checked) return null;
@@ -501,11 +546,13 @@
     o.connect(g); g.connect(ctx.destination);
     o.start(t0); o.stop(t0 + dur + 0.02);
   }
+
   function sfxSwap(){ playTone({freq:520, dur:0.06, type:"triangle", gain:0.10, slide:0.8}); }
   function sfxBad(){ playTone({freq:180, dur:0.10, type:"sawtooth", gain:0.06, slide:0.7}); }
+
+  // v3：sfxPop 依 combo 升調（combo 效果）
   function sfxPop(n=1){
-    // 多顆連消：疊個小音階
-    const base = 520;
+    const base = 520 * (1 + Math.min(10, combo) * 0.04);
     for(let i=0;i<Math.min(6,n);i++){
       setTimeout(()=>playTone({freq: base*(1+i*0.12), dur:0.06, type:"square", gain:0.07, slide:0.95}), i*18);
     }
@@ -523,10 +570,80 @@
     setTimeout(()=>playTone({freq:540, dur:0.08, type:"triangle", gain:0.06, slide:1.1}), 60);
   }
 
+  /* ===== v3：TOP3（含時間）===== */
+  function readTop3(){
+    try{
+      const arr = JSON.parse(localStorage.getItem(TOP3_KEY) || "[]");
+      return Array.isArray(arr) ? arr : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function fmtTime(sec){
+    sec = Math.max(0, sec|0);
+    const m = Math.floor(sec/60);
+    const s = sec%60;
+    return (m>0) ? `${m}分${String(s).padStart(2,"0")}秒` : `${s}秒`;
+  }
+
+  function refreshTop3UI(){
+    const top3 = readTop3();
+    const top1 = top3[0]?.score ?? 0;
+    bestEl.textContent = String(top1);
+
+    if(top3.length===0){
+      top3TextEl.textContent = "—";
+      return;
+    }
+
+    const lines = top3.map((x,i)=>`#${i+1} ${x.score}（${fmtTime(x.time)}）`);
+    top3TextEl.textContent = lines.join("｜");
+  }
+
+  function saveTop3CurrentScore(){
+    const playSec = Math.floor((Date.now() - runStartMs) / 1000);
+    let top3 = readTop3();
+    top3.push({ score, time: playSec });
+
+    top3.sort((a,b)=>{
+      if(b.score!==a.score) return b.score-a.score;
+      return a.time-b.time; // 同分：時間短的排前面
+    });
+
+    top3 = top3.slice(0,3);
+    localStorage.setItem(TOP3_KEY, JSON.stringify(top3));
+    refreshTop3UI();
+  }
+
+  /* ===== v3：破萬 BOM ===== */
+  function checkBomb(){
+    if(bombTriggered) return;
+    if(score < 10000) return;
+    bombTriggered = true;
+
+    // 入榜（含時間）
+    saveTop3CurrentScore();
+
+    // 顯示 BOM 5 秒後刷新
+    bombOverlayEl.style.display = "flex";
+    setTimeout(()=>location.reload(), 5000);
+  }
+
+  /* ===== v3：combo 浮字 ===== */
+  function showComboFloat(){
+    if(combo<=1) return;
+    comboFloatEl.textContent = `COMBO ×${combo}`;
+    comboFloatEl.style.fontSize = `${Math.min(64, 22 + combo*6)}px`;
+    comboFloatEl.classList.remove("comboShow");
+    // reflow
+    void comboFloatEl.offsetWidth;
+    comboFloatEl.classList.add("comboShow");
+  }
+
   /* ===== helpers ===== */
   const inBounds = (r,c)=> r>=0 && r<SIZE && c>=0 && c<SIZE;
   const key = (r,c)=> r*SIZE + c;
-  const cloneCell = (cell)=> ({ c: cell.c, sp: cell.sp });
 
   function randColor(){
     return Math.floor(Math.random()*COLORS);
@@ -567,7 +684,6 @@
         el.classList.toggle("selected", !!selected && selected.r===r && selected.c===c);
         el.classList.remove("hint");
 
-        // clear children
         el.innerHTML = "";
 
         if(cell.c===null && cell.sp!=="b"){
@@ -586,7 +702,6 @@
           if(cell.sp==="w")  candy.classList.add("wrapped");
         }
 
-        // badge
         if(cell.sp){
           const b = document.createElement("div");
           b.className = "badge";
@@ -602,14 +717,6 @@
     }
     scoreEl.textContent = score;
     comboEl.textContent = combo;
-    bestEl.textContent = best;
-  }
-
-  function setBestIfNeeded(){
-    if(score>best){
-      best = score;
-      localStorage.setItem(BEST_KEY, String(best));
-    }
   }
 
   /* ===== 初始化：避免開局就有三連 ===== */
@@ -632,12 +739,10 @@
     const cell = grid[r][c];
     if(cell.sp==="b") return false;
     const color = cell.c;
-    // check horizontal 3 ending at (r,c)
     if(c>=2){
       const a=grid[r][c-1], b=grid[r][c-2];
       if(a.sp!=="b" && b.sp!=="b" && a.c===color && b.c===color) return true;
     }
-    // check vertical
     if(r>=2){
       const a=grid[r-1][c], b=grid[r-2][c];
       if(a.sp!=="b" && b.sp!=="b" && a.c===color && b.c===color) return true;
@@ -649,14 +754,13 @@
   function onCellDown(e){
     if(busy) return;
 
-    // 讓 iOS 上第一次互動就能啟動音訊
+    // iOS：第一次互動才可啟動音訊
     ensureAudio();
 
     const el = e.currentTarget;
     const r = Number(el.dataset.r);
     const c = Number(el.dataset.c);
 
-    // 若點到空（理論上不會）
     if(grid[r][c].c===null && grid[r][c].sp!=="b") return;
 
     if(!selected){
@@ -665,21 +769,18 @@
       return;
     }
 
-    // 同格：取消
     if(selected.r===r && selected.c===c){
       selected = null;
       render();
       return;
     }
 
-    // 非相鄰：改選
     if(Math.abs(selected.r-r)+Math.abs(selected.c-c)!==1){
       selected = {r,c};
       render();
       return;
     }
 
-    // 相鄰：嘗試交換
     const a = selected;
     const b = {r,c};
     selected = null;
@@ -695,7 +796,6 @@
     render();
     sfxSwap();
 
-    // 特殊組合：彩球
     const ca = grid[a.r][a.c];
     const cb = grid[b.r][b.c];
 
@@ -709,7 +809,6 @@
 
     const matches = findAllMatches();
     if(matches.groups.length===0){
-      // swap back
       swapCells(a,b);
       render();
       sfxBad();
@@ -729,8 +828,6 @@
   }
 
   async function maybeTriggerSpecialOnSwap(a,b, ca, cb){
-    // 彩球（b）與任意顏色交換：清掉那個顏色全盤
-    // 彩球與彩球：清全盤（簡化）
     if(ca.sp==="b" && cb.sp==="b"){
       await triggerClearAll();
       return true;
@@ -744,25 +841,25 @@
       return true;
     }
 
-    // 條紋/包裝彼此交換也可觸發（簡化：各自引爆一次）
     if(ca.sp && cb.sp && ca.sp!=="b" && cb.sp!=="b"){
       await triggerSpecialAt(a);
       await triggerSpecialAt(b);
       return true;
     }
-
     return false;
   }
-
-  async function resolveCascades(initialMatches=null){
+	
+	  async function resolveCascades(initialMatches=null){
     combo = 0;
     let matches = initialMatches || findAllMatches();
     while(matches.groups.length>0){
       combo++;
-      // 先依 matches 產生特殊糖（優先：5連彩球、4連條紋、T/L 包裝）
+
+      // v3：combo 效果（浮字）
+      showComboFloat();
+
       const specialsToCreate = computeSpecialCreations(matches);
 
-      // 要消除的格子集合
       const toClear = new Set();
       for(const g of matches.groups){
         for(const pos of g.cells){
@@ -770,25 +867,21 @@
         }
       }
 
-      // 消除時若掃到特殊糖，也要觸發效果（仿原作感）
-      // 注意：避免無限遞迴：本輪只把觸發加到擴張集合
       const expanded = await expandByTriggeredSpecials(toClear);
 
-      // 應用消除（但保留要生成特殊糖的位置）
       const preserve = new Set(specialsToCreate.map(s=> key(s.r,s.c)));
-
       const clearedCount = applyClear(expanded, preserve);
 
-      // 生成特殊糖
       for(const s of specialsToCreate){
         grid[s.r][s.c] = { c: s.color, sp: s.sp };
       }
 
-      // 分數
       const base = 10;
       const gain = clearedCount * base * combo;
       score += gain;
-      setBestIfNeeded();
+
+      // v3：破萬檢查（達標就 BOM + 5 秒刷新）
+      checkBomb();
 
       sfxPop(Math.min(6, clearedCount));
       if(specialsToCreate.length>0) sfxSpecial();
@@ -796,12 +889,10 @@
       render();
       await sleep(120);
 
-      // 掉落補空
       dropDownAndFill();
       render();
       await sleep(120);
 
-      // 下一輪
       matches = findAllMatches();
     }
   }
@@ -810,19 +901,16 @@
 
   function applyClear(toClearSet, preserveSet){
     let count = 0;
-    for(const k of toClearSet){
-      if(preserveSet.has(k)) continue;
-      const r = Math.floor(k / SIZE);
-      const c = k % SIZE;
+    for(const k0 of toClearSet){
+      if(preserveSet.has(k0)) continue;
+      const r = Math.floor(k0 / SIZE);
+      const c = k0 % SIZE;
       if(grid[r][c].c!==null || grid[r][c].sp==="b"){
         grid[r][c] = {c:null, sp:null};
         count++;
-        // pop animation
         const el = domCells[key(r,c)];
         const candy = el.querySelector(".candy");
-        if(candy){
-          candy.classList.add("pop");
-        }
+        if(candy) candy.classList.add("pop");
       }
     }
     return count;
@@ -830,7 +918,6 @@
 
   function dropDownAndFill(){
     for(let c=0;c<SIZE;c++){
-      // collect existing from bottom to top
       const stack = [];
       for(let r=SIZE-1;r>=0;r--){
         const cell = grid[r][c];
@@ -838,27 +925,20 @@
           stack.push(cell);
         }
       }
-      // refill column from bottom
       for(let r=SIZE-1;r>=0;r--){
         if(stack.length){
           grid[r][c] = stack.shift();
         }else{
-          // generate new (normal only)
           grid[r][c] = {c: randColor(), sp:null};
         }
       }
     }
-
-    // 防止填完就自動出現匹配導致「永遠自動消」：允許，但我們可稍微減少開局式暴走
-    // 這裡不強制去掉，讓連鎖更爽（更像 Candy）。
   }
 
   /* ===== match finding ===== */
   function findAllMatches(){
     const groups = [];
-    const marked = Array.from({length: SIZE}, ()=> Array(SIZE).fill(false));
 
-    // horizontal runs
     for(let r=0;r<SIZE;r++){
       let c=0;
       while(c<SIZE){
@@ -875,7 +955,6 @@
         if(len>=3){
           const cells=[];
           for(let x=c;x<j;x++){
-            marked[r][x]=true;
             cells.push({r,c:x});
           }
           groups.push({type:"h", len, cells});
@@ -884,7 +963,6 @@
       }
     }
 
-    // vertical runs
     for(let c=0;c<SIZE;c++){
       let r=0;
       while(r<SIZE){
@@ -901,7 +979,6 @@
         if(len>=3){
           const cells=[];
           for(let x=r;x<j;x++){
-            marked[x][c]=true;
             cells.push({r:x,c});
           }
           groups.push({type:"v", len, cells});
@@ -910,25 +987,14 @@
       }
     }
 
-    // 合併交叉（做 T/L 判定用）
-    // 我們在 computeSpecialCreations 內會再分析交叉。
-    return { groups, marked };
+    return { groups };
   }
 
-  /* ===== special creation ===== */
   function computeSpecialCreations(matches){
-    // 規則（簡化但有味道）：
-    // - 5 連（直或橫） => 彩球（sp="b"）
-    // - 4 連 => 條紋（隨機橫/直，或依連線方向）
-    // - T/L（交叉） => 包裝糖（sp="w"）
-    // 生成位置：取該組「交換後」落點更像原作，但我們沒有記錄交換方向；此處取群組中間。
-    // 避免同一格重複生成。
-
     const creations = [];
     const used = new Set();
 
-    // 建交叉映射：每格屬於哪些 group
-    const belong = new Map(); // k -> [groupIndex...]
+    const belong = new Map();
     matches.groups.forEach((g, idx)=>{
       g.cells.forEach(p=>{
         const k0 = key(p.r,p.c);
@@ -937,7 +1003,6 @@
       });
     });
 
-    // 先找 T/L：同格同色同時屬於一個水平+一個垂直 group
     for(const [k0, arr] of belong.entries()){
       if(arr.length<2) continue;
       const r = Math.floor(k0/SIZE), c = k0%SIZE;
@@ -945,16 +1010,13 @@
       if(cell.sp==="b") continue;
       const color = cell.c;
 
-      let hasH=false, hasV=false, total=0;
+      let hasH=false, hasV=false;
       for(const idx of arr){
         const g = matches.groups[idx];
         if(g.type==="h") hasH=true;
         if(g.type==="v") hasV=true;
-        // 交叉會重疊，此處只是估一個規模
-        total += g.len;
       }
       if(hasH && hasV){
-        // 交叉型：包裝糖
         if(!used.has(k0)){
           creations.push({r,c, sp:"w", color});
           used.add(k0);
@@ -962,18 +1024,16 @@
       }
     }
 
-    // 再處理 5連 / 4連（但若該格已生成包裝糖，就略過）
     for(const g of matches.groups){
       if(g.len>=5){
         const mid = g.cells[Math.floor(g.cells.length/2)];
         const k0 = key(mid.r, mid.c);
         if(used.has(k0)) continue;
         const color = grid[mid.r][mid.c].c;
-        // 彩球不需要顏色，但保留 color 欄位無妨
         creations.push({r: mid.r, c: mid.c, sp:"b", color});
         used.add(k0);
       }else if(g.len===4){
-        const mid = g.cells[1]; // 稍偏前一點更像落點
+        const mid = g.cells[1];
         const k0 = key(mid.r, mid.c);
         if(used.has(k0)) continue;
         const color = grid[mid.r][mid.c].c;
@@ -982,14 +1042,10 @@
         used.add(k0);
       }
     }
-
     return creations;
   }
 
-  /* ===== special trigger on clear ===== */
   async function expandByTriggeredSpecials(toClear){
-    // 如果被清除集合中包含特殊糖，把效果擴張進集合
-    // 這裡做一次擴張，並允許擴張後再次遇到特殊糖再擴一次（迭代直到穩定）
     const expanded = new Set([...toClear]);
     let changed = true;
     let safety = 0;
@@ -1001,10 +1057,8 @@
       for(const k0 of Array.from(expanded)){
         const r = Math.floor(k0/SIZE), c = k0%SIZE;
         const cell = grid[r][c];
-        if(!cell) continue;
-        if(!cell.sp) continue;
+        if(!cell || !cell.sp) continue;
 
-        // 彩球：被掃到就當作清全盤（爽感），但不太常發生
         if(cell.sp==="b"){
           for(let rr=0;rr<SIZE;rr++){
             for(let cc=0;cc<SIZE;cc++){
@@ -1015,7 +1069,6 @@
           continue;
         }
 
-        // 條紋
         if(cell.sp==="sh"){
           for(let cc=0;cc<SIZE;cc++){
             const kk = key(r,cc);
@@ -1027,7 +1080,6 @@
             if(!expanded.has(kk)){ expanded.add(kk); changed=true; }
           }
         }else if(cell.sp==="w"){
-          // 3x3
           for(let dr=-1;dr<=1;dr++){
             for(let dc=-1;dc<=1;dc++){
               const rr=r+dr, cc=c+dc;
@@ -1039,7 +1091,6 @@
         }
       }
     }
-
     return expanded;
   }
 
@@ -1052,7 +1103,7 @@
     }
     const set = new Set([key(pos.r,pos.c)]);
     const expanded = await expandByTriggeredSpecials(set);
-    // 清掉 expanded（不保留生成）
+
     let count = 0;
     for(const k0 of expanded){
       const r = Math.floor(k0/SIZE), c = k0%SIZE;
@@ -1062,8 +1113,9 @@
       }
     }
     score += count * 12;
-    setBestIfNeeded();
+    checkBomb();
     combo++;
+    showComboFloat();
     if(cell.sp==="w") sfxBomb(); else sfxSpecial();
     render();
     await sleep(140);
@@ -1073,7 +1125,6 @@
   }
 
   async function triggerColorBombAt(bombPos, targetColor){
-    // 清掉 targetColor 全盤（也包含特殊糖，只要顏色相同且非彩球）
     const toClear = new Set();
     for(let r=0;r<SIZE;r++){
       for(let c=0;c<SIZE;c++){
@@ -1082,14 +1133,14 @@
         if(cell.c===targetColor) toClear.add(key(r,c));
       }
     }
-    // 彩球自己也要清
     toClear.add(key(bombPos.r, bombPos.c));
 
     const expanded = await expandByTriggeredSpecials(toClear);
     const cleared = applyClear(expanded, new Set());
     score += cleared * 14;
-    setBestIfNeeded();
+    checkBomb();
     combo++;
+    showComboFloat();
     sfxBomb();
     render();
     await sleep(160);
@@ -1108,8 +1159,9 @@
     const expanded = await expandByTriggeredSpecials(toClear);
     const cleared = applyClear(expanded, new Set());
     score += cleared * 16;
-    setBestIfNeeded();
+    checkBomb();
     combo++;
+    showComboFloat();
     sfxBomb();
     render();
     await sleep(180);
@@ -1120,7 +1172,6 @@
 
   /* ===== hint / shuffle / playable ===== */
   function findAnyMove(){
-    // 嘗試任意相鄰交換，看是否能產生 match 或觸發彩球
     for(let r=0;r<SIZE;r++){
       for(let c=0;c<SIZE;c++){
         const dirs = [[0,1],[1,0]];
@@ -1128,11 +1179,9 @@
           const rr=r+dr, cc=c+dc;
           if(!inBounds(rr,cc)) continue;
 
-          // 先看彩球交換：直接算可用
           const A = grid[r][c], B = grid[rr][cc];
           if(A.sp==="b" || B.sp==="b") return [{r,c},{r:rr,c:cc}];
 
-          // swap simulate
           swapCells({r,c},{r:rr,c:cc});
           const m = findAllMatches();
           swapCells({r,c},{r:rr,c:cc});
@@ -1170,19 +1219,16 @@
     clearHints();
     selected = null;
 
-    // 取出所有糖（包含特殊）
     const bag = [];
     for(let r=0;r<SIZE;r++){
       for(let c=0;c<SIZE;c++){
         bag.push(grid[r][c]);
       }
     }
-    // 洗牌
     for(let i=bag.length-1;i>0;i--){
       const j = Math.floor(Math.random()*(i+1));
       [bag[i],bag[j]] = [bag[j],bag[i]];
     }
-    // 填回
     let idx=0;
     for(let r=0;r<SIZE;r++){
       for(let c=0;c<SIZE;c++){
@@ -1190,7 +1236,6 @@
       }
     }
 
-    // 避免 shuffle 後立刻大量自動消：允許少量，但如果太誇張就再洗一次
     let guard = 0;
     while(findAllMatches().groups.length>0 && guard<4){
       guard++;
@@ -1213,7 +1258,6 @@
       busy = false;
       ensurePlayableOrShuffle();
       if(fromAuto){
-        // 自動洗牌時給一點提示
         showHint();
       }
     }, 120);
@@ -1232,10 +1276,19 @@
     selected = null;
     score = 0;
     combo = 0;
+
+    // v3：重置本局計時 & 破萬鎖
+    runStartMs = Date.now();
+    bombTriggered = false;
+    bombOverlayEl.style.display = "none";
+
     makeEmptyGrid();
     fillRandomNoMatches();
     render();
     ensurePlayableOrShuffle();
+
+    // v3：載入排行榜顯示
+    refreshTop3UI();
   }
 
   /* ===== wire ===== */
@@ -1243,7 +1296,6 @@
   btnHint.addEventListener("click", ()=> showHint());
   btnShuffle.addEventListener("click", ()=> doShuffle(false));
 
-  // 音效 checkbox：若關閉就不播；若開啟第一次需要互動後才有聲（iOS限制）
   soundOnEl.addEventListener("change", ()=>{
     if(soundOnEl.checked){
       ensureAudio();
@@ -1253,6 +1305,7 @@
 
   /* ===== start ===== */
   createDom();
+  refreshTop3UI();
   newGame();
 })();
 </script>
