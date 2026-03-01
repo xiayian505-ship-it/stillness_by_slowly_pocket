@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>情侶交往紀錄｜事件卡（莫蘭迪少女粉）</title>
+<style>
+  :root{
+    /* Morandi girl-pink (柔霧、低飽和) */
+    --bg: #f6f0f2;
+    --panel: #fff8fa;
+    --card: #ffffff;
+    --ink: #2b2326;
+    --muted: #7a6b72;
+    --line: rgba(43,35,38,.12);
+
+    --pink: #d7a6b7;     /* 主粉 */
+    --rose: #c98fa7;     /* 深一點 */
+    --mauve: #b69aa8;    /* 灰紫粉 */
+    --cream: #fbf4f5;    /* 淡奶油粉 */
+    --shadow: 0 14px 28px rgba(40,20,30,.10);
+
+    --radius: 18px;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
+    background:
+      radial-gradient(1200px 700px at 10% -10%, rgba(215,166,183,.35), transparent 60%),
+      radial-gradient(900px 600px at 95% 10%, rgba(182,154,168,.25), transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wrap{
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 18px;
+    padding-bottom: 44px;
+  }
+
+  header{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:flex-end;
+    justify-content:space-between;
+    margin: 6px 0 14px;
+  }
+
+  .brand{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  h1{
+    margin:0;
+    font-size: 20px;
+    letter-spacing: .5px;
+  }
+  .sub{
+    color:var(--muted);
+    font-size: 13px;
+  }
+
+  .top-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+  }
+
+  button, .btn{
+    appearance:none;
+    border:1px solid var(--line);
+    background: linear-gradient(180deg, var(--panel), #fff);
+    color:var(--ink);
+    padding: 10px 12px;
+    border-radius: 999px;
+    box-shadow: 0 10px 18px rgba(40,20,30,.08);
+    cursor:pointer;
+    font-weight: 700;
+    font-size: 13px;
+    transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
+    user-select:none;
+  }
+  button:hover, .btn:hover{
+    transform: translateY(-1px);
+    border-color: rgba(201,143,167,.45);
+    box-shadow: 0 14px 22px rgba(40,20,30,.12);
+  }
+  button:active, .btn:active{
+    transform: translateY(0px);
+    box-shadow: 0 8px 14px rgba(40,20,30,.10);
+  }
+  .btn-primary{
+    border-color: rgba(201,143,167,.55);
+    background: linear-gradient(180deg, rgba(215,166,183,.35), rgba(255,248,250,.95));
+  }
+
+  .panel{
+    background: rgba(255,248,250,.72);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap:12px;
+  }
+  @media (max-width: 900px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  label{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  input, select, textarea{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,.9);
+    color: var(--ink);
+    outline: none;
+    font-size: 14px;
+  }
+  textarea{ min-height: 92px; resize: vertical; }
+
+  .row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width: 560px){
+    .row{ grid-template-columns: 1fr; }
+  }
+
+  .form-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-start;
+    margin-top: 10px;
+  }
+
+  .divider{
+    height:1px;
+    background: var(--line);
+    margin: 12px 0;
+  }
+
+  .filters{
+    display:grid;
+    grid-template-columns: 1.3fr .7fr .7fr;
+    gap:12px;
+    align-items:end;
+  }
+  @media (max-width: 900px){
+    .filters{ grid-template-columns: 1fr; }
+  }
+
+  .stats{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top: 10px;
+  }
+  .pill{
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.75);
+    padding: 8px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 800;
+  }
+  .pill b{ color: var(--ink); }
+
+  /* card wall */
+  .wall{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media (max-width: 980px){ .wall{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px){ .wall{ grid-template-columns: 1fr; } }
+
+  .card{
+    background: rgba(255,255,255,.92);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 22px rgba(40,20,30,.10);
+    padding: 12px 12px 10px;
+    position: relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--pink), var(--mauve));
+    opacity:.9;
+  }
+  .card-head{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    justify-content:space-between;
+    margin-top: 4px;
+  }
+  .meta{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    min-width: 0;
+  }
+  .title{
+    font-weight: 900;
+    letter-spacing:.2px;
+    line-height: 1.25;
+    overflow:hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tiny{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border:1px solid rgba(201,143,167,.35);
+    background: rgba(215,166,183,.18);
+    color: rgba(43,35,38,.86);
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .content{
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgba(43,35,38,.90);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .tags{
+    margin-top: 10px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .tag{
+    font-size: 12px;
+    font-weight: 900;
+    color: rgba(43,35,38,.75);
+    background: rgba(182,154,168,.16);
+    border:1px solid rgba(182,154,168,.25);
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
+
+  .card-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    align-items:center;
+    margin-top: 10px;
+  }
+  .mini{
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 900;
+    box-shadow: none;
+  }
+  .danger{
+    border-color: rgba(200,60,90,.28);
+    background: linear-gradient(180deg, rgba(200,60,90,.10), rgba(255,248,250,.95));
+  }
+
+  .empty{
+    margin-top: 14px;
+    border:1px dashed rgba(43,35,38,.22);
+    background: rgba(255,255,255,.55);
+    border-radius: var(--radius);
+    padding: 16px;
+    color: var(--muted);
+    font-weight: 800;
+  }
+
+  /* modal */
+  .modal-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(20,10,15,.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 18px;
+    z-index: 50;
+  }
+  .modal{
+    width: min(820px, 100%);
+    background: rgba(255,248,250,.95);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(10,5,8,.28);
+    overflow:hidden;
+  }
+  .modal-top{
+    padding: 14px 14px 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .modal-title{
+    font-weight: 1000;
+    letter-spacing:.3px;
+  }
+  .modal-body{
+    padding: 14px;
+  }
+  .modal-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    padding: 0 14px 14px;
+    justify-content:flex-end;
+  }
+
+  .footer{
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align:center;
+    font-weight: 800;
+    opacity:.9;
+  }
+
+  /* print (optional quick) */
+  @media print{
+    header, .panel, .footer{ display:none !important; }
+    body{ background:#fff; }
+    .wrap{ max-width: none; padding: 0; }
+    .wall{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .card{ box-shadow:none; }
+  }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>情侶交往紀錄｜事件卡牆</h1>
+      <div class="sub">莫蘭迪少女粉｜日常照顧派也能很浪漫（只是你不承認）</div>
+    </div>
+
+    <div class="top-actions">
+      <button class="btn-primary" id="btnOpenAdd">＋ 新增事件</button>
+      <button id="btnExport">匯出 JSON</button>
+      <label class="btn" for="importFile" style="cursor:pointer;">
+        匯入 JSON
+      </label>
+      <input id="importFile" type="file" accept="application/json" style="display:none;">
+      <button class="danger" id="btnClearAll" title="清空全部資料（不可逆）">清空全部</button>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="filters">
+      <label>搜尋（標題 / 內容 / 標籤）
+        <input id="q" type="search" placeholder="例如：5+20、湯姆熊、燭光、乙游、玫瑰、沒帶錢…" />
+      </label>
+
+      <label>類型
+        <select id="typeFilter">
+          <option value="">全部</option>
+        </select>
+      </label>
+
+      <label>排序
+        <select id="sortBy">
+          <option value="date_desc">日期：新 → 舊</option>
+          <option value="date_asc">日期：舊 → 新</option>
+          <option value="updated_desc">更新：新 → 舊</option>
+          <option value="title_asc">標題：A → Z</option>
+          <option value="title_desc">標題：Z → A</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="stats" id="stats"></div>
+    <div class="divider"></div>
+
+    <div class="wall" id="wall"></div>
+    <div class="empty" id="empty" style="display:none;">
+      目前沒有事件卡。你可以先新增一張（例如：<b>5+20 分兩包</b>）。<br>
+      小提示：標籤用 <b>#</b> 或逗號分隔都可以，例如：<b>#荒謬 #湯姆熊, #情人節</b>
+    </div>
+  </section>
+
+  <div class="footer">Stillness by Slowly｜Couple Log Cards v1（本機離線儲存）</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-top">
+      <div class="modal-title" id="modalTitle">新增事件</div>
+      <button class="mini" id="btnCloseModal">關閉</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="grid">
+        <div>
+          <div class="row">
+            <label>日期
+              <input id="fDate" type="date">
+            </label>
+            <label>類型
+              <select id="fType"></select>
+            </label>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <label>標題
+              <input id="fTitle" type="text" placeholder="例如：5+20 分兩包 / 電池蠟燭燭光晚餐 / 你付錢我買花…">
+            </label>
+            <label>心情（可空）
+              <input id="fMood" type="text" placeholder="例如：🙄 / 😂 / ？？？ / 好欸 / 這人有病嗎">
+            </label>
+          </div>
+
+          <label style="margin-top:10px;">內容
+            <textarea id="fContent" placeholder="把對話原汁原味貼進來最有靈魂（例如：『沒停電你拿它幹嘛』）"></textarea>
+          </label>
+        </div>
+
+        <div>
+          <label>標籤（#tag 或逗號分隔）
+            <textarea id="fTags" placeholder="#荒謬 #湯姆熊 #情人節&#10;或：荒謬, 湯姆熊, 情人節"></textarea>
+          </label>
+
+          <div class="divider"></div>
+
+          <div class="pill" style="display:block; border-color: rgba(201,143,167,.35); background: rgba(215,166,183,.10);">
+            小提示：你老公愛儀式感，就把「儀式」當成類型之一。你不用天天配合，但這裡可以完整記錄他的努力（含荒謬版本）。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="danger" id="btnDeleteInModal" style="display:none;">刪除</button>
+      <button id="btnSave" class="btn-primary">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* =========================
+     Storage Keys (獨立+版本)
+  ========================= */
+  const STORAGE_KEY = "sbs_couple_log_cards_v1";
+  const SETTINGS_KEY = "sbs_couple_log_settings_v1";
+
+  /* =========================
+     Default Types
+  ========================= */
+  const DEFAULT_TYPES = [
+    "日常照顧",
+    "節日/儀式感",
+    "旅行/約會",
+    "吵架/摩擦",
+    "和好/溫柔",
+    "禮物/花錢",
+    "荒謬事件",
+    "里程碑",
+    "其他"
+  ];
+
+  /* =========================
+     DOM
+  ========================= */
+  const wall = document.getElementById("wall");
+  const empty = document.getElementById("empty");
+  const statsEl = document.getElementById("stats");
+
+  const q = document.getElementById("q");
+  const typeFilter = document.getElementById("typeFilter");
+  const sortBy = document.getElementById("sortBy");
+
+  const btnExport = document.getElementById("btnExport");
+  const importFile = document.getElementById("importFile");
+  const btnClearAll = document.getElementById("btnClearAll");
+
+  const btnOpenAdd = document.getElementById("btnOpenAdd");
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const btnCloseModal = document.getElementById("btnCloseModal");
+  const modalTitle = document.getElementById("modalTitle");
+  const btnSave = document.getElementById("btnSave");
+  const btnDeleteInModal = document.getElementById("btnDeleteInModal");
+
+  const fDate = document.getElementById("fDate");
+  const fType = document.getElementById("fType");
+  const fTitle = document.getElementById("fTitle");
+  const fMood = document.getElementById("fMood");
+  const fContent = document.getElementById("fContent");
+  const fTags = document.getElementById("fTags");
+
+  /* =========================
+     State
+  ========================= */
+  let records = loadRecords();
+  let settings = loadSettings();
+  let editingId = null;
+
+  init();
+
+  function init(){
+    ensureTypeOptions();
+    hydrateTypeFilter();
+    hydrateTypeSelect();
+
+    // initial UI values
+    q.value = settings.q || "";
+    typeFilter.value = settings.type || "";
+    sortBy.value = settings.sort || "date_desc";
+
+    // listeners
+    q.addEventListener("input", () => { settings.q = q.value; saveSettings(); render(); });
+    typeFilter.addEventListener("change", () => { settings.type = typeFilter.value; saveSettings(); render(); });
+    sortBy.addEventListener("change", () => { settings.sort = sortBy.value; saveSettings(); render(); });
+
+    btnOpenAdd.addEventListener("click", openAdd);
+    btnCloseModal.addEventListener("click", closeModal);
+    modalBackdrop.addEventListener("click", (e) => { if(e.target === modalBackdrop) closeModal(); });
+
+    btnSave.addEventListener("click", onSave);
+    btnDeleteInModal.addEventListener("click", onDeleteFromModal);
+
+    btnExport.addEventListener("click", exportJSON);
+    importFile.addEventListener("change", onImportFile);
+
+    btnClearAll.addEventListener("click", () => {
+      if(!confirm("確定要清空全部資料？這是不可逆操作。")) return;
+      records = [];
+      saveRecords();
+      render();
+      alert("已清空。");
+    });
+
+    // ESC close
+    window.addEventListener("keydown", (e) => {
+      if(e.key === "Escape" && isModalOpen()) closeModal();
+    });
+
+    // default date today for add
+    render();
+  }
+
+  /* =========================
+     Types & Settings
+  ========================= */
+  function ensureTypeOptions(){
+    // Keep user-added types if exist in records/settings
+    const set = new Set(DEFAULT_TYPES);
+    for(const r of records){
+      if(r.type) set.add(r.type);
+    }
+    settings.customTypes = settings.customTypes || [];
+    for(const t of settings.customTypes){
+      if(t && String(t).trim()) set.add(String(t).trim());
+    }
+    // write back sorted (keep DEFAULT_TYPES first, then rest alpha)
+    const extras = [...set].filter(t => !DEFAULT_TYPES.includes(t)).sort((a,b)=>a.localeCompare(b,"zh-Hant"));
+    settings.types = [...DEFAULT_TYPES, ...extras];
+    saveSettings();
+  }
+
+  function hydrateTypeFilter(){
+    typeFilter.innerHTML = `<option value="">全部</option>` + settings.types.map(t => `<option value="${escapeHtmlAttr(t)}">${escapeHtml(t)}</option>`).join("");
+  }
+
+  function hydrateTypeSelect(){
+    fType.innerHTML = settings.types.map(t => `<option value="${escapeHtmlAttr(t)}">${escapeHtml(t)}</option>`).join("");
+  }
+
+  /* =========================
+     Render
+  ========================= */
+  function render(){
+    ensureTypeOptions();
+    hydrateTypeFilter();
+    hydrateTypeSelect();
+
+    const list = getFilteredSortedRecords();
+    renderStats(list);
+    renderWall(list);
+  }
+
+  function getFilteredSortedRecords(){
+    const query = (q.value || "").trim().toLowerCase();
+    const type = typeFilter.value || "";
+    let list = [...records];
+
+    if(type){
+      list = list.filter(r => (r.type || "") === type);
+    }
+
+    if(query){
+      list = list.filter(r => {
+        const blob = [
+          r.title, r.content, r.mood, (r.tags || []).join(" "),
+          r.type, r.date
+        ].filter(Boolean).join(" ").toLowerCase();
+        return blob.includes(query);
+      });
+    }
+
+    const sort = sortBy.value;
+    list.sort((a,b)=>{
+      if(sort === "date_desc") return (b.date || "").localeCompare(a.date || "");
+      if(sort === "date_asc") return (a.date || "").localeCompare(b.date || "");
+      if(sort === "updated_desc") return (b.updatedAt || 0) - (a.updatedAt || 0);
+      if(sort === "title_asc") return (a.title || "").localeCompare(b.title || "","zh-Hant");
+      if(sort === "title_desc") return (b.title || "").localeCompare(a.title || "","zh-Hant");
+      return 0;
+    });
+
+    return list;
+  }
+
+  function renderStats(currentList){
+    const total = records.length;
+    const showing = currentList.length;
+
+    const byType = {};
+    for(const r of records){
+      const t = r.type || "未分類";
+      byType[t] = (byType[t] || 0) + 1;
+    }
+    const topTypes = Object.entries(byType)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,3);
+
+    const absurdCount = records.filter(r => r.type === "荒謬事件").length;
+
+    statsEl.innerHTML = `
+      <div class="pill">總事件 <b>${total}</b>｜目前顯示 <b>${showing}</b></div>
+      <div class="pill">荒謬事件 <b>${absurdCount}</b></div>
+      ${topTypes.map(([t,c]) => `<div class="pill">最多：<b>${escapeHtml(t)}</b> × <b>${c}</b></div>`).join("")}
+    `;
+  }
+
+  function renderWall(list){
+    wall.innerHTML = "";
+    empty.style.display = list.length ? "none" : "block";
+
+    for(const r of list){
+      const badge = `<span class="badge">${escapeHtml(r.type || "未分類")}${r.mood ? ` · ${escapeHtml(r.mood)}` : ""}</span>`;
+      const dt = r.date ? formatDateYMD(r.date) : "（無日期）";
+      const updated = r.updatedAt ? new Date(r.updatedAt).toLocaleString("zh-Hant",{hour12:false}) : "";
+      const tags = (r.tags || []).length
+        ? `<div class="tags">${r.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join("")}</div>`
+        : "";
+
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <div class="card-head">
+          <div class="meta">
+            <div class="title" title="${escapeHtmlAttr(r.title || "")}">${escapeHtml(r.title || "（未命名）")}</div>
+            <div class="tiny">
+              <span>📅 ${escapeHtml(dt)}</span>
+              ${updated ? `<span title="更新時間">🕒 ${escapeHtml(updated)}</span>` : ""}
+            </div>
+          </div>
+          <div>${badge}</div>
+        </div>
+
+        ${r.content ? `<div class="content">${escapeHtml(r.content)}</div>` : `<div class="content" style="color:var(--muted);">（無內容）</div>`}
+        ${tags}
+
+        <div class="card-actions">
+          <button class="mini" data-act="edit" data-id="${escapeHtmlAttr(r.id)}">編輯</button>
+          <button class="mini danger" data-act="del" data-id="${escapeHtmlAttr(r.id)}">刪除</button>
+        </div>
+      `;
+      el.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if(!btn) return;
+        const id = btn.getAttribute("data-id");
+        const act = btn.getAttribute("data-act");
+        if(act === "edit") openEdit(id);
+        if(act === "del") deleteRecord(id);
+      });
+      wall.appendChild(el);
+    }
+  }
+
+  /* =========================
+     Modal
+  ========================= */
+  function openAdd(){
+    editingId = null;
+    modalTitle.textContent = "新增事件";
+    btnDeleteInModal.style.display = "none";
+
+    // default today if empty
+    fDate.value = toInputDate(new Date());
+    fType.value = "日常照顧";
+    fTitle.value = "";
+    fMood.value = "";
+    fContent.value = "";
+    fTags.value = "";
+
+    openModal();
+    setTimeout(()=>fTitle.focus(), 50);
+  }
+
+  function openEdit(id){
+    const r = records.find(x => x.id === id);
+    if(!r) return;
+
+    editingId = id;
+    modalTitle.textContent = "編輯事件";
+    btnDeleteInModal.style.display = "inline-flex";
+
+    fDate.value = r.date || "";
+    fType.value = r.type || "其他";
+    fTitle.value = r.title || "";
+    fMood.value = r.mood || "";
+    fContent.value = r.content || "";
+    fTags.value = (r.tags || []).map(t => "#"+t).join(" ");
+
+    openModal();
+    setTimeout(()=>fTitle.focus(), 50);
+  }
+
+  function openModal(){
+    modalBackdrop.style.display = "flex";
+    modalBackdrop.setAttribute("aria-hidden","false");
+  }
+  function closeModal(){
+    modalBackdrop.style.display = "none";
+    modalBackdrop.setAttribute("aria-hidden","true");
+    editingId = null;
+  }
+  function isModalOpen(){
+    return modalBackdrop.style.display === "flex";
+  }
+
+  function onSave(){
+    const date = (fDate.value || "").trim();
+    const type = (fType.value || "").trim() || "其他";
+    const title = (fTitle.value || "").trim();
+    const mood = (fMood.value || "").trim();
+    const content = (fContent.value || "").trim();
+    const tags = parseTags(fTags.value || "");
+
+    if(!title){
+      alert("請先填『標題』。");
+      fTitle.focus();
+      return;
+    }
+
+    // ensure type in settings
+    if(type && !settings.types.includes(type)){
+      settings.customTypes = settings.customTypes || [];
+      settings.customTypes.push(type);
+      settings.customTypes = uniq(settings.customTypes.map(s => String(s).trim()).filter(Boolean));
+      saveSettings();
+    }
+
+    const now = Date.now();
+    if(editingId){
+      const idx = records.findIndex(x => x.id === editingId);
+      if(idx === -1) return;
+      records[idx] = {
+        ...records[idx],
+        date, type, title, mood, content, tags,
+        updatedAt: now
+      };
+    }else{
+      records.unshift({
+        id: uid(),
+        date,
+        type,
+        title,
+        mood,
+        content,
+        tags,
+        createdAt: now,
+        updatedAt: now
+      });
+    }
+
+    saveRecords();
+    closeModal();
+    render();
+  }
+
+  function onDeleteFromModal(){
+    if(!editingId) return;
+    deleteRecord(editingId, {silentClose:true});
+  }
+
+  function deleteRecord(id, opt={}){
+    const r = records.find(x => x.id === id);
+    if(!r) return;
+    if(!confirm(`確定刪除「${r.title}」？`)) return;
+
+    records = records.filter(x => x.id !== id);
+    saveRecords();
+
+    if(opt.silentClose) closeModal();
+    render();
+  }
+
+  /* =========================
+     Export / Import
+  ========================= */
+  function exportJSON(){
+    const payload = {
+      app: "sbs_couple_log_cards_v1",
+      exportedAt: new Date().toISOString(),
+      records
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    a.href = URL.createObjectURL(blob);
+    a.download = `couple_log_backup_${y}${m}${dd}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 800);
+  }
+
+  async function onImportFile(){
+    const file = importFile.files && importFile.files[0];
+    if(!file) return;
+
+    try{
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      const incoming = Array.isArray(data?.records) ? data.records : null;
+      if(!incoming) throw new Error("檔案格式不正確（找不到 records）。");
+
+      // basic normalize
+      const normalized = incoming.map(normalizeRecord).filter(Boolean);
+
+      const mode = prompt("匯入模式：輸入 1 合併（保留現有） / 輸入 2 覆蓋（清空後匯入）", "1");
+      if(mode !== "1" && mode !== "2"){
+        alert("已取消匯入。");
+        importFile.value = "";
+        return;
+      }
+
+      if(mode === "2"){
+        records = normalized;
+      }else{
+        // merge by id, fallback to dedupe by (date+title)
+        const map = new Map(records.map(r => [r.id, r]));
+        for(const r of normalized){
+          if(map.has(r.id)){
+            // keep newer updated
+            const old = map.get(r.id);
+            map.set(r.id, (r.updatedAt || 0) >= (old.updatedAt || 0) ? r : old);
+          }else{
+            // try avoid duplicates by (date+title)
+            const sig = (r.date||"") + "||" + (r.title||"");
+            const exists = records.some(x => ((x.date||"")+"||"+(x.title||"")) === sig);
+            if(!exists) map.set(r.id, r);
+          }
+        }
+        records = Array.from(map.values());
+      }
+
+      // refresh types from imported
+      saveRecords();
+      ensureTypeOptions();
+      hydrateTypeFilter();
+      hydrateTypeSelect();
+      render();
+
+      alert(`匯入完成：${normalized.length} 筆。`);
+    }catch(err){
+      alert("匯入失敗：" + (err?.message || String(err)));
+    }finally{
+      importFile.value = "";
+    }
+  }
+
+  function normalizeRecord(r){
+    if(!r || typeof r !== "object") return null;
+    const title = String(r.title || "").trim();
+    if(!title) return null;
+
+    const out = {
+      id: String(r.id || uid()),
+      date: String(r.date || "").slice(0,10),
+      type: String(r.type || "其他").trim() || "其他",
+      title,
+      mood: String(r.mood || "").trim(),
+      content: String(r.content || "").trim(),
+      tags: Array.isArray(r.tags) ? r.tags.map(t => String(t).trim()).filter(Boolean) : [],
+      createdAt: Number(r.createdAt || Date.now()),
+      updatedAt: Number(r.updatedAt || Date.now())
+    };
+    // ensure unique tags
+    out.tags = uniq(out.tags.map(t => t.replace(/^#/, "").trim()).filter(Boolean));
+    return out;
+  }
+
+  /* =========================
+     Storage
+  ========================= */
+  function loadRecords(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.map(normalizeRecord).filter(Boolean) : [];
+    }catch(_){
+      return [];
+    }
+  }
+  function saveRecords(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  function loadSettings(){
+    try{
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if(!raw) return { q:"", type:"", sort:"date_desc", types:[...DEFAULT_TYPES], customTypes:[] };
+      const s = JSON.parse(raw);
+      const types = Array.isArray(s.types) && s.types.length ? s.types : [...DEFAULT_TYPES];
+      return {
+        q: String(s.q || ""),
+        type: String(s.type || ""),
+        sort: String(s.sort || "date_desc"),
+        types,
+        customTypes: Array.isArray(s.customTypes) ? s.customTypes : []
+      };
+    }catch(_){
+      return { q:"", type:"", sort:"date_desc", types:[...DEFAULT_TYPES], customTypes:[] };
+    }
+  }
+  function saveSettings(){
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }
+
+  /* =========================
+     Helpers
+  ========================= */
+  function uid(){
+    return "r_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+  }
+  function uniq(arr){
+    return Array.from(new Set(arr));
+  }
+
+  function parseTags(s){
+    const raw = String(s || "");
+    // allow #tag, commas, spaces, newlines
+    const parts = raw
+      .replace(/，/g,",")
+      .split(/[\s,]+/g)
+      .map(x => x.trim())
+      .filter(Boolean)
+      .map(x => x.replace(/^#/, "").trim())
+      .filter(Boolean);
+
+    // keep original order unique
+    const seen = new Set();
+    const out = [];
+    for(const p of parts){
+      const key = p.toLowerCase();
+      if(seen.has(key)) continue;
+      seen.add(key);
+      out.push(p);
+    }
+    return out;
+  }
+
+  function toInputDate(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${dd}`;
+  }
+  function formatDateYMD(ymd){
+    // keep as YYYY-MM-DD; show in zh style
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
+    if(!m) return ymd;
+    return `${m[1]}/${m[2]}/${m[3]}`;
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+  function escapeHtmlAttr(str){
+    // same as escapeHtml, but keep it explicit
+    return escapeHtml(str);
+  }
+
+})();
+</script>
+</body>
+</html>
