@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>三柱電子燒香｜雙模式</title>
+
+<style>
+:root{
+  --bg:#0f1115;
+  --card:#141821;
+  --text:#e9eef5;
+  --muted:#9aa3b2;
+  --ring:rgba(255,255,255,.08);
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(180deg,#0c0e12,var(--bg));
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+}
+
+.card{
+  width:min(480px,92vw);
+  background:var(--card);
+  border:1px solid var(--ring);
+  border-radius:24px;
+  box-shadow:var(--shadow);
+  padding:22px;
+  text-align:center;
+}
+
+h1{margin:0 0 6px;font-size:18px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+
+/* 香區 */
+.incense-area{
+  height:260px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:26px;
+}
+.incense{
+  width:14px;
+  height:200px;
+  border-radius:7px;
+  background:linear-gradient(#c77,#844);
+  position:relative;
+  transition:height .2s linear, opacity .6s linear;
+}
+.ash{
+  position:absolute;
+  top:-8px;
+  left:50%;
+  transform:translateX(-50%);
+  width:18px;
+  height:10px;
+  background:#ccc;
+  border-radius:50%;
+}
+.smoke{
+  position:absolute;
+  top:-40px;
+  left:50%;
+  width:6px;
+  height:6px;
+  background:rgba(255,255,255,.6);
+  border-radius:50%;
+  filter:blur(2px);
+  animation:smoke 3s infinite ease-out;
+}
+@keyframes smoke{
+  0%{transform:translate(-50%,0) scale(.8);opacity:.6}
+  100%{transform:translate(-60%,-70px) scale(1.6);opacity:0}
+}
+
+/* 時間 */
+.time-box{
+  display:flex;
+  gap:12px;
+  margin-top:16px;
+}
+.time{
+  flex:1;
+  border:1px solid var(--ring);
+  border-radius:14px;
+  padding:10px;
+  font-size:13px;
+}
+.label{color:var(--muted);font-size:12px;margin-bottom:4px}
+.value{font-weight:650}
+
+/* 控制 */
+.controls{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:16px;
+  flex-wrap:wrap;
+}
+button,select{
+  border:1px solid var(--ring);
+  background:rgba(255,255,255,.03);
+  color:var(--text);
+  padding:10px 14px;
+  border-radius:14px;
+  font-weight:650;
+}
+.status{
+  margin-top:12px;
+  font-size:13px;
+  color:var(--muted);
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h1>三柱電子燒香</h1>
+  <div class="sub">有些時候快一點，有些時候就照時間走。</div>
+
+  <div class="incense-area" id="area">
+    <div class="incense"><div class="ash"></div><div class="smoke"></div></div>
+    <div class="incense"><div class="ash"></div><div class="smoke"></div></div>
+    <div class="incense"><div class="ash"></div><div class="smoke"></div></div>
+  </div>
+
+  <div class="time-box">
+    <div class="time">
+      <div class="label">現在時間</div>
+      <div class="value" id="nowTime">--:--:--</div>
+    </div>
+    <div class="time">
+      <div class="label">已燒香時間</div>
+      <div class="value" id="burnTime">00:00</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <select id="mode">
+      <option value="zen">靜心模式（快速）</option>
+      <option value="real">真實燒香模式（25/30/35 分）</option>
+    </select>
+    <button id="start">點香</button>
+    <button id="reset">重新上一炷</button>
+  </div>
+
+  <div class="status" id="status">尚未點香</div>
+</div>
+
+<script>
+(() => {
+  const incenses = [...document.querySelectorAll(".incense")];
+  const nowTime  = document.getElementById("nowTime");
+  const burnTime = document.getElementById("burnTime");
+  const status   = document.getElementById("status");
+  const startBtn = document.getElementById("start");
+  const resetBtn = document.getElementById("reset");
+  const modeSel  = document.getElementById("mode");
+
+  const FULL = 200;
+  let heights = [FULL,FULL,FULL];
+  let durations = [0,0,0]; // 每支總秒數
+  let burning = false;
+  let burnedSeconds = 0;
+  let timer = null;
+
+  // 現在時間
+  setInterval(()=>{
+    nowTime.textContent = new Date().toLocaleTimeString();
+  },1000);
+
+  function format(sec){
+    const m = String(Math.floor(sec/60)).padStart(2,"0");
+    const s = String(sec%60).padStart(2,"0");
+    return `${m}:${s}`;
+  }
+
+  function setupDurations(){
+    if(modeSel.value === "zen"){
+      durations = [60,60,60]; // 約 1 分鐘
+    }else{
+      const base = [25,30,35].map(m=>m*60);
+      durations = base.sort(()=>Math.random()-0.5);
+    }
+  }
+
+  function burn(){
+    if(!burning) return;
+    burnedSeconds += 1;
+    incenses.forEach((el,i)=>{
+      if(heights[i] <= 0) return;
+      heights[i] -= FULL / durations[i];
+      if(heights[i] <= 0){
+        heights[i] = 0;
+        el.style.opacity = 0;
+      }
+      el.style.height = heights[i] + "px";
+      el.style.opacity = Math.max(heights[i]/FULL,0);
+    });
+    burnTime.textContent = format(burnedSeconds);
+
+    if(heights.every(h=>h<=0)){
+      stop();
+      status.textContent = "三柱香皆已燒盡。";
+    }
+  }
+
+  function start(){
+    if(burning) return;
+    setupDurations();
+    burning = true;
+    status.textContent = modeSel.value === "real"
+      ? "真實燒香中（請慢慢放著）"
+      : "靜心燒香中";
+    timer = setInterval(burn,1000);
+  }
+
+  function stop(){
+    burning = false;
+    clearInterval(timer);
+    timer = null;
+  }
+
+  function reset(){
+    stop();
+    heights = [FULL,FULL,FULL];
+    incenses.forEach(el=>{
+      el.style.height = FULL+"px";
+      el.style.opacity = 1;
+    });
+    burnedSeconds = 0;
+    burnTime.textContent = "00:00";
+    status.textContent = "已換新香，尚未點香";
+  }
+
+  startBtn.onclick = start;
+  resetBtn.onclick = reset;
+})();
+</script>
+</body>
+</html>
