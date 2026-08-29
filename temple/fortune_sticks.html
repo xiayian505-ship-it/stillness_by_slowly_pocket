@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>電子籤條｜test</title>
+
+<style>
+:root{
+  --bg:#0f1115;
+  --card:#141821;
+  --text:#e9eef5;
+  --muted:#9aa3b2;
+  --ring:rgba(255,255,255,.08);
+  --shadow:0 18px 40px rgba(0,0,0,.45);
+  --paper:#faf9f6;
+  --ink:#222;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(180deg,#0c0e12,var(--bg));
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+  color:var(--text);
+}
+
+.card{
+  width:min(460px,92vw);
+  background:var(--card);
+  border:1px solid var(--ring);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+  padding:22px;
+  text-align:center;
+}
+
+h1{margin:0 0 6px;font-size:18px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+
+/* 籤條 */
+.scroll-wrap{
+  display:grid;
+  place-items:center;
+  margin:12px 0 16px;
+}
+.scroll{
+  width:220px;
+  background:var(--paper);
+  color:var(--ink);
+  border-radius:10px;
+  box-shadow:0 12px 24px rgba(0,0,0,.35);
+  padding:16px 14px 18px;
+  font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  line-height:1.8;
+  opacity:0;
+  transform:translateY(-20px);
+}
+.scroll.show{
+  animation: drop .5s ease forwards;
+}
+@keyframes drop{
+  to{opacity:1; transform:translateY(0)}
+}
+
+.fortune{
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:6px;
+  text-align:center;
+  margin-bottom:8px;
+}
+.divider{
+  border-top:1px solid #333;
+  margin:8px 0 10px;
+}
+
+.explain{
+  font-size:13px;
+  margin-bottom:10px;
+}
+.poem{
+  font-size:14px;
+  white-space:pre-line;
+}
+
+/* 控制 */
+.controls{
+  margin-top:14px;
+}
+button{
+  border:1px solid var(--ring);
+  background:rgba(255,255,255,.03);
+  color:var(--text);
+  padding:12px 18px;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:700;
+}
+button:hover{background:rgba(255,255,255,.05)}
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.count{
+  margin-top:8px;
+  font-size:13px;
+  color:var(--muted);
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h1>電子抽籤</h1>
+  <div class="sub">抽出來就看，看完就好。</div>
+
+  <div class="scroll-wrap">
+    <div class="scroll" id="scroll">
+      <div class="fortune" id="fortune">—</div>
+      <div class="divider"></div>
+      <div class="explain" id="explain"></div>
+      <div class="poem" id="poem"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="draw">抽籤</button>
+  </div>
+  <div class="count">已抽籤次數：<span id="count">0</span></div>
+</div>
+
+<script>
+(() => {
+  const data = [
+    {
+      luck:"大吉",
+      explain:"此事順勢而行即可。",
+      poem:"雲開月出正分明\n不必遲疑向前行\n心安理得終無礙\n一路春風自太平"
+    },
+    {
+      luck:"中吉",
+      explain:"不快不慢，守正即可。",
+      poem:"風平浪靜正當時\n進退之間自有期\n若問前途何所向\n平常心是渡船時"
+    },
+    {
+      luck:"小吉",
+      explain:"雖小有成，仍需耐心。",
+      poem:"微光初現未成明\n且向人間試一行\n待到時來風再起\n自有花開滿路生"
+    },
+    {
+      luck:"末吉",
+      explain:"尚可，勿強求。",
+      poem:"花未全開月未圓\n此身正好立中間\n凡事留得餘地在\n他日回頭亦坦然"
+    },
+    {
+      luck:"凶",
+      explain:"不宜急進，暫避其鋒。",
+      poem:"風雨交加路未明\n勸君暫止莫前行\n退後一步天地闊\n靜待雲散再出程"
+    },
+    {
+      luck:"大凶",
+      explain:"此時不動為佳。",
+      poem:"黑雲蔽日不見天\n強行只恐更相纏\n收心閉口隨緣過\n守住方能待轉年"
+    }
+  ];
+
+  const scroll = document.getElementById("scroll");
+  const fortune = document.getElementById("fortune");
+  const explain = document.getElementById("explain");
+  const poem = document.getElementById("poem");
+  const btn = document.getElementById("draw");
+  const countEl = document.getElementById("count");
+
+  let count = 0;
+  let locked = false;
+
+  btn.onclick = () => {
+    if(locked) return;
+    locked = true;
+    btn.disabled = true;
+
+    const pick = data[Math.floor(Math.random()*data.length)];
+
+    fortune.textContent = pick.luck;
+    explain.textContent = pick.explain;
+    poem.textContent = pick.poem;
+
+    scroll.classList.remove("show");
+    void scroll.offsetWidth;
+    scroll.classList.add("show");
+
+    count++;
+    countEl.textContent = count;
+  };
+})();
+</script>
+</body>
+</html>

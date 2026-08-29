@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>電子筊杯｜test</title>
+
+<style>
+:root{
+  --bg:#0f1115;
+  --card:#141821;
+  --text:#e9eef5;
+  --muted:#9aa3b2;
+  --ring:rgba(255,255,255,.08);
+  --shadow:0 18px 40px rgba(0,0,0,.45);
+
+  --yang:#c43b3b;
+  --yin:#6b1f1f;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(180deg,#0c0e12,var(--bg));
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+}
+
+.card{
+  width:min(420px,92vw);
+  background:var(--card);
+  border:1px solid var(--ring);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+  padding:22px;
+  text-align:center;
+}
+
+h1{margin:0 0 6px;font-size:18px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+
+/* 筊杯區 */
+.jiaobei-area{
+  height:160px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:48px;
+}
+
+/* 半圓（左右） */
+.jb{
+  width:60px;
+  height:120px;
+  position:relative;
+  transition:transform .35s ease;
+  box-shadow:0 14px 24px rgba(0,0,0,.45);
+}
+
+/* 陽面：外側圓、內側平 */
+.jb.yang{
+  background:linear-gradient(90deg,#d85a5a,var(--yang));
+  border-radius:60px 0 0 60px;
+}
+.jb.yang::after{
+  content:"聖";
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  font-weight:900;
+  opacity:.85;
+}
+
+/* 陰面：顏色深、沒字 */
+.jb.yin{
+  background:linear-gradient(90deg,#7a2a2a,var(--yin));
+  border-radius:0 60px 60px 0;
+}
+
+/* 擲筊動畫（只跳，不翻） */
+.throw{
+  animation:toss .35s ease;
+}
+@keyframes toss{
+  0%{transform:translateY(0)}
+  40%{transform:translateY(-30px)}
+  100%{transform:translateY(0)}
+}
+
+/* 結果 */
+.result{
+  margin-top:10px;
+  font-size:22px;
+  font-weight:800;
+  min-height:30px;
+}
+.result span{
+  padding:6px 16px;
+  border-radius:999px;
+  border:1px solid var(--ring);
+  background:rgba(255,255,255,.04);
+}
+
+/* 次數 */
+.count{
+  margin-top:8px;
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* 控制 */
+.controls{
+  margin-top:16px;
+}
+button{
+  border:1px solid var(--ring);
+  background:rgba(255,255,255,.03);
+  color:var(--text);
+  padding:12px 18px;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:700;
+}
+button:hover{background:rgba(255,255,255,.05)}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>電子筊杯</h1>
+  <div class="sub">兩個半圓，躺好就知道答案。</div>
+
+  <div class="jiaobei-area">
+    <div class="jb yang" id="jb1"></div>
+    <div class="jb yang" id="jb2"></div>
+  </div>
+
+  <div class="result" id="result"></div>
+  <div class="count">已擲筊次數：<span id="count">0</span></div>
+
+  <div class="controls">
+    <button id="throw">擲筊</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const jb1 = document.getElementById("jb1");
+  const jb2 = document.getElementById("jb2");
+  const btn = document.getElementById("throw");
+  const result = document.getElementById("result");
+  const countEl = document.getElementById("count");
+
+  let count = 0;
+
+  function rand(){
+    return Math.random() < 0.5 ? "yang" : "yin";
+  }
+
+  function outcome(a,b){
+    if(a !== b) return "聖筊";
+    if(a === "yang") return "笑筊";
+    return "陰筊";
+  }
+
+  btn.onclick = () => {
+    result.textContent = "";
+
+    jb1.classList.add("throw");
+    jb2.classList.add("throw");
+
+    setTimeout(()=>{
+      const r1 = rand();
+      const r2 = rand();
+
+      jb1.className = "jb " + r1;
+      jb2.className = "jb " + r2;
+
+      count++;
+      countEl.textContent = count;
+
+      result.innerHTML = `<span>${outcome(r1,r2)}</span>`;
+
+      jb1.classList.remove("throw");
+      jb2.classList.remove("throw");
+    },350);
+  };
+})();
+</script>
+
+</body>
+</html>
