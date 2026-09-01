@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QRCode 多份列印｜test23</title>
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<style>
+:root{--bg:#f4f5f5;--surface:#fff;--text:#202426;--muted:#687176;--line:#d9dddf;--content:980px}
+*{box-sizing:border-box}body{font-family:Arial,"Microsoft JhengHei",sans-serif;margin:0;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}button{cursor:pointer}input,select{padding:8px 10px;border:1px solid var(--line);background:#fff}
+.page,.topbar-inner{width:min(calc(100% - 32px),var(--content));margin:0 auto}.page{padding-bottom:48px}
+.topbar{border-bottom:1px solid var(--line);background:var(--surface)}.topbar-inner{min-height:64px;display:flex;align-items:center}.brand{font-size:18px;font-weight:bold}
+.hero{padding:40px 0 24px;border-bottom:1px solid var(--line)}.hero-kicker,.section-head p,.notice{color:var(--muted);font-size:14px}
+.hero h1{margin:0 0 8px;font-size:clamp(28px,5vw,42px)}.hero p{margin:0;color:var(--muted);line-height:1.7}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:28px 0 18px}.section-head h2{margin:0 0 5px}.section-head p{margin:0}
+.sub-nav{display:flex;gap:6px;flex-wrap:wrap}.sub-nav button{border:1px solid var(--line);background:transparent;padding:8px 12px}.sub-nav button.active{background:var(--text);color:#fff;border-color:var(--text)}
+.content-box{background:var(--surface);border:1px solid var(--line);padding:18px}.field{margin:10px 0}.field label{display:inline-block;min-width:110px}.field input,.field select{min-width:220px}
+.action-row{margin:14px 0}.action-row button,.data-row button{margin:3px 3px 3px 0;padding:7px 11px}.hidden{display:none!important}
+.data-row{border-top:1px solid var(--line);padding:14px 0}.data-row:first-child{border-top:none}.data-row-title{font-weight:bold;margin-bottom:8px}
+.checkbox-field label{min-width:0}.checkbox-field input{min-width:0;width:auto}
+.print-preview{margin-top:18px}.print-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
+.print-card{text-align:center;break-inside:avoid;page-break-inside:avoid;padding:4px 0}.print-title{font-size:18px;font-weight:bold;margin-bottom:5px;min-height:22px}
+.print-card.no-label .print-title{display:none}.print-card canvas{display:block;margin:0 auto}
+@media(max-width:700px){.section-head{align-items:flex-start;flex-direction:column}.field label{display:block;margin-bottom:5px}.field input,.field select{width:100%;min-width:0}.checkbox-field label{display:inline}.checkbox-field input{width:auto}.print-grid{grid-template-columns:1fr}}
+@page{size:A4 portrait;margin:12mm}
+@media print{
+body *{visibility:hidden!important}#printArea,#printArea *{visibility:visible!important}
+#printArea{position:absolute;left:0;top:0;width:100%;margin:0}
+#printArea .print-grid{display:grid!important;grid-template-columns:repeat(3,1fr);column-gap:6mm;row-gap:4mm}
+#printArea .print-card{break-inside:avoid;page-break-inside:avoid;padding:0}
+#printArea .print-title{font-size:12pt;margin-bottom:2mm;min-height:0}
+#printArea .print-card.no-label .print-title{display:none!important}}
+</style></head>
+<body>
+<header class="topbar"><div class="topbar-inner"><div class="brand">QRCode 多份列印｜test23</div></div></header>
+<main class="page">
+<div class="hero"><div class="hero-kicker">A4 Print Test</div><h1>QRCode 多份列印</h1><p>QRCode 固定 120，A4 每次最多 18 張。超過 18 張不處理。</p></div>
+
+<div class="section-head"><div><h2>QRCode 類型</h2><p>先選擇一般 QRCode 或 Wi-Fi QRCode。</p></div>
+<div class="sub-nav"><button id="typeNormal" class="active" onclick="setQrType('normal')">一般 QRCode</button><button id="typeWifi" onclick="setQrType('wifi')">Wi-Fi QRCode</button></div></div>
+
+<div class="section-head"><div><h2>列印方式</h2><p>同一筆資料印多份，或輸入多筆不同資料。</p></div>
+<div class="sub-nav"><button id="modeSame" class="active" onclick="setPrintMode('same')">同資料多份列印</button><button id="modeDifferent" onclick="setPrintMode('different')">不同資料多份列印</button></div></div>
+
+<div class="content-box">
+<div id="sameMode">
+<div class="field checkbox-field"><input type="checkbox" id="printLabel" checked onchange="syncLabelFields()"><label for="printLabel">列印標籤</label></div>
+<div id="sameNormalFields">
+<div class="field label-field"><label>標籤：</label><input id="sameNormalLabel" placeholder="例如 官方網站"></div>
+<div class="field"><label>內容：</label><input id="sameNormalText" placeholder="網址或任意文字"></div></div>
+<div id="sameWifiFields" class="hidden">
+<div class="field label-field"><label>標籤：</label><input id="sameWifiLabel" placeholder="例如 大廳 | Wi-Fi"></div>
+<div class="field"><label>Wi-Fi 名稱：</label><input id="sameWifiSsid"></div>
+<div class="field"><label>Wi-Fi 密碼：</label><input id="sameWifiPassword"></div>
+<div class="field"><label>加密方式：</label><select id="sameWifiType"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="">無密碼</option></select></div></div>
+<div class="field"><label>列印份數：</label><input type="number" id="sameCount" min="1" max="18" value="5"></div>
+<div class="action-row"><button onclick="generateSameQR()">產生 QRCode</button><button onclick="previewGeneratedPrint()">預覽列印</button><button onclick="printCurrent()">列印</button></div>
+</div>
+
+<div id="differentMode" class="hidden"><p class="notice">每一筆都可設定列印份數並單獨產生 QRCode；全部加總最多 18 張。</p><div id="differentRows"></div>
+<div class="action-row"><button id="addRowButton" onclick="addDifferentRow()">新增一筆</button><button onclick="previewDifferentPrint()">預覽列印</button><button onclick="printCurrent()">列印</button></div></div>
+</div>
+<section id="qrPreviewArea" class="print-preview hidden">
+    <div class="section-head">
+        <div>
+            <h2>QRCode 預覽</h2>
+            <p>確認 QRCode 已產生，再進入 A4 列印預覽。</p>
+        </div>
+    </div>
+    <div id="qrPreviewGrid" class="print-grid"></div>
+</section>
+<section id="printArea" class="print-preview hidden"></section>
+</main>
+<script>
+const QR_SIZE=120,MAX_PRINT_COUNT=18;let qrType="normal",printMode="same",generatedItems=[];
+function active(ids,id){ids.forEach(x=>document.getElementById(x).classList.toggle("active",x===id))}
+function clearPrint(){const p=document.getElementById("printArea");p.innerHTML="";p.classList.add("hidden")}
+function clearGenerated(){generatedItems=[];const a=document.getElementById("qrPreviewArea"),g=document.getElementById("qrPreviewGrid");if(g)g.innerHTML="";if(a)a.classList.add("hidden");clearPrint()}
+function showGenerated(items){generatedItems=items;const a=document.getElementById("qrPreviewArea"),g=document.getElementById("qrPreviewGrid");g.innerHTML="";items.forEach(i=>g.appendChild(card(i.label,i.payload,i.printLabel)));a.classList.remove("hidden");clearPrint();a.scrollIntoView({behavior:"smooth",block:"start"})}
+function setQrType(t){qrType=t;active(["typeNormal","typeWifi"],t==="normal"?"typeNormal":"typeWifi");document.getElementById("sameNormalFields").classList.toggle("hidden",t!=="normal");document.getElementById("sameWifiFields").classList.toggle("hidden",t!=="wifi");resetRows();syncLabelFields();clearGenerated()}
+function setPrintMode(m){printMode=m;active(["modeSame","modeDifferent"],m==="same"?"modeSame":"modeDifferent");document.getElementById("sameMode").classList.toggle("hidden",m!=="same");document.getElementById("differentMode").classList.toggle("hidden",m!=="different");clearGenerated()}
+function syncLabelFields(){
+    const on=document.getElementById("printLabel").checked;
+    document.querySelectorAll("#sameMode .label-field").forEach(x=>x.classList.toggle("hidden",!on));
+    clearGenerated()
+}
+function wifiPayload(s,p,t="WPA"){return `WIFI:T:${t||"nopass"};S:${s};P:${p};;`}
+function card(label,payload,withLabel){const c=document.createElement("div");c.className="print-card"+(withLabel?"":" no-label");const title=document.createElement("div");title.className="print-title";title.textContent=label||"";const canvas=document.createElement("canvas");new QRious({element:canvas,value:payload,size:QR_SIZE,level:"H"});c.append(title,canvas);return c}
+function render(items){if(!items.length)return alert("沒有可列印的資料");if(items.length>18)return alert("一次最多只能列印 18 張");const p=document.getElementById("printArea");p.innerHTML="";const g=document.createElement("div");g.className="print-grid";items.forEach(i=>g.appendChild(card(i.label,i.payload,i.printLabel)));p.appendChild(g);p.classList.remove("hidden");p.scrollIntoView({behavior:"smooth",block:"start"})}
+function sameItem(){const pl=document.getElementById("printLabel").checked;if(qrType==="normal"){const label=document.getElementById("sameNormalLabel").value.trim(),text=document.getElementById("sameNormalText").value.trim();if(!text){alert("請輸入內容");return null}if(pl&&!label){alert("請輸入標籤，或取消「列印標籤」");return null}return{label,payload:text,printLabel:pl}}const label=document.getElementById("sameWifiLabel").value.trim(),ssid=document.getElementById("sameWifiSsid").value.trim(),pw=document.getElementById("sameWifiPassword").value,type=document.getElementById("sameWifiType").value;if(!ssid){alert("請輸入 Wi-Fi 名稱");return null}if(pl&&!label){alert("請輸入標籤，或取消「列印標籤」");return null}return{label,payload:wifiPayload(ssid,pw,type),printLabel:pl}}
+function generateSameQR(){const n=Number(document.getElementById("sameCount").value);if(!Number.isInteger(n)||n<1||n>18)return alert("列印份數只能是 1～18");const i=sameItem();if(i)showGenerated(Array.from({length:n},()=>({...i})))}
+function row(i){
+    const r=document.createElement("div");
+    r.className="data-row";
+    r.dataset.generated="0";
+
+    r.innerHTML=qrType==="normal"
+    ? `<div class="data-row-title">第 ${i} 筆</div>
+       <div class="field checkbox-field"><input type="checkbox" class="row-print-label" checked onchange="syncDifferentRowLabel(this)"><label>列印標籤</label></div>
+       <div class="field label-field row-label-field"><label>標籤：</label><input class="row-label"></div>
+       <div class="field"><label>內容：</label><input class="row-text" placeholder="網址或任意文字"></div>
+       <div class="field"><label>列印份數：</label><input type="number" class="row-count" min="1" max="18" value="1"></div>
+       <div class="action-row"><button type="button" onclick="generateDifferentRow(this)">產生 QRCode</button><button type="button" onclick="removeRow(this)">刪除此筆</button></div>
+       <div class="row-qr-preview hidden"></div><div class="row-generate-status hidden">資料已變更，請重新產生 QRCode</div>`
+    : `<div class="data-row-title">第 ${i} 筆</div>
+       <div class="field checkbox-field"><input type="checkbox" class="row-print-label" checked onchange="syncDifferentRowLabel(this)"><label>列印標籤</label></div>
+       <div class="field label-field row-label-field"><label>標籤：</label><input class="row-label"></div>
+       <div class="field"><label>Wi-Fi 名稱：</label><input class="row-ssid"></div>
+       <div class="field"><label>Wi-Fi 密碼：</label><input class="row-pw"></div>
+       <div class="field"><label>加密方式：</label><select class="row-type"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="">無密碼</option></select></div>
+       <div class="field"><label>列印份數：</label><input type="number" class="row-count" min="1" max="18" value="1"></div>
+       <div class="action-row"><button type="button" onclick="generateDifferentRow(this)">產生 QRCode</button><button type="button" onclick="removeRow(this)">刪除此筆</button></div>
+       <div class="row-qr-preview hidden"></div><div class="row-generate-status hidden">資料已變更，請重新產生 QRCode</div>`;
+
+    bindDifferentRowChanges(r);
+    return r;
+}
+function invalidateDifferentRow(row){
+    if(!row || row.dataset.generated!=="1") return;
+
+    row.dataset.generated="0";
+    row.dataset.generatedCount="0";
+    row.dataset.generatedLabel="";
+    row.dataset.generatedPayload="";
+    row.dataset.generatedPrintLabel="0";
+
+    const preview=row.querySelector(".row-qr-preview");
+    if(preview){
+        preview.innerHTML="";
+        preview.classList.add("hidden");
+    }
+
+    const status=row.querySelector(".row-generate-status");
+    if(status)status.classList.remove("hidden");
+
+    clearPrint();
+}
+
+function bindDifferentRowChanges(row){
+    row.querySelectorAll("input, select").forEach(el=>{
+        el.addEventListener("input",()=>invalidateDifferentRow(row));
+        el.addEventListener("change",()=>invalidateDifferentRow(row));
+    });
+}
+
+function syncDifferentRowLabel(checkbox){
+    const row=checkbox.closest(".data-row");
+    const field=row.querySelector(".row-label-field");
+    if(field)field.classList.toggle("hidden",!checkbox.checked);
+    invalidateDifferentRow(row);
+}
+function renumber(){const rs=[...document.querySelectorAll("#differentRows .data-row")];rs.forEach((r,i)=>r.querySelector(".data-row-title").textContent=`第 ${i+1} 筆`);document.getElementById("addRowButton").disabled=rs.length>=18}
+function resetRows(){const b=document.getElementById("differentRows");b.innerHTML="";for(let i=1;i<=3;i++)b.appendChild(row(i));renumber()}
+function addDifferentRow(){const b=document.getElementById("differentRows"),n=b.querySelectorAll(".data-row").length;if(n>=18)return alert("最多只能新增 18 筆");b.appendChild(row(n+1));renumber();clearPrint()}
+function removeRow(btn){const rs=document.querySelectorAll("#differentRows .data-row");if(rs.length<=1){
+        const row=btn.closest(".data-row");
+        row.querySelectorAll("input").forEach(x=>x.value="");
+        row.querySelector(".row-count").value="1";
+        row.dataset.generated="0";
+        row.dataset.generatedCount="0";
+        row.dataset.generatedLabel="";
+        row.dataset.generatedPayload="";
+        row.dataset.generatedPrintLabel="0";
+        const preview=row.querySelector(".row-qr-preview");
+        preview.innerHTML="";
+        preview.classList.add("hidden");
+        const status=row.querySelector(".row-generate-status");
+        if(status)status.classList.add("hidden");
+        clearPrint();
+        return
+    }btn.closest(".data-row").remove();renumber();clearGenerated()}
+function getDifferentRowItem(row,index){
+    const printLabel=row.querySelector(".row-print-label").checked;
+    const label=row.querySelector(".row-label")?.value.trim()||"";
+    const count=Number(row.querySelector(".row-count").value);
+
+    if(!Number.isInteger(count)||count<1||count>18){
+        alert(`第 ${index} 筆：列印份數只能是 1～18`);
+        return null;
+    }
+
+    if(qrType==="normal"){
+        const text=row.querySelector(".row-text").value.trim();
+
+        if(!text){
+            alert(`第 ${index} 筆：請輸入內容`);
+            return null;
+        }
+
+        if(printLabel&&!label){
+            alert(`第 ${index} 筆：請輸入標籤，或取消「列印標籤」`);
+            return null;
+        }
+
+        return {label,payload:text,printLabel,count};
+    }
+
+    const ssid=row.querySelector(".row-ssid").value.trim();
+    const pw=row.querySelector(".row-pw").value;
+    const type=row.querySelector(".row-type").value;
+
+    if(!ssid){
+        alert(`第 ${index} 筆：請輸入 Wi-Fi 名稱`);
+        return null;
+    }
+
+    if(printLabel&&!label){
+        alert(`第 ${index} 筆：請輸入標籤，或取消「列印標籤」`);
+        return null;
+    }
+
+    return {label,payload:wifiPayload(ssid,pw,type),printLabel,count};
+}
+
+function getGeneratedDifferentTotal(excludeRow=null, replacementCount=0){
+    let total=replacementCount;
+
+    document.querySelectorAll("#differentRows .data-row").forEach(row=>{
+        if(row===excludeRow)return;
+        if(row.dataset.generated==="1"){
+            total+=Number(row.dataset.generatedCount||0);
+        }
+    });
+
+    return total;
+}
+
+function generateDifferentRow(button){
+    const row=button.closest(".data-row");
+    const rows=[...document.querySelectorAll("#differentRows .data-row")];
+    const index=rows.indexOf(row)+1;
+    const item=getDifferentRowItem(row,index);
+
+    if(!item)return;
+
+    const total=getGeneratedDifferentTotal(row,item.count);
+
+    if(total>MAX_PRINT_COUNT){
+        alert(`全部列印份數加總最多 ${MAX_PRINT_COUNT} 張，目前會變成 ${total} 張`);
+        return;
+    }
+
+    row.dataset.generated="1";
+    row.dataset.generatedCount=String(item.count);
+    row.dataset.generatedLabel=item.label;
+    row.dataset.generatedPayload=item.payload;
+    row.dataset.generatedPrintLabel=item.printLabel?"1":"0";
+
+    const preview=row.querySelector(".row-qr-preview");
+    preview.innerHTML="";
+    preview.appendChild(card(item.label,item.payload,item.printLabel));
+    preview.classList.remove("hidden");
+
+    const status=row.querySelector(".row-generate-status");
+    if(status)status.classList.add("hidden");
+
+    clearPrint();
+}
+
+function collectGeneratedDifferentItems(){
+    const rows=[...document.querySelectorAll("#differentRows .data-row")];
+    const generated=rows.filter(row=>row.dataset.generated==="1");
+
+    if(!generated.length){
+        alert("請先至少產生一筆 QRCode");
+        return null;
+    }
+
+    const items=[];
+
+    generated.forEach(row=>{
+        const count=Number(row.dataset.generatedCount||0);
+        const item={
+            label:row.dataset.generatedLabel||"",
+            payload:row.dataset.generatedPayload||"",
+            printLabel:row.dataset.generatedPrintLabel==="1"
+        };
+
+        for(let i=0;i<count;i++){
+            items.push({...item});
+        }
+    });
+
+    if(items.length>MAX_PRINT_COUNT){
+        alert(`全部列印份數加總最多 ${MAX_PRINT_COUNT} 張`);
+        return null;
+    }
+
+    return items;
+}
+
+function previewDifferentPrint(){
+    const items=collectGeneratedDifferentItems();
+    if(items)render(items);
+}
+
+function previewGeneratedPrint(){
+    if(!generatedItems.length)return alert("請先產生 QRCode");
+    render(generatedItems)
+}
+function printCurrent(){const p=document.getElementById("printArea");if(p.classList.contains("hidden")||!p.children.length)return alert("請先預覽列印");window.print()}
+window.addEventListener("load",()=>{resetRows();syncLabelFields()});
+</script></body></html>
