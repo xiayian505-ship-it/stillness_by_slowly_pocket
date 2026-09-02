@@ -1,0 +1,663 @@
+/* grcode_test.css
+   慢慢｜QRCode 工具
+   僅負責螢幕 UI 美化，不介入既有 A4 / 列印 CSS。
+*/
+
+@media screen {
+
+:root {
+    --qr-bg: #f6f4ed;
+    --qr-surface: rgba(255, 253, 247, 0.92);
+    --qr-surface-strong: #fffdf8;
+    --qr-text: #3d3b34;
+    --qr-muted: #7d796c;
+    --qr-line: #ddd9cc;
+
+    --qr-accent: #a89458;
+    --qr-accent-hover: #968348;
+    --qr-accent-deep: #75683e;
+    --qr-accent-soft: #eee8d3;
+    --qr-accent-pale: #f5f0df;
+
+    --qr-danger: #9a6258;
+    --qr-shadow: 0 18px 44px rgba(77, 70, 48, 0.08);
+    --qr-shadow-soft: 0 8px 24px rgba(77, 70, 48, 0.06);
+
+    --qr-radius-lg: 26px;
+    --qr-radius-md: 18px;
+    --qr-radius-sm: 12px;
+
+    --content: 1040px;
+}
+
+/* ===== 全頁 ===== */
+
+html {
+    background: var(--qr-bg);
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background:
+        radial-gradient(circle at 14% 0%, rgba(223, 207, 151, 0.16), transparent 34%),
+        linear-gradient(180deg, #faf8f1 0%, var(--qr-bg) 42%, #f3f0e7 100%);
+    color: var(--qr-text);
+    font-family:
+        "Noto Sans TC",
+        "PingFang TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+    letter-spacing: 0.015em;
+}
+
+::selection {
+    background: #ddd09f;
+    color: #332f22;
+}
+
+.page {
+    width: min(calc(100% - 36px), var(--content));
+    padding-bottom: 72px;
+}
+
+/* ===== 頂部導覽 ===== */
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-bottom: 1px solid rgba(168, 148, 88, 0.18);
+    background: rgba(250, 248, 241, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.topbar-inner {
+    width: min(calc(100% - 36px), var(--content));
+    min-height: 76px;
+}
+
+.brand {
+    color: var(--qr-accent-deep);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.main-nav {
+    gap: 8px;
+}
+
+.main-nav button,
+.sub-nav button,
+.a4-tabs button {
+    border: 1px solid var(--qr-line);
+    border-radius: 999px;
+    background: rgba(255, 253, 248, 0.72);
+    color: var(--qr-muted);
+    box-shadow: none;
+    transition:
+        background-color .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        transform .18s ease;
+}
+
+.main-nav button {
+    padding: 9px 15px;
+}
+
+.main-nav button:hover,
+.sub-nav button:hover,
+.a4-tabs button:hover {
+    border-color: #cfc39e;
+    background: var(--qr-accent-pale);
+    color: var(--qr-accent-deep);
+}
+
+.main-nav button:active,
+.sub-nav button:active,
+.a4-tabs button:active {
+    transform: translateY(1px);
+}
+
+.main-nav button.active,
+.sub-nav button.active,
+.a4-tabs button.active {
+    border-color: var(--qr-accent);
+    background: var(--qr-accent);
+    color: #fffdf8;
+}
+
+/* ===== Hero ===== */
+
+.main-section {
+    margin-top: 0;
+}
+
+.hero {
+    position: relative;
+    overflow: hidden;
+    margin-top: 22px;
+    padding: 46px 34px 38px;
+    border: 1px solid rgba(168, 148, 88, 0.18);
+    border-radius: var(--qr-radius-lg);
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.76), rgba(238,232,211,.62)),
+        var(--qr-surface);
+    box-shadow: var(--qr-shadow-soft);
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    right: -42px;
+    top: -58px;
+    width: 180px;
+    height: 180px;
+    border: 1px solid rgba(168, 148, 88, 0.18);
+    border-radius: 38px;
+    transform: rotate(24deg);
+    background: rgba(255,255,255,.25);
+}
+
+.hero-kicker {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 12px;
+    color: var(--qr-accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .18em;
+}
+
+.hero h1 {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 10px;
+    color: #343229;
+    font-size: clamp(32px, 5.6vw, 50px);
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.hero p {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    color: var(--qr-muted);
+    line-height: 1.85;
+}
+
+/* ===== 區塊標題 ===== */
+
+.section-head {
+    margin: 34px 2px 18px;
+    align-items: center;
+}
+
+.section-head h2 {
+    margin: 0 0 7px;
+    color: #37352e;
+    font-size: 22px;
+    letter-spacing: .035em;
+}
+
+.section-head p {
+    color: var(--qr-muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.sub-nav {
+    gap: 8px;
+}
+
+.sub-nav button,
+.a4-tabs button {
+    padding: 8px 14px;
+}
+
+/* ===== 主卡片 ===== */
+
+.content-box {
+    border: 1px solid rgba(168, 148, 88, 0.20);
+    border-radius: var(--qr-radius-lg);
+    background: var(--qr-surface);
+    padding: 28px;
+    box-shadow: var(--qr-shadow);
+}
+
+.qr-mode {
+    margin-top: 0;
+}
+
+/* ===== 表單 ===== */
+
+.field {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    margin: 16px 0;
+}
+
+.field label {
+    min-width: 0;
+    color: #625e51;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.field input,
+.field select {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    border: 1px solid var(--qr-line);
+    border-radius: var(--qr-radius-sm);
+    background: rgba(255,255,255,.82);
+    color: var(--qr-text);
+    padding: 10px 13px;
+    outline: none;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background-color .18s ease;
+}
+
+.field input::placeholder {
+    color: #aaa596;
+}
+
+.field input:hover,
+.field select:hover {
+    border-color: #c9be9d;
+}
+
+.field input:focus,
+.field select:focus {
+    border-color: var(--qr-accent);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(168, 148, 88, 0.13);
+}
+
+/* ===== 按鈕 ===== */
+
+button {
+    border-radius: 12px;
+    transition:
+        background-color .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        transform .18s ease,
+        box-shadow .18s ease;
+}
+
+.action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0 4px;
+}
+
+.action-row button {
+    margin: 0;
+    min-height: 42px;
+    border: 1px solid var(--qr-line);
+    background: var(--qr-surface-strong);
+    color: var(--qr-text);
+    padding: 9px 15px;
+}
+
+.action-row button:hover {
+    border-color: #c8bb93;
+    background: var(--qr-accent-pale);
+    color: var(--qr-accent-deep);
+    box-shadow: 0 6px 16px rgba(92, 82, 49, 0.07);
+}
+
+.action-row button:active {
+    transform: translateY(1px);
+}
+
+/* 主要產生動作 */
+#qrNormalMode > .action-row button,
+#qrWifiMode > .action-row button,
+#a4SameMode > .action-row:not(#a4SamePrintButtons) button.a4-row-generate,
+#a4SameMode > .action-row:not(#a4SamePrintButtons) > button:first-child {
+    border-color: var(--qr-accent);
+    background: var(--qr-accent);
+    color: #fff;
+}
+
+/* 單張產生器第一顆產生按鈕 */
+#qrNormalMode .action-row button:first-child,
+#qrWifiMode .action-row button:first-child {
+    border-color: var(--qr-accent);
+    background: var(--qr-accent);
+    color: #fff;
+}
+
+#qrNormalMode .action-row button:first-child:hover,
+#qrWifiMode .action-row button:first-child:hover {
+    border-color: var(--qr-accent-hover);
+    background: var(--qr-accent-hover);
+    color: #fff;
+}
+
+/* ===== 單張 QR 預覽 ===== */
+
+#genericQrPreview {
+    display: flex;
+    min-height: 0;
+    margin-top: 22px;
+}
+
+#genericQrPreview:not(:empty) {
+    align-items: center;
+    justify-content: center;
+    padding: 26px;
+    border: 1px solid rgba(168, 148, 88, 0.20);
+    border-radius: var(--qr-radius-md);
+    background:
+        linear-gradient(45deg, rgba(168,148,88,.025) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(168,148,88,.025) 25%, transparent 25%),
+        #fff;
+    background-size: 18px 18px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.75);
+}
+
+#genericQrPreview canvas {
+    max-width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 10px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(54, 50, 37, 0.10);
+}
+
+/* ===== A4 分頁與選項 ===== */
+
+.a4-tabs {
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.a4-tabs + .a4-tabs {
+    margin-top: 4px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(168, 148, 88, 0.14);
+}
+
+.a4-checkbox {
+    gap: 10px;
+    margin: 16px 0;
+    color: #625e51;
+}
+
+.a4-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    accent-color: var(--qr-accent);
+}
+
+.notice {
+    color: var(--qr-muted);
+    line-height: 1.75;
+}
+
+/* ===== 不同資料列 ===== */
+
+.a4-data-row {
+    margin-top: 14px;
+    padding: 22px;
+    border: 1px solid rgba(168, 148, 88, 0.18);
+    border-radius: var(--qr-radius-md);
+    background: rgba(255,255,255,.52);
+}
+
+.a4-data-row:first-child {
+    border-top: 1px solid rgba(168, 148, 88, 0.18);
+}
+
+.a4-data-row-title {
+    margin-bottom: 14px;
+    color: var(--qr-accent-deep);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+
+.a4-row-status {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f5ecdf;
+    color: #896341;
+}
+
+/* 動態列按鈕 */
+.a4-row-generate {
+    border-color: var(--qr-accent) !important;
+    background: var(--qr-accent) !important;
+    color: #fff !important;
+}
+
+.a4-row-generate:hover {
+    border-color: var(--qr-accent-hover) !important;
+    background: var(--qr-accent-hover) !important;
+}
+
+.a4-row-delete {
+    color: var(--qr-danger) !important;
+}
+
+/* ===== QR 四尺寸螢幕預覽 ===== */
+
+#a4QrPreviewArea {
+    margin-top: 28px;
+}
+
+#a4QrPreviewArea .section-head {
+    margin-top: 0;
+}
+
+#a4QrPreviewGrid {
+    padding: 24px;
+    border: 1px solid rgba(168, 148, 88, 0.18);
+    border-radius: var(--qr-radius-lg);
+    background: rgba(255,253,248,.80);
+    box-shadow: var(--qr-shadow-soft);
+}
+
+.a4-size-preview-set {
+    gap: 16px;
+    align-items: stretch;
+}
+
+.a4-size-preview-item {
+    min-width: 150px;
+    padding: 18px;
+    border: 1px solid rgba(168, 148, 88, 0.16);
+    border-radius: var(--qr-radius-md);
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(77, 70, 48, 0.05);
+}
+
+.a4-size-preview-label {
+    margin-bottom: 12px;
+    color: var(--qr-accent-deep);
+    font-size: 13px;
+    letter-spacing: .08em;
+}
+
+.a4-size-preview-item .print-card {
+    padding: 0;
+}
+
+.a4-size-preview-item canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ===== 捲動 ===== */
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* ===== 手機 ===== */
+
+@media (max-width: 700px) {
+
+    .page,
+    .topbar-inner {
+        width: min(calc(100% - 24px), var(--content));
+    }
+
+    .topbar-inner {
+        min-height: 0;
+        padding: 14px 0 12px;
+        gap: 12px;
+    }
+
+    .brand {
+        font-size: 16px;
+    }
+
+    .main-nav {
+        width: 100%;
+    }
+
+    .main-nav button {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 9px 10px;
+        font-size: 13px;
+    }
+
+    .hero {
+        margin-top: 14px;
+        padding: 30px 22px 26px;
+        border-radius: 22px;
+    }
+
+    .hero::after {
+        right: -72px;
+        top: -74px;
+    }
+
+    .hero h1 {
+        font-size: clamp(30px, 10vw, 42px);
+    }
+
+    .hero p {
+        font-size: 14px;
+        line-height: 1.75;
+    }
+
+    .section-head {
+        margin: 26px 2px 14px;
+        gap: 14px;
+    }
+
+    .section-head .sub-nav {
+        width: 100%;
+    }
+
+    .section-head .sub-nav button {
+        flex: 1 1 0;
+    }
+
+    .content-box {
+        padding: 20px 16px;
+        border-radius: 22px;
+    }
+
+    .field {
+        grid-template-columns: 1fr;
+        gap: 7px;
+        margin: 14px 0;
+    }
+
+    .field label {
+        display: block;
+        margin: 0;
+    }
+
+    .field input,
+    .field select {
+        width: 100%;
+    }
+
+    .action-row {
+        gap: 7px;
+    }
+
+    .action-row button {
+        flex: 1 1 auto;
+        min-width: 118px;
+    }
+
+    .a4-tabs button {
+        flex: 1 1 auto;
+        min-width: 118px;
+    }
+
+    .a4-data-row {
+        padding: 18px 14px;
+    }
+
+    #a4QrPreviewGrid {
+        padding: 16px 12px;
+    }
+
+    .a4-size-preview-set {
+        justify-content: center;
+    }
+
+    .a4-size-preview-item {
+        min-width: 132px;
+        padding: 14px 10px;
+    }
+
+    #genericQrPreview:not(:empty) {
+        padding: 18px 12px;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .page,
+    .topbar-inner {
+        width: min(calc(100% - 20px), var(--content));
+    }
+
+    .brand {
+        width: 100%;
+    }
+
+    .main-nav button {
+        font-size: 12px;
+    }
+
+    .hero {
+        padding: 26px 18px 22px;
+    }
+
+    .content-box {
+        padding: 18px 13px;
+    }
+
+    .action-row button,
+    .a4-tabs button {
+        width: 100%;
+        flex-basis: 100%;
+    }
+}
+
+}

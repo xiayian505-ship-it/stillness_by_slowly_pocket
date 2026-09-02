@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wi-Fi QRCode 工具｜A4排版列印</title>
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<style>
+:root {
+    --bg: #f4f5f5;
+    --surface: #ffffff;
+    --text: #202426;
+    --muted: #687176;
+    --line: #d9dddf;
+    --accent: #536d78;
+    --content: 980px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: Arial, "Microsoft JhengHei", sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+}
+
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+
+input, select {
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+}
+
+.page {
+    width: min(calc(100% - 32px), var(--content));
+    margin: 0 auto;
+    padding-bottom: 48px;
+}
+
+.topbar {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.topbar-inner {
+    width: min(calc(100% - 32px), var(--content));
+    margin: 0 auto;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.brand {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.main-nav,
+.sub-nav {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.main-nav button,
+.sub-nav button {
+    border: 1px solid var(--line);
+    background: transparent;
+    padding: 8px 12px;
+}
+
+.main-nav button.active,
+.sub-nav button.active {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+}
+
+.hero {
+    padding: 40px 0 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.hero-kicker {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.hero h1 {
+    margin: 0 0 8px;
+    font-size: clamp(28px, 5vw, 42px);
+}
+
+.hero p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 16px;
+    margin: 28px 0 18px;
+}
+
+.section-head h2 { margin: 0 0 5px; }
+
+.section-head p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.main-section,
+.hotel-section,
+.qr-mode,
+.edit-panel { margin-top: 18px; }
+
+.hidden { display: none !important; }
+.toolbar { margin-bottom: 14px; }
+.field { margin: 10px 0; }
+
+.field label {
+    display: inline-block;
+    min-width: 110px;
+}
+
+.field input,
+.field select { min-width: 220px; }
+
+.action-row { margin: 14px 0; }
+
+.action-row button,
+.edit-panel button,
+.manage-row button {
+    margin: 3px 3px 3px 0;
+    padding: 7px 11px;
+}
+
+.content-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 18px;
+}
+
+.wifi-row,
+.manage-row {
+    border-top: 1px solid var(--line);
+    padding: 12px 0;
+}
+
+.wifi-row:first-child,
+.manage-row:first-child { border-top: none; }
+
+.wifi-row strong {
+    display: inline-block;
+    min-width: 90px;
+}
+
+.print-preview { margin-top: 18px; }
+
+.print-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    align-items: start;
+}
+
+.print-card {
+    text-align: center;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    padding: 4px 0;
+}
+
+.print-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.print-card canvas {
+    display: block;
+    margin: 0 auto;
+}
+
+.public-print {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.public-print .print-title { font-size: 20px; }
+
+.public-info {
+    margin-top: 8px;
+    line-height: 1.6;
+}
+
+#genericQrPreview { margin-top: 16px; }
+
+#genericQrPreview canvas {
+    display: block;
+    margin-top: 8px;
+}
+
+.edit-panel {
+    border-top: 2px solid #999;
+    padding-top: 12px;
+}
+
+.notice {
+    color: #555;
+    font-size: 14px;
+}
+
+.status-unset { color: #777; }
+
+
+/* ==================== A4 多份列印 ==================== */
+.a4-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.a4-tabs button {
+    border: 1px solid var(--line);
+    background: transparent;
+    padding: 8px 12px;
+}
+
+.a4-tabs button.active {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+}
+
+.a4-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.a4-checkbox input { min-width: auto; }
+
+.a4-data-row {
+    border-top: 1px solid var(--line);
+    padding: 14px 0;
+}
+
+.a4-data-row:first-child { border-top: none; }
+
+.a4-data-row-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.a4-row-preview { margin-top: 10px; }
+
+.a4-row-status {
+    margin-top: 8px;
+    color: #8a5a00;
+    font-size: 14px;
+}
+
+#a4QrPreviewArea { margin-top: 18px; }
+
+#a4QrPreviewArea .print-grid { grid-template-columns: repeat(3, 1fr); }
+
+.a4-size-preview-set {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.a4-size-preview-item { text-align: center; }
+
+.a4-size-preview-label {
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.print-sheet { width: 100%; }
+
+/* ==================== A4 四尺寸實體樣張 ==================== */
+.a4-physical-sample {
+    width: 172mm;
+    margin: 0 auto;
+}
+
+.a4-physical-sample-warning {
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1.6;
+    margin-bottom: 3mm;
+}
+
+.a4-physical-sample-stage {
+    position: relative;
+    width: 172mm;
+    height: 245mm;
+}
+
+.a4-physical-ruler-horizontal {
+    position: absolute;
+    left: 12mm;
+    top: 0;
+    width: 160mm;
+    height: 10mm;
+    border-bottom: 0.2mm solid #000;
+}
+
+.a4-physical-ruler-vertical {
+    position: absolute;
+    left: 0;
+    top: 12mm;
+    width: 10mm;
+    height: 220mm;
+    border-right: 0.2mm solid #000;
+}
+
+.a4-physical-ruler-tick { position: absolute; background: #000; }
+
+.a4-physical-ruler-horizontal .a4-physical-ruler-tick {
+    bottom: 0;
+    width: 0.2mm;
+}
+
+.a4-physical-ruler-vertical .a4-physical-ruler-tick {
+    right: 0;
+    height: 0.2mm;
+}
+
+.a4-physical-ruler-label {
+    position: absolute;
+    font-size: 8pt;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.a4-physical-ruler-horizontal .a4-physical-ruler-label {
+    top: 0;
+    transform: translateX(-50%);
+}
+
+.a4-physical-ruler-vertical .a4-physical-ruler-label {
+    left: 0;
+    transform: translateY(-50%);
+}
+
+.a4-physical-stack {
+    position: absolute;
+    left: 20mm;
+    top: 18mm;
+    width: 140mm;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4mm;
+}
+
+.a4-physical-size-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.a4-physical-size-label {
+    font-size: 10pt;
+    font-weight: bold;
+    margin-bottom: 1mm;
+}
+
+.a4-physical-size-item canvas { display: block; }
+
+@media (max-width: 700px) {
+    .topbar-inner,
+    .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .topbar-inner { padding: 14px 0; }
+
+    .field label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .field input,
+    .field select {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .print-grid { grid-template-columns: 1fr; }
+}
+
+@page {
+    size: A4 portrait;
+    margin: 12mm;
+}
+
+@media print {
+    body * { visibility: hidden !important; }
+
+    #printArea,
+    #printArea * { visibility: visible !important; }
+
+    #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+    }
+
+    #printArea .print-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr);
+        column-gap: 6mm;
+        row-gap: 4mm;
+    }
+
+    #printArea .print-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        padding: 0;
+    }
+
+    #printArea .print-title {
+        font-size: 12pt;
+        margin-bottom: 2mm;
+    }
+
+    #printArea .public-print .print-title { font-size: 14pt; }
+    #printArea .public-info { font-size: 11pt; }
+
+    #printArea .a4-physical-sample {
+        width: 172mm;
+        margin: 0 auto;
+    }
+
+    #printArea .a4-physical-sample-warning {
+        font-size: 9pt;
+        margin-bottom: 3mm;
+    }
+}
+</style>
+<link rel="stylesheet" href="qrcode_test.css">
+</head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<div class="brand">Wi-Fi QRCode 工具</div>
+<nav class="main-nav">
+
+<button class="active" id="navGenerator" onclick="showMain('generator')">單張 QRCode 產生器</button>
+<button id="navA4" onclick="showMain('a4')">多份列印 | A4排版</button>
+
+</nav>
+</div>
+</header>
+<main class="page">
+
+<section class="main-section" id="sectionGenerator">
+<div class="hero">
+<div class="hero-kicker">QRCode Generator</div>
+<h1>QRCode 產生器</h1>
+<p>產生一般文字、網址或 Wi-Fi QRCode。</p>
+</div>
+<div class="section-head">
+<div>
+<h2>產生 QRCode</h2>
+<p>選擇要建立的 QRCode 類型。</p>
+</div>
+<div class="sub-nav">
+<button class="active" id="qrNavNormal" onclick="showQrMode('normal')">一般 QRCode</button>
+<button id="qrNavWifi" onclick="showQrMode('wifi')">Wi-Fi QRCode</button>
+</div>
+</div>
+<div class="content-box">
+<div class="qr-mode" id="qrNormalMode">
+<div class="field"><label for="normalText">內容：</label><input id="normalText" placeholder="網址或任意文字" type="text"/></div>
+<div class="field">
+<label for="normalSize">尺寸：</label>
+<select id="normalSize">
+<option value="120">120</option><option value="150">150</option><option value="180">180</option>
+<option value="200">200</option><option value="250">250</option><option value="300">300</option>
+<option value="400">400</option><option value="500">500</option><option value="600">600</option>
+</select>
+</div>
+<div class="action-row"><button onclick="makeNormalQR()">產生 QRCode</button></div>
+</div>
+<div class="qr-mode hidden" id="qrWifiMode">
+<div class="field"><label for="genericWifiSsid">Wi-Fi 名稱：</label><input id="genericWifiSsid" type="text"/></div>
+<div class="field"><label for="genericWifiPw">Wi-Fi 密碼：</label><input id="genericWifiPw" type="text"/></div>
+<div class="field"><label for="genericWifiType">加密方式：</label><select id="genericWifiType"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="">無密碼</option></select></div>
+<div class="field">
+<label for="genericWifiSize">尺寸：</label>
+<select id="genericWifiSize">
+<option value="120">120</option><option value="150">150</option><option value="180">180</option>
+<option value="200">200</option><option value="250">250</option><option value="300">300</option>
+<option value="400">400</option><option value="500">500</option><option value="600">600</option>
+</select>
+</div>
+<div class="action-row"><button onclick="makeGenericWifiQR()">產生 Wi-Fi QRCode</button></div>
+</div>
+<div id="genericQrPreview"></div>
+<div class="action-row">
+<button onclick="downloadGenericQR()">下載 QR 圖片</button>
+<button onclick="shareGenericQR()">分享 QR 圖片</button>
+<button onclick="clearGenericQR()">清除</button>
+</div>
+</div>
+</section>
+<section class="main-section hidden" id="sectionA4">
+<div class="hero">
+<div class="hero-kicker">A4 QRCode Print</div>
+<h1>A4 多份列印</h1>
+<p>同時產生80px、120px、150px、200px 四種尺寸，預覽後再列印。 </p><p>80、120 為 18 張 </p> <p>150 為 12 張 </p> <p>200 為 9 張</p>
+</div>
+<div class="section-head">
+<div>
+<h2>QRCode 多份列印</h2>
+<p>可使用同一筆資料重複列印，或設定多筆不同資料。</p>
+</div>
+</div>
+<div class="content-box">
+<div class="a4-tabs">
+<button class="active" id="a4TypeNormal" onclick="a4ShowType('normal')">一般 QRCode</button>
+<button id="a4TypeWifi" onclick="a4ShowType('wifi')">Wi-Fi QRCode</button>
+</div>
+<div class="a4-tabs">
+<button class="active" id="a4ModeSame" onclick="a4ShowMode('same')">同資料多份</button>
+<button id="a4ModeDifferent" onclick="a4ShowMode('different')">不同資料多份</button>
+</div>
+<div class="a4-checkbox">
+<input checked="" id="a4PhysicalRuler" type="checkbox"/>
+<label for="a4PhysicalRuler">列印尺寸尺</label>
+</div>
+<div id="a4SameMode">
+<div class="a4-checkbox">
+<input checked="" id="a4SamePrintLabel" onchange="a4SyncSameLabel()" type="checkbox"/>
+<label for="a4SamePrintLabel">列印標籤</label>
+</div>
+<div class="field" id="a4SameLabelField">
+<label for="a4SameLabel">標籤：</label>
+<input id="a4SameLabel" type="text"/>
+</div>
+<div id="a4SameNormal">
+<div class="field"><label for="a4SameText">內容：</label><input id="a4SameText" placeholder="網址或任意文字" type="text"/></div>
+</div>
+<div class="hidden" id="a4SameWifi">
+<div class="field"><label for="a4SameSsid">Wi-Fi 名稱：</label><input id="a4SameSsid" type="text"/></div>
+<div class="field"><label for="a4SamePassword">Wi-Fi 密碼：</label><input id="a4SamePassword" type="text"/></div>
+<div class="field"><label for="a4SameWifiType">加密方式：</label><select id="a4SameWifiType"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="">無密碼</option></select></div>
+</div>
+<div class="field"><label for="a4SameCount">列印份數：</label><input id="a4SameCount" max="18" min="1" type="number" value="1"/></div>
+<div class="action-row">
+<button onclick="a4GenerateSame()">產生四種尺寸 QRCode</button>
+</div>
+<div class="action-row hidden" id="a4SamePrintButtons">
+<button onclick="a4PreviewSamePrint(80)">預覽 80 px 列印（A4最多18張）</button>
+<button onclick="a4PreviewSamePrint(120)">預覽 120 px 列印（A4最多18張）</button>
+<button onclick="a4PreviewSamePrint(150)">預覽 150 px 列印（A4最多12張）</button>
+<button onclick="a4PreviewSamePrint(200)">預覽 200 px 列印（A4最多9張）</button>
+<button onclick="a4PreviewPhysicalSample(a4SameGeneratedItems[0])">預覽四尺寸實體樣張（列印請用 100%／實際大小）</button>
+<button onclick="printCurrent()">列印目前預覽</button>
+</div>
+</div>
+<div class="hidden" id="a4DifferentMode">
+<p class="notice"><p>每一筆可獨立設定標籤、列印份數，資料只需輸入一次</p><p>同時產生80px、120px、150px、200px 四種尺寸，預覽後再列印。 </p><p>80、120 為 18 張 </p> <p>150 為 12 張 </p> <p>200 為 9 張</p>
+<div id="a4DifferentRows"></div>
+<div class="action-row">
+<button id="a4AddRowButton" onclick="a4AddRow()">新增一筆</button>
+</div>
+<div class="action-row hidden" id="a4DifferentPrintButtons">
+<button onclick="a4PreviewDifferentPrint(80)">預覽 80px 列印（A4最多18張）</button>
+<button onclick="a4PreviewDifferentPrint(120)">預覽 120px 列印（A4最多18張）</button>
+<button onclick="a4PreviewDifferentPrint(150)">預覽 150px 列印（A4最多12張）</button>
+<button onclick="a4PreviewDifferentPrint(200)">預覽 200px 列印（A4最多9張）</button>
+<button onclick="printCurrent()">列印目前預覽</button>
+</div>
+</p></div>
+</div>
+<section class="hidden" id="a4QrPreviewArea">
+<div class="section-head">
+<div>
+<h2>QRCode 預覽</h2>
+<p>同一份資料同時顯示 80px、120px、150px、200px，先預覽再列印</p>
+</div>
+</div>
+<div class="print-grid" id="a4QrPreviewGrid"></div>
+</section>
+</section>
+
+<section class="print-preview hidden" id="printArea"></section>
+</main>
+<script>
+const ROOM_STORAGE_KEY = "hotel_wifi_room";
+const OTHER_STORAGE_KEY = "hotel_wifi_other";
+const HOTEL_QR_SIZE = 120;
+const OTHER_NAME_MAX = 4;
+
+const ROOM_NUMBERS = [
+    202,
+    203,205,206,207,208,210,211,212,215,
+    301,303,305,306,307,308,310,311,312,315,316,317,
+    501,503,505,506,507,508,510,511,512,515,516,517,
+    601,602,603,605,606,607,608,610,611,612,615,616,617,
+    701,702,705,706,707,708,710,711,712,715,716,717,
+    801,802,803,805,810,811,812,815
+];
+
+let roomWifi = loadRoomWifi();
+let otherWifi = loadOtherWifi();
+
+function loadRoomWifi() {
+    try {
+        const saved = localStorage.getItem(ROOM_STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+        }
+    } catch (error) { console.warn("客房 Wi-Fi 資料讀取失敗。", error); }
+    return {};
+}
+
+function loadOtherWifi() {
+    try {
+        const saved = localStorage.getItem(OTHER_STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) return parsed;
+        }
+    } catch (error) { console.warn("其他 Wi-Fi 資料讀取失敗。", error); }
+    return [];
+}
+
+function saveRoomWifi() { localStorage.setItem(ROOM_STORAGE_KEY, JSON.stringify(roomWifi)); }
+function saveOtherWifi() { localStorage.setItem(OTHER_STORAGE_KEY, JSON.stringify(otherWifi)); }
+
+function wifiPayload(ssid, password, type = "WPA") {
+    const wifiType = type || "nopass";
+    return `WIFI:T:${wifiType};S:${ssid};P:${password};;`;
+}
+
+function escapeHtml(value) {
+    return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+function setActive(ids, activeId) {
+    ids.forEach(id => document.getElementById(id)?.classList.toggle("active", id === activeId));
+}
+
+function clearPrintArea() {
+    const printArea = document.getElementById("printArea");
+    printArea.innerHTML = "";
+    printArea.classList.add("hidden");
+}
+
+function showMain(target) {
+    document.getElementById("sectionGenerator").classList.add("hidden");
+    document.getElementById("sectionA4").classList.add("hidden");
+    clearPrintArea();
+    setActive(["navGenerator","navA4"], target === "generator" ? "navGenerator" : "navA4");
+
+    if (target === "generator") document.getElementById("sectionGenerator").classList.remove("hidden");
+    else if (target === "a4") document.getElementById("sectionA4").classList.remove("hidden");
+}
+
+function showHotelMode(target) {
+    document.getElementById("hotelRooms").classList.toggle("hidden", target !== "rooms");
+    document.getElementById("hotelPublic").classList.toggle("hidden", target !== "public");
+    setActive(["hotelNavRooms","hotelNavPublic"], target === "rooms" ? "hotelNavRooms" : "hotelNavPublic");
+    clearPrintArea();
+    if (target === "rooms") resetRoomListView();
+    else resetPublicListView();
+}
+
+function showManageMode(target) {
+    document.getElementById("manageRooms").classList.toggle("hidden", target !== "rooms");
+    document.getElementById("managePublic").classList.toggle("hidden", target !== "public");
+    setActive(["manageNavRooms","manageNavPublic"], target === "rooms" ? "manageNavRooms" : "manageNavPublic");
+    if (target === "rooms") {
+        document.getElementById("roomSearch").value = "";
+        renderRoomManageList();
+    } else renderPublicManageList();
+}
+
+function showQrMode(mode) {
+    document.getElementById("qrNormalMode").classList.toggle("hidden", mode !== "normal");
+    document.getElementById("qrWifiMode").classList.toggle("hidden", mode !== "wifi");
+    setActive(["qrNavNormal","qrNavWifi"], mode === "normal" ? "qrNavNormal" : "qrNavWifi");
+    clearGenericQR();
+}
+
+/* ==================== 客房顯示 / 列印 ==================== */
+function getConfiguredRoom(room) { return roomWifi[String(room)] || null; }
+
+function resetRoomListView() {
+    const tabs = document.getElementById("roomFloorTabs");
+    tabs.innerHTML = "";
+    tabs.classList.add("hidden");
+    document.getElementById("hotelList").innerHTML = "";
+}
+
+function showRoomList() {
+    clearPrintArea();
+
+    const floors = [...new Set(ROOM_NUMBERS.map(room => String(room).charAt(0)))];
+    const tabs = document.getElementById("roomFloorTabs");
+
+    tabs.innerHTML = "";
+
+    floors.forEach((floor, index) => {
+        const button = document.createElement("button");
+        button.textContent = `${floor}F`;
+        button.onclick = () => showRoomFloor(floor, button);
+        tabs.appendChild(button);
+
+        if (index === 0) button.classList.add("active");
+    });
+
+    tabs.classList.remove("hidden");
+
+    if (floors.length) showRoomFloor(floors[0], tabs.querySelector("button"));
+}
+
+function showRoomFloor(floor, activeButton) {
+    const tabs = document.getElementById("roomFloorTabs");
+    [...tabs.querySelectorAll("button")].forEach(button => button.classList.remove("active"));
+    if (activeButton) activeButton.classList.add("active");
+
+    const box = document.getElementById("hotelList");
+    const rows = ROOM_NUMBERS
+        .filter(room => String(room).charAt(0) === String(floor))
+        .map(room => {
+            const data = getConfiguredRoom(room);
+            return `<div class="wifi-row"><strong>R${room}</strong>${data ? `${escapeHtml(data.ssid)}` : `<span class="status-unset">尚未設定</span>`}</div>`;
+        })
+        .join("");
+
+    box.innerHTML = `<h4>${escapeHtml(floor)}F</h4>${rows}`;
+}
+
+function showRoomPrintPreview() {
+    const configured = ROOM_NUMBERS.map(room => ({ room, data: getConfiguredRoom(room) })).filter(entry => entry.data && entry.data.ssid);
+    if (!configured.length) { alert("目前沒有已設定的客房 Wi-Fi"); return; }
+    const printArea = document.getElementById("printArea");
+    printArea.innerHTML = "";
+    const grid = document.createElement("div"); grid.className = "print-grid";
+    configured.forEach(({ room, data }) => {
+        const card = document.createElement("div"); card.className = "print-card";
+        const title = document.createElement("div"); title.className = "print-title"; title.textContent = `R${room} | Wi-Fi`;
+        const canvas = document.createElement("canvas");
+        new QRious({ element: canvas, value: wifiPayload(data.ssid, data.password || ""), size: HOTEL_QR_SIZE, level: "H" });
+        card.appendChild(title); card.appendChild(canvas); grid.appendChild(card);
+    });
+    printArea.appendChild(grid); printArea.classList.remove("hidden");
+    printArea.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ==================== 其他顯示 / 列印 ==================== */
+function resetPublicListView() { document.getElementById("publicList").innerHTML = ""; }
+
+function showPublicList() {
+    clearPrintArea();
+
+    const box = document.getElementById("publicList");
+
+    if (!otherWifi.length) {
+        box.innerHTML = "<p>目前沒有其他 Wi-Fi。</p>";
+        return;
+    }
+
+    box.innerHTML = otherWifi.map(item => `
+        <div class="wifi-row">
+            <strong>${escapeHtml(item.name)}</strong>
+            <div>SSID：${escapeHtml(item.ssid)}</div>
+            <div>密碼：${escapeHtml(item.password || "")}</div>
+        </div>
+    `).join("");
+}
+
+function showPublicPrintPreview() {
+    const configured = otherWifi.filter(item => item && item.ssid);
+
+    if (!configured.length) {
+        alert("目前沒有已設定的其他 Wi-Fi");
+        return;
+    }
+
+    const printArea = document.getElementById("printArea");
+    printArea.innerHTML = "";
+
+    const grid = document.createElement("div");
+    grid.className = "print-grid";
+
+    configured.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "print-card";
+
+        const title = document.createElement("div");
+        title.className = "print-title";
+        title.textContent = `${item.name} | Wi-Fi`;
+
+        const canvas = document.createElement("canvas");
+
+        new QRious({
+            element: canvas,
+            value: wifiPayload(item.ssid, item.password || ""),
+            size: HOTEL_QR_SIZE,
+            level: "H"
+        });
+
+        card.appendChild(title);
+        card.appendChild(canvas);
+        grid.appendChild(card);
+    });
+
+    printArea.appendChild(grid);
+    printArea.classList.remove("hidden");
+    printArea.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function printCurrent() {
+    const printArea = document.getElementById("printArea");
+    if (printArea.classList.contains("hidden") || !printArea.children.length) { alert("請先預覽列印"); return; }
+    if (printArea.querySelector(".a4-physical-sample")) {
+        const ok = confirm("四尺寸實體樣張的尺規必須使用 100%／實際大小列印，請勿使用「符合頁面」或縮放列印。\n是否繼續列印？");
+        if (!ok) return;
+    }
+    window.print();
+}
+
+/* ==================== 通用 QRCode ==================== */
+function renderGenericQR(text, size) {
+    const preview = document.getElementById("genericQrPreview"); preview.innerHTML = "";
+    const canvas = document.createElement("canvas"); canvas.id = "genericQrCanvas";
+    new QRious({ element: canvas, value: text, size, level: "H" }); preview.appendChild(canvas);
+}
+function makeNormalQR() {
+    const text = document.getElementById("normalText").value.trim();
+    if (!text) { alert("請輸入內容"); return; }
+    renderGenericQR(text, parseInt(document.getElementById("normalSize").value, 10));
+}
+function makeGenericWifiQR() {
+    const ssid = document.getElementById("genericWifiSsid").value.trim(), password = document.getElementById("genericWifiPw").value, type = document.getElementById("genericWifiType").value;
+    if (!ssid) { alert("請輸入 Wi-Fi 名稱"); return; }
+    renderGenericQR(wifiPayload(ssid, password, type), parseInt(document.getElementById("genericWifiSize").value, 10));
+}
+function getGenericQrDataUrl() { const canvas = document.getElementById("genericQrCanvas"); return canvas ? canvas.toDataURL("image/png") : null; }
+function downloadGenericQR() {
+    const dataUrl = getGenericQrDataUrl(); if (!dataUrl) { alert("請先產生 QRCode"); return; }
+    const link = document.createElement("a"); link.href = dataUrl; link.download = "qrcode.png"; document.body.appendChild(link); link.click(); link.remove();
+}
+async function shareGenericQR() {
+    const dataUrl = getGenericQrDataUrl(); if (!dataUrl) { alert("請先產生 QRCode"); return; }
+    if (!navigator.share) { alert("此裝置不支援系統分享，請改用下載圖片"); return; }
+    try {
+        const blob = await (await fetch(dataUrl)).blob(), file = new File([blob], "qrcode.png", { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ title: "QRCode", files: [file] });
+        else await navigator.share({ title: "QRCode" });
+    } catch (error) { console.warn("分享取消或失敗", error); }
+}
+function clearGenericQR() { document.getElementById("genericQrPreview").innerHTML = ""; }
+
+/* ==================== A4 多份列印 ==================== */
+const A4_QR_SIZES = [80, 120, 150, 200];
+const A4_MAX_PRINT_COUNT = 18;
+const A4_PAGE_CAPACITY = { 80: 18, 120: 18, 150: 12, 200: 9 };
+
+let a4QrType = "normal";
+let a4PrintMode = "same";
+let a4SameGeneratedItems = [];
+
+function a4ClearPrintOnly() { clearPrintArea(); }
+
+function a4MakeCard(label, payload, printLabel, size = 120) {
+    const card = document.createElement("div");
+    card.className = "print-card";
+
+    if (printLabel) {
+        const title = document.createElement("div");
+        title.className = "print-title";
+        title.textContent = label;
+        card.appendChild(title);
+    }
+
+    const canvas = document.createElement("canvas");
+    new QRious({ element: canvas, value: payload, size: size, level: "H" });
+    card.appendChild(canvas);
+    return card;
+}
+
+function a4ShowType(type) {
+    a4QrType = type;
+    setActive(["a4TypeNormal","a4TypeWifi"], type === "normal" ? "a4TypeNormal" : "a4TypeWifi");
+    document.getElementById("a4SameNormal").classList.toggle("hidden", type !== "normal");
+    document.getElementById("a4SameWifi").classList.toggle("hidden", type !== "wifi");
+    a4ResetGenerated();
+    a4ResetRows();
+}
+
+function a4ShowMode(mode) {
+    a4PrintMode = mode;
+    setActive(["a4ModeSame","a4ModeDifferent"], mode === "same" ? "a4ModeSame" : "a4ModeDifferent");
+    document.getElementById("a4SameMode").classList.toggle("hidden", mode !== "same");
+    document.getElementById("a4DifferentMode").classList.toggle("hidden", mode !== "different");
+    a4ResetGenerated();
+    if (mode === "different" && !document.querySelector("#a4DifferentRows .a4-data-row")) a4ResetRows();
+}
+
+function a4SyncSameLabel() {
+    document.getElementById("a4SameLabelField").classList.toggle("hidden", !document.getElementById("a4SamePrintLabel").checked);
+    a4ResetGenerated();
+}
+
+function a4ResetGenerated() {
+    a4SameGeneratedItems = [];
+    const area = document.getElementById("a4QrPreviewArea");
+    const grid = document.getElementById("a4QrPreviewGrid");
+    if (grid) { grid.innerHTML = ""; grid.style.display = ""; }
+    if (area) area.classList.add("hidden");
+    document.getElementById("a4SamePrintButtons")?.classList.add("hidden");
+    document.getElementById("a4DifferentPrintButtons")?.classList.add("hidden");
+    a4ClearPrintOnly();
+}
+
+function a4MakeSizePreview(label, payload, printLabel) {
+    const set = document.createElement("div");
+    set.className = "a4-size-preview-set";
+
+    A4_QR_SIZES.forEach(size => {
+        const item = document.createElement("div");
+        item.className = "a4-size-preview-item";
+
+        const sizeLabel = document.createElement("div");
+        sizeLabel.className = "a4-size-preview-label";
+        sizeLabel.textContent = `${size}`;
+
+        item.appendChild(sizeLabel);
+        item.appendChild(a4MakeCard(label, payload, printLabel, size));
+        set.appendChild(item);
+    });
+
+    return set;
+}
+
+function a4ShowSameGenerated(items) {
+    a4SameGeneratedItems = items;
+    const area = document.getElementById("a4QrPreviewArea");
+    const grid = document.getElementById("a4QrPreviewGrid");
+    grid.innerHTML = "";
+    grid.style.display = "block";
+
+    if (items.length) {
+        const sample = items[0];
+        grid.appendChild(a4MakeSizePreview(sample.label, sample.payload, sample.printLabel));
+    }
+
+    area.classList.remove("hidden");
+    document.getElementById("a4SamePrintButtons").classList.remove("hidden");
+    a4ClearPrintOnly();
+    area.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function a4GenerateSame() {
+    const count = Number(document.getElementById("a4SameCount").value);
+    const printLabel = document.getElementById("a4SamePrintLabel").checked;
+    const label = document.getElementById("a4SameLabel").value.trim();
+
+    if (!Number.isInteger(count) || count < 1 || count > A4_MAX_PRINT_COUNT) {
+        alert("列印份數只能是 1～18");
+        return;
+    }
+
+    if (printLabel && !label) {
+        alert("請輸入標籤，或取消「列印標籤」");
+        return;
+    }
+
+    let payload = "";
+
+    if (a4QrType === "normal") {
+        const text = document.getElementById("a4SameText").value.trim();
+        if (!text) {
+            alert("請輸入內容");
+            return;
+        }
+        payload = text;
+    } else {
+        const ssid = document.getElementById("a4SameSsid").value.trim();
+        const password = document.getElementById("a4SamePassword").value;
+        const type = document.getElementById("a4SameWifiType").value;
+        if (!ssid) {
+            alert("請輸入 Wi-Fi 名稱");
+            return;
+        }
+        payload = wifiPayload(ssid, password, type);
+    }
+
+    a4ShowSameGenerated(Array.from({ length: count }, () => ({ label, payload, printLabel })));
+}
+
+function a4PreviewSamePrint(size) {
+    if (!a4SameGeneratedItems.length) {
+        alert("請先產生 QRCode");
+        return;
+    }
+    a4RenderPrint(a4SameGeneratedItems, size);
+}
+
+function a4MakeRow(index) {
+    const row = document.createElement("div");
+    row.className = "a4-data-row";
+    row.dataset.generated = "0";
+
+    row.innerHTML = a4QrType === "normal"
+        ? `<div class="a4-data-row-title">第 ${index} 筆</div>
+           <div class="a4-checkbox"><input type="checkbox" class="a4-row-print-label" checked><label>列印標籤</label></div>
+           <div class="field a4-row-label-field"><label>標籤：</label><input type="text" class="a4-row-label"></div>
+           <div class="field"><label>內容：</label><input type="text" class="a4-row-text" placeholder="網址或任意文字"></div>
+           <div class="field"><label>列印份數：</label><input type="number" class="a4-row-count" min="1" max="18" value="1"></div>
+           <div class="action-row"><button type="button" class="a4-row-generate">產生 QRCode</button><button type="button" class="a4-row-delete">刪除此筆</button></div>
+           <div class="a4-row-preview hidden"></div><div class="a4-row-status hidden">資料已變更，請重新產生 QRCode</div>`
+        : `<div class="a4-data-row-title">第 ${index} 筆</div>
+           <div class="a4-checkbox"><input type="checkbox" class="a4-row-print-label" checked><label>列印標籤</label></div>
+           <div class="field a4-row-label-field"><label>標籤：</label><input type="text" class="a4-row-label"></div>
+           <div class="field"><label>Wi-Fi 名稱：</label><input type="text" class="a4-row-ssid"></div>
+           <div class="field"><label>Wi-Fi 密碼：</label><input type="text" class="a4-row-password"></div>
+           <div class="field"><label>加密方式：</label><select class="a4-row-wifi-type"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="">無密碼</option></select></div>
+           <div class="field"><label>列印份數：</label><input type="number" class="a4-row-count" min="1" max="18" value="1"></div>
+           <div class="action-row"><button type="button" class="a4-row-generate">產生 QRCode</button><button type="button" class="a4-row-delete">刪除此筆</button></div>
+           <div class="a4-row-preview hidden"></div><div class="a4-row-status hidden">資料已變更，請重新產生 QRCode</div>`;
+
+    const labelToggle = row.querySelector(".a4-row-print-label");
+    labelToggle.addEventListener("change", () => {
+        row.querySelector(".a4-row-label-field").classList.toggle("hidden", !labelToggle.checked);
+        a4InvalidateRow(row);
+    });
+
+    row.querySelectorAll("input:not(.a4-row-print-label), select").forEach(element => {
+        element.addEventListener("input", () => a4InvalidateRow(row));
+        element.addEventListener("change", () => a4InvalidateRow(row));
+    });
+
+    row.querySelector(".a4-row-generate").addEventListener("click", () => a4GenerateRow(row));
+    row.querySelector(".a4-row-delete").addEventListener("click", () => a4RemoveRow(row));
+
+    return row;
+}
+
+function a4ResetRows() {
+    const box = document.getElementById("a4DifferentRows");
+    if (!box) return;
+    box.innerHTML = "";
+    box.appendChild(a4MakeRow(1));
+    box.appendChild(a4MakeRow(2));
+    box.appendChild(a4MakeRow(3));
+    a4RenumberRows();
+}
+
+function a4AddRow() {
+    const box = document.getElementById("a4DifferentRows");
+    const rows = box.querySelectorAll(".a4-data-row");
+    if (rows.length >= A4_MAX_PRINT_COUNT) {
+        alert("最多 18 筆資料");
+        return;
+    }
+    box.appendChild(a4MakeRow(rows.length + 1));
+    a4RenumberRows();
+    a4ClearPrintOnly();
+}
+
+function a4RemoveRow(row) {
+    const box = document.getElementById("a4DifferentRows");
+    const rows = box.querySelectorAll(".a4-data-row");
+
+    if (rows.length <= 1) {
+        row.replaceWith(a4MakeRow(1));
+    } else {
+        row.remove();
+    }
+
+    a4RenumberRows();
+    a4ClearPrintOnly();
+}
+
+function a4RenumberRows() {
+    [...document.querySelectorAll("#a4DifferentRows .a4-data-row")].forEach((row, index) => {
+        row.querySelector(".a4-data-row-title").textContent = `第 ${index + 1} 筆`;
+    });
+}
+
+function a4InvalidateRow(row) {
+    if (row.dataset.generated !== "1") return;
+
+    row.dataset.generated = "0";
+    row.dataset.generatedCount = "0";
+    row.dataset.generatedLabel = "";
+    row.dataset.generatedPayload = "";
+    row.dataset.generatedPrintLabel = "0";
+
+    const preview = row.querySelector(".a4-row-preview");
+    preview.innerHTML = "";
+    preview.classList.add("hidden");
+    row.querySelector(".a4-row-status").classList.remove("hidden");
+    if (![...document.querySelectorAll("#a4DifferentRows .a4-data-row")].some(item => item.dataset.generated === "1")) {
+        document.getElementById("a4DifferentPrintButtons")?.classList.add("hidden");
+    }
+    a4ClearPrintOnly();
+}
+
+function a4GetRowItem(row) {
+    const rows = [...document.querySelectorAll("#a4DifferentRows .a4-data-row")];
+    const index = rows.indexOf(row) + 1;
+    const printLabel = row.querySelector(".a4-row-print-label").checked;
+    const label = row.querySelector(".a4-row-label").value.trim();
+    const count = Number(row.querySelector(".a4-row-count").value);
+
+    if (!Number.isInteger(count) || count < 1 || count > A4_MAX_PRINT_COUNT) {
+        alert(`第 ${index} 筆：列印份數只能是 1～18`);
+        return null;
+    }
+
+    if (printLabel && !label) {
+        alert(`第 ${index} 筆：請輸入標籤，或取消「列印標籤」`);
+        return null;
+    }
+
+    if (a4QrType === "normal") {
+        const text = row.querySelector(".a4-row-text").value.trim();
+        if (!text) {
+            alert(`第 ${index} 筆：請輸入內容`);
+            return null;
+        }
+        return { label, payload: text, printLabel, count };
+    }
+
+    const ssid = row.querySelector(".a4-row-ssid").value.trim();
+    const password = row.querySelector(".a4-row-password").value;
+    const type = row.querySelector(".a4-row-wifi-type").value;
+
+    if (!ssid) {
+        alert(`第 ${index} 筆：請輸入 Wi-Fi 名稱`);
+        return null;
+    }
+
+    return { label, payload: wifiPayload(ssid, password, type), printLabel, count };
+}
+
+function a4GeneratedTotal(excludeRow, replacementCount) {
+    let total = replacementCount;
+    document.querySelectorAll("#a4DifferentRows .a4-data-row").forEach(row => {
+        if (row === excludeRow) return;
+        if (row.dataset.generated === "1") total += Number(row.dataset.generatedCount || 0);
+    });
+    return total;
+}
+
+function a4GenerateRow(row) {
+    const item = a4GetRowItem(row);
+    if (!item) return;
+
+    const total = a4GeneratedTotal(row, item.count);
+    if (total > A4_MAX_PRINT_COUNT) {
+        alert(`全部列印份數加總最多 ${A4_MAX_PRINT_COUNT} 張，目前會變成 ${total} 張`);
+        return;
+    }
+
+    row.dataset.generated = "1";
+    row.dataset.generatedCount = String(item.count);
+    row.dataset.generatedLabel = item.label;
+    row.dataset.generatedPayload = item.payload;
+    row.dataset.generatedPrintLabel = item.printLabel ? "1" : "0";
+
+    const preview = row.querySelector(".a4-row-preview");
+    preview.innerHTML = "";
+    preview.appendChild(a4MakeSizePreview(item.label, item.payload, item.printLabel));
+
+    const sampleActions = document.createElement("div");
+    sampleActions.className = "action-row";
+    const sampleButton = document.createElement("button");
+    sampleButton.type = "button";
+    sampleButton.textContent = "預覽四尺寸實體樣張（列印請用 100%／實際大小）";
+    sampleButton.onclick = () => a4PreviewPhysicalSample(item);
+    sampleActions.appendChild(sampleButton);
+    preview.appendChild(sampleActions);
+
+    preview.classList.remove("hidden");
+    document.getElementById("a4DifferentPrintButtons").classList.remove("hidden");
+    row.querySelector(".a4-row-status").classList.add("hidden");
+    a4ClearPrintOnly();
+}
+
+function a4CollectDifferentItems() {
+    const rows = [...document.querySelectorAll("#a4DifferentRows .a4-data-row")];
+    const generated = rows.filter(row => row.dataset.generated === "1");
+
+    if (!generated.length) {
+        alert("請先至少產生一筆 QRCode");
+        return null;
+    }
+
+    const items = [];
+    generated.forEach(row => {
+        const count = Number(row.dataset.generatedCount || 0);
+        const item = {
+            label: row.dataset.generatedLabel || "",
+            payload: row.dataset.generatedPayload || "",
+            printLabel: row.dataset.generatedPrintLabel === "1"
+        };
+        for (let i = 0; i < count; i++) items.push({ ...item });
+    });
+
+    if (items.length > A4_MAX_PRINT_COUNT) {
+        alert(`全部列印份數加總最多 ${A4_MAX_PRINT_COUNT} 張`);
+        return null;
+    }
+
+    return items;
+}
+
+function a4PreviewDifferentPrint(size) {
+    const items = a4CollectDifferentItems();
+    if (items) a4RenderPrint(items, size);
+}
+
+function a4RenderPrint(items, size) {
+    if (!A4_QR_SIZES.includes(size)) return;
+
+    const capacity = A4_PAGE_CAPACITY[size];
+    if (items.length > capacity) {
+        alert(`${size} 尺寸一張 A4 最多 ${capacity} 張，目前共 ${items.length} 張。請減少列印份數。`);
+        return;
+    }
+
+    const printArea = document.getElementById("printArea");
+    printArea.innerHTML = "";
+
+    const grid = document.createElement("div");
+    grid.className = `print-grid size-${size}`;
+
+    items.forEach(item => {
+        grid.appendChild(a4MakeCard(item.label, item.payload, item.printLabel, size));
+    });
+
+    printArea.appendChild(grid);
+    printArea.classList.remove("hidden");
+    printArea.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ==================== A4 四尺寸實體樣張 ==================== */
+function a4PxToMm(size) {
+    return size * 25.4 / 96;
+}
+
+function a4MakePhysicalRuler(orientation, lengthMm) {
+    const ruler = document.createElement("div");
+    ruler.className = orientation === "horizontal" ? "a4-physical-ruler-horizontal" : "a4-physical-ruler-vertical";
+
+    for (let mm = 0; mm <= lengthMm; mm++) {
+        const tick = document.createElement("div");
+        tick.className = "a4-physical-ruler-tick";
+
+        const isCentimeter = mm % 10 === 0;
+        const isHalfCentimeter = mm % 5 === 0;
+
+        if (orientation === "horizontal") {
+            tick.style.left = `${mm}mm`;
+            tick.style.height = isCentimeter ? "5mm" : isHalfCentimeter ? "3.5mm" : "2mm";
+        } else {
+            tick.style.top = `${mm}mm`;
+            tick.style.width = isCentimeter ? "5mm" : isHalfCentimeter ? "3.5mm" : "2mm";
+        }
+
+        ruler.appendChild(tick);
+
+        if (isCentimeter) {
+            const label = document.createElement("div");
+            label.className = "a4-physical-ruler-label";
+            label.textContent = String(mm / 10);
+
+            if (orientation === "horizontal") label.style.left = `${mm}mm`;
+            else label.style.top = `${mm}mm`;
+
+            ruler.appendChild(label);
+        }
+    }
+
+    return ruler;
+}
+
+function a4PreviewPhysicalSample(item) {
+    if (!item || !item.payload) {
+        alert("請先產生 QRCode");
+        return;
+    }
+
+    const printArea = document.getElementById("printArea");
+    printArea.innerHTML = "";
+
+    const sample = document.createElement("div");
+    sample.className = "a4-physical-sample";
+
+    const warning = document.createElement("div");
+    warning.className = "a4-physical-sample-warning";
+    warning.textContent = "列印提醒：請使用 100%／實際大小，請勿使用「符合頁面」或縮放列印。";
+    sample.appendChild(warning);
+
+    const stage = document.createElement("div");
+    stage.className = "a4-physical-sample-stage";
+
+    if (document.getElementById("a4PhysicalRuler").checked) {
+        stage.appendChild(a4MakePhysicalRuler("horizontal", 160));
+        stage.appendChild(a4MakePhysicalRuler("vertical", 220));
+    }
+
+    const stack = document.createElement("div");
+    stack.className = "a4-physical-stack";
+
+    A4_QR_SIZES.forEach(size => {
+        const sizeItem = document.createElement("div");
+        sizeItem.className = "a4-physical-size-item";
+
+        const sizeLabel = document.createElement("div");
+        sizeLabel.className = "a4-physical-size-label";
+        sizeLabel.textContent = `${size}px`;
+
+        const canvas = document.createElement("canvas");
+        new QRious({
+            element: canvas,
+            value: item.payload,
+            size: size,
+            level: "H"
+        });
+
+        const physicalMm = a4PxToMm(size);
+        canvas.style.width = `${physicalMm}mm`;
+        canvas.style.height = `${physicalMm}mm`;
+
+        sizeItem.appendChild(sizeLabel);
+        sizeItem.appendChild(canvas);
+        stack.appendChild(sizeItem);
+    });
+
+    stage.appendChild(stack);
+    sample.appendChild(stage);
+    printArea.appendChild(sample);
+    printArea.classList.remove("hidden");
+    printArea.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ==================== 客房管理 ==================== */
+function renderRoomManageList() {
+    const keyword = document.getElementById("roomSearch").value.trim(), box = document.getElementById("roomManageList");
+
+    if (!keyword) {
+        box.innerHTML = "";
+        return;
+    }
+
+    const rows = ROOM_NUMBERS.filter(room => String(room).includes(keyword)).map(room => {
+        const data = getConfiguredRoom(room);
+        return `<div class="manage-row"><div><strong>R${room}</strong></div><div>${data ? `SSID：${escapeHtml(data.ssid)}` : `<span class="status-unset">尚未設定</span>`}</div><button onclick="openRoomEditPanel(${room})">${data ? "修改" : "設定"}</button></div>`;
+    }).join("");
+    box.innerHTML = rows || "<p>找不到房號。</p>";
+}
+function openBatchRoomPanel() { document.getElementById("batchRoomPanel").classList.remove("hidden"); document.getElementById("batchRoomPanel").scrollIntoView({ behavior: "smooth", block: "start" }); }
+function closeBatchRoomPanel() { document.getElementById("batchRoomPanel").classList.add("hidden"); }
+function saveAllRooms() {
+    const prefix = document.getElementById("batchSsidPrefix").value, password = document.getElementById("batchPassword").value;
+    if (!prefix.trim()) { alert("請輸入 SSID 前綴"); return; }
+    const existingCount = ROOM_NUMBERS.filter(room => getConfiguredRoom(room)).length;
+    if (existingCount > 0 && !confirm(`目前已有 ${existingCount} 間客房設定過 Wi-Fi。\n套用全部會覆蓋現有客房的 SSID 與密碼。\n是否繼續？`)) return;
+    ROOM_NUMBERS.forEach(room => { roomWifi[String(room)] = { ssid: prefix + room, password }; });
+    saveRoomWifi(); closeBatchRoomPanel(); renderRoomManageList(); alert("已套用全部客房。");
+}
+function openRoomEditPanel(room) {
+    const data = getConfiguredRoom(room);
+    document.getElementById("roomEditTitle").textContent = data ? "修改客房 Wi-Fi" : "設定客房 Wi-Fi";
+    document.getElementById("roomEditRoom").value = room; document.getElementById("roomEditRoomLabel").textContent = `R${room}`;
+    document.getElementById("roomEditSsid").value = data ? data.ssid : ""; document.getElementById("roomEditPassword").value = data ? data.password : "";
+    document.getElementById("roomEditPanel").classList.remove("hidden"); document.getElementById("roomEditPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function closeRoomEditPanel() { document.getElementById("roomEditPanel").classList.add("hidden"); }
+function saveSingleRoom() {
+    const room = document.getElementById("roomEditRoom").value, ssid = document.getElementById("roomEditSsid").value.trim(), password = document.getElementById("roomEditPassword").value;
+    if (!ssid) { alert("請輸入 SSID"); return; }
+    roomWifi[String(room)] = { ssid, password }; saveRoomWifi(); closeRoomEditPanel(); renderRoomManageList();
+}
+
+/* ==================== 其他管理 ==================== */
+function renderPublicManageList() {
+    const box = document.getElementById("publicManageList");
+    if (!otherWifi.length) { box.innerHTML = "<p>目前沒有其他 Wi-Fi。</p>"; return; }
+    box.innerHTML = otherWifi.map(item => `<div class="manage-row"><div><strong>${escapeHtml(item.name)}</strong></div><div>SSID：${escapeHtml(item.ssid)}</div><button onclick="openPublicEditPanel('${item.id}')">修改</button><button onclick="deletePublicItem('${item.id}')">刪除</button></div>`).join("");
+}
+function makePublicBatchRow() {
+    const row = document.createElement("div"); row.className = "manage-row public-batch-row";
+    row.innerHTML = `<div class="field"><label>名稱：</label><input type="text" class="batch-public-name" maxlength="4" placeholder="最多 4 個字"></div><div class="field"><label>SSID：</label><input type="text" class="batch-public-ssid"></div><div class="field"><label>密碼：</label><input type="text" class="batch-public-password"></div><button type="button" onclick="removePublicBatchRow(this)">刪除此列</button>`;
+    return row;
+}
+function addPublicBatchRow() { document.getElementById("publicBatchRows").appendChild(makePublicBatchRow()); }
+function removePublicBatchRow(button) {
+    const rows = document.querySelectorAll("#publicBatchRows .public-batch-row");
+    if (rows.length <= 1) {
+        const row = button.closest(".public-batch-row");
+        row.querySelector(".batch-public-name").value = ""; row.querySelector(".batch-public-ssid").value = ""; row.querySelector(".batch-public-password").value = ""; return;
+    }
+    button.closest(".public-batch-row").remove();
+}
+function openPublicBatchPanel() {
+    const box = document.getElementById("publicBatchRows"); box.innerHTML = "";
+    addPublicBatchRow(); addPublicBatchRow(); addPublicBatchRow();
+    document.getElementById("publicBatchPanel").classList.remove("hidden"); document.getElementById("publicBatchPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function closePublicBatchPanel() { document.getElementById("publicBatchPanel").classList.add("hidden"); }
+function savePublicBatch() {
+    const rows = [...document.querySelectorAll("#publicBatchRows .public-batch-row")], parsed = [], errors = [];
+    rows.forEach((row, index) => {
+        const name = row.querySelector(".batch-public-name").value.trim(), ssid = row.querySelector(".batch-public-ssid").value.trim(), password = row.querySelector(".batch-public-password").value;
+        if (!name && !ssid && !password) return;
+        if (!name) { errors.push(`第 ${index + 1} 列：請輸入名稱`); return; }
+        if ([...name].length > OTHER_NAME_MAX) { errors.push(`第 ${index + 1} 列：名稱最多 ${OTHER_NAME_MAX} 個字`); return; }
+        if (!ssid) { errors.push(`第 ${index + 1} 列：請輸入 SSID`); return; }
+        parsed.push({ name, ssid, password });
+    });
+    if (errors.length) { alert("以下資料未新增：\n\n" + errors.join("\n")); return; }
+    if (!parsed.length) { alert("請至少輸入一筆 Wi-Fi 資料"); return; }
+    parsed.forEach(item => otherWifi.push({ id: "other_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8), name: item.name, ssid: item.ssid, password: item.password }));
+    saveOtherWifi(); closePublicBatchPanel(); renderPublicManageList(); resetPublicListView(); alert(`已新增 ${parsed.length} 筆其他 Wi-Fi。`);
+}
+function openPublicAddPanel() {
+    document.getElementById("publicEditTitle").textContent = "新增其他 Wi-Fi"; document.getElementById("publicEditId").value = "";
+    document.getElementById("publicEditName").value = ""; document.getElementById("publicEditSsid").value = ""; document.getElementById("publicEditPassword").value = "";
+    document.getElementById("publicEditPanel").classList.remove("hidden"); document.getElementById("publicEditPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function openPublicEditPanel(id) {
+    const item = otherWifi.find(entry => entry.id === id); if (!item) return;
+    document.getElementById("publicEditTitle").textContent = "修改其他 Wi-Fi"; document.getElementById("publicEditId").value = item.id;
+    document.getElementById("publicEditName").value = item.name; document.getElementById("publicEditSsid").value = item.ssid; document.getElementById("publicEditPassword").value = item.password;
+    document.getElementById("publicEditPanel").classList.remove("hidden"); document.getElementById("publicEditPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function closePublicEditPanel() { document.getElementById("publicEditPanel").classList.add("hidden"); }
+function savePublicItem() {
+    const id = document.getElementById("publicEditId").value, name = document.getElementById("publicEditName").value.trim(), ssid = document.getElementById("publicEditSsid").value.trim(), password = document.getElementById("publicEditPassword").value;
+    if (!name) { alert("請輸入名稱"); return; }
+    if ([...name].length > OTHER_NAME_MAX) { alert(`名稱最多 ${OTHER_NAME_MAX} 個字`); return; }
+    if (!ssid) { alert("請輸入 SSID"); return; }
+    if (id) {
+        const index = otherWifi.findIndex(item => item.id === id); if (index === -1) return;
+        otherWifi[index] = { ...otherWifi[index], name, ssid, password };
+    } else otherWifi.push({ id: "other_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8), name, ssid, password });
+    saveOtherWifi(); closePublicEditPanel(); renderPublicManageList(); resetPublicListView();
+}
+function deletePublicItem(id) {
+    const item = otherWifi.find(entry => entry.id === id); if (!item) return;
+    if (!confirm(`確定刪除「${item.name}」？`)) return;
+    otherWifi = otherWifi.filter(entry => entry.id !== id); saveOtherWifi(); renderPublicManageList(); resetPublicListView();
+}
+
+window.addEventListener("load", () => {
+    showMain("generator"); a4ResetRows();
+});
+</script>
+</body>
+</html>
