@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wi-Fi QRCode 工具｜A4排版列印</title>
+
 <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
 <style>
 :root {
     --bg: #f4f5f5;
@@ -463,154 +464,171 @@ input, select {
 </style>
 <link rel="stylesheet" href="qrcode_print_tool.css">
 </head>
+
 <body>
+
 <header class="topbar">
-<div class="topbar-inner">
-<div class="brand">Wi-Fi QRCode 工具</div>
-<nav class="main-nav">
-
-<button class="active" id="navGenerator" onclick="showMain('generator')">單張 QRCode 產生器</button>
-<button id="navA4" onclick="showMain('a4')">多份列印 | A4排版</button>
-
-</nav>
-</div>
+    <div class="topbar-inner">
+        <div class="brand">Wi-Fi QRCode 工具</div>
+        <nav class="main-nav">
+            <button id="navGenerator" onclick="showMain('generator')">單張 QRCode 產生器</button>
+            <button id="navA4" onclick="showMain('a4')">多份列印 | A4排版</button>
+            </nav>
+    </div>
 </header>
+
 <main class="page">
 
-<section class="main-section" id="sectionGenerator">
-<div class="hero">
-<div class="hero-kicker">QRCode Generator</div>
-<h1>QRCode 產生器</h1>
-<p>產生一般文字、網址或 Wi-Fi QRCode。</p>
-</div>
-<div class="section-head">
-<div>
-<h2>產生 QRCode</h2>
-<p>選擇要建立的 QRCode 類型。</p>
-</div>
-<div class="sub-nav">
-<button class="active" id="qrNavNormal" onclick="showQrMode('normal')">一般 QRCode</button>
-<button id="qrNavWifi" onclick="showQrMode('wifi')">Wi-Fi QRCode</button>
-</div>
-</div>
-<div class="content-box">
-<div class="qr-mode" id="qrNormalMode">
-<div class="field"><label for="normalText">內容：</label><input id="normalText" placeholder="網址或任意文字" type="text"/></div>
-<div class="field">
-<label for="normalSize">尺寸：</label>
-<select id="normalSize">
-<option value="120">120</option><option value="150">150</option><option value="180">180</option>
-<option value="200">200</option><option value="250">250</option><option value="300">300</option>
-<option value="400">400</option><option value="500">500</option><option value="600">600</option>
-</select>
-</div>
-<div class="action-row"><button onclick="makeNormalQR()">產生 QRCode</button></div>
-</div>
-<div class="qr-mode hidden" id="qrWifiMode">
-<div class="field"><label for="genericWifiSsid">Wi-Fi 名稱：</label><input id="genericWifiSsid" type="text"/></div>
-<div class="field"><label for="genericWifiPw">Wi-Fi 密碼：</label><input id="genericWifiPw" type="text"/></div>
-<div class="field"><label for="genericWifiType">加密方式：</label><select id="genericWifiType"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="">無密碼</option></select></div>
-<div class="field">
-<label for="genericWifiSize">尺寸：</label>
-<select id="genericWifiSize">
-<option value="120">120</option><option value="150">150</option><option value="180">180</option>
-<option value="200">200</option><option value="250">250</option><option value="300">300</option>
-<option value="400">400</option><option value="500">500</option><option value="600">600</option>
-</select>
-</div>
-<div class="action-row"><button onclick="makeGenericWifiQR()">產生 Wi-Fi QRCode</button></div>
-</div>
-<div id="genericQrPreview"></div>
-<div class="action-row">
-<button onclick="downloadGenericQR()">下載 QR 圖片</button>
-<button onclick="shareGenericQR()">分享 QR 圖片</button>
-<button onclick="clearGenericQR()">清除</button>
-</div>
-</div>
-</section>
-<section class="main-section hidden" id="sectionA4">
-<div class="hero">
-<div class="hero-kicker">A4 QRCode Print</div>
-<h1>A4 多份列印</h1>
-<p>同時產生80px、120px、150px、200px 四種尺寸，預覽後再列印。 </p><p>80、120 為 18 張 </p> <p>150 為 12 張 </p> <p>200 為 9 張</p>
-</div>
-<div class="section-head">
-<div>
-<h2>QRCode 多份列印</h2>
-<p>可使用同一筆資料重複列印，或設定多筆不同資料。</p>
-</div>
-</div>
-<div class="content-box">
-<div class="a4-tabs">
-<button class="active" id="a4TypeNormal" onclick="a4ShowType('normal')">一般 QRCode</button>
-<button id="a4TypeWifi" onclick="a4ShowType('wifi')">Wi-Fi QRCode</button>
-</div>
-<div class="a4-tabs">
-<button class="active" id="a4ModeSame" onclick="a4ShowMode('same')">同資料多份</button>
-<button id="a4ModeDifferent" onclick="a4ShowMode('different')">不同資料多份</button>
-</div>
-<div class="a4-checkbox">
-<input checked="" id="a4PhysicalRuler" type="checkbox"/>
-<label for="a4PhysicalRuler">列印尺寸尺</label>
-</div>
-<div id="a4SameMode">
-<div class="a4-checkbox">
-<input checked="" id="a4SamePrintLabel" onchange="a4SyncSameLabel()" type="checkbox"/>
-<label for="a4SamePrintLabel">列印標籤</label>
-</div>
-<div class="field" id="a4SameLabelField">
-<label for="a4SameLabel">標籤：</label>
-<input id="a4SameLabel" type="text"/>
-</div>
-<div id="a4SameNormal">
-<div class="field"><label for="a4SameText">內容：</label><input id="a4SameText" placeholder="網址或任意文字" type="text"/></div>
-</div>
-<div class="hidden" id="a4SameWifi">
-<div class="field"><label for="a4SameSsid">Wi-Fi 名稱：</label><input id="a4SameSsid" type="text"/></div>
-<div class="field"><label for="a4SamePassword">Wi-Fi 密碼：</label><input id="a4SamePassword" type="text"/></div>
-<div class="field"><label for="a4SameWifiType">加密方式：</label><select id="a4SameWifiType"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="">無密碼</option></select></div>
-</div>
-<div class="field"><label for="a4SameCount">列印份數：</label><input id="a4SameCount" max="18" min="1" type="number" value="1"/></div>
-<div class="action-row">
-<button onclick="a4GenerateSame()">產生四種尺寸 QRCode</button>
-</div>
-<div class="action-row hidden" id="a4SamePrintButtons">
-<button onclick="a4PreviewSamePrint(80)">預覽 80 px 列印（A4最多18張）</button>
-<button onclick="a4PreviewSamePrint(120)">預覽 120 px 列印（A4最多18張）</button>
-<button onclick="a4PreviewSamePrint(150)">預覽 150 px 列印（A4最多12張）</button>
-<button onclick="a4PreviewSamePrint(200)">預覽 200 px 列印（A4最多9張）</button>
-<button onclick="a4PreviewPhysicalSample(a4SameGeneratedItems[0])">預覽四尺寸實體樣張（列印請用 100%／實際大小）</button>
-<button onclick="printCurrent()">列印目前預覽</button>
-</div>
-</div>
-<div class="hidden" id="a4DifferentMode">
-<p class="notice"><p>每一筆可獨立設定標籤、列印份數，資料只需輸入一次</p><p>同時產生80px、120px、150px、200px 四種尺寸，預覽後再列印。 </p><p>80、120 為 18 張 </p> <p>150 為 12 張 </p> <p>200 為 9 張</p>
-<div id="a4DifferentRows"></div>
-<div class="action-row">
-<button id="a4AddRowButton" onclick="a4AddRow()">新增一筆</button>
-</div>
-<div class="action-row hidden" id="a4DifferentPrintButtons">
-<button onclick="a4PreviewDifferentPrint(80)">預覽 80px 列印（A4最多18張）</button>
-<button onclick="a4PreviewDifferentPrint(120)">預覽 120px 列印（A4最多18張）</button>
-<button onclick="a4PreviewDifferentPrint(150)">預覽 150px 列印（A4最多12張）</button>
-<button onclick="a4PreviewDifferentPrint(200)">預覽 200px 列印（A4最多9張）</button>
-<button onclick="printCurrent()">列印目前預覽</button>
-</div>
-</p></div>
-</div>
-<section class="hidden" id="a4QrPreviewArea">
-<div class="section-head">
-<div>
-<h2>QRCode 預覽</h2>
-<p>同一份資料同時顯示 80px、120px、150px、200px，先預覽再列印</p>
-</div>
-</div>
-<div class="print-grid" id="a4QrPreviewGrid"></div>
-</section>
+<section id="sectionGenerator" class="main-section">
+    <div class="hero">
+        <div class="hero-kicker">QRCode Generator</div>
+        <h1>QRCode 產生器</h1>
+        <p>產生一般文字、網址或 Wi-Fi QRCode。</p>
+    </div>
+
+    <div class="section-head">
+        <div>
+            <h2>產生 QRCode</h2>
+            <p>選擇要建立的 QRCode 類型。</p>
+        </div>
+        <div class="sub-nav">
+            <button id="qrNavNormal" class="active" onclick="showQrMode('normal')">一般 QRCode</button>
+            <button id="qrNavWifi" onclick="showQrMode('wifi')">Wi-Fi QRCode</button>
+        </div>
+    </div>
+
+    <div class="content-box">
+        <div id="qrNormalMode" class="qr-mode">
+            <div class="field"><label for="normalText">內容：</label><input type="text" id="normalText" placeholder="網址或任意文字"></div>
+            <div class="field">
+                <label for="normalSize">尺寸：</label>
+                <select id="normalSize">
+                    <option value="120">120</option><option value="150">150</option><option value="180">180</option>
+                    <option value="200">200</option><option value="250">250</option><option value="300">300</option>
+                    <option value="400">400</option><option value="500">500</option><option value="600">600</option>
+                </select>
+            </div>
+            <div class="action-row"><button onclick="makeNormalQR()">產生 QRCode</button></div>
+        </div>
+
+        <div id="qrWifiMode" class="qr-mode hidden">
+            <div class="field"><label for="genericWifiSsid">Wi-Fi 名稱：</label><input type="text" id="genericWifiSsid"></div>
+            <div class="field"><label for="genericWifiPw">Wi-Fi 密碼：</label><input type="text" id="genericWifiPw"></div>
+            <div class="field"><label for="genericWifiType">加密方式：</label><select id="genericWifiType"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="">無密碼</option></select></div>
+            <div class="field">
+                <label for="genericWifiSize">尺寸：</label>
+                <select id="genericWifiSize">
+                    <option value="120">120</option><option value="150">150</option><option value="180">180</option>
+                    <option value="200">200</option><option value="250">250</option><option value="300">300</option>
+                    <option value="400">400</option><option value="500">500</option><option value="600">600</option>
+                </select>
+            </div>
+            <div class="action-row"><button onclick="makeGenericWifiQR()">產生 Wi-Fi QRCode</button></div>
+        </div>
+
+        <div id="genericQrPreview"></div>
+        <div class="action-row">
+            <button onclick="downloadGenericQR()">下載 QR 圖片</button>
+            <button onclick="shareGenericQR()">分享 QR 圖片</button>
+            <button onclick="clearGenericQR()">清除</button>
+        </div>
+    </div>
 </section>
 
-<section class="print-preview hidden" id="printArea"></section>
+<section id="sectionA4" class="main-section hidden">
+    <div class="hero">
+        <div class="hero-kicker">A4 QRCode Print</div>
+        <h1>A4 多份列印</h1>
+        <p>同時產生 極小（80px）、小（120px）、中（150px）、大（200px） 四種尺寸，預覽後再列印。 </p><p>極小（80px）、小（120px）為 18 張 </p> <p>中（150px）為 12 張 </p> <p>大（200px）為 9 張</p>
+    </div>
+
+    <div class="section-head">
+        <div>
+            <h2>QRCode 多份列印</h2>
+            <p>可使用同一筆資料重複列印，或設定多筆不同資料。</p>
+        </div>
+    </div>
+
+    <div class="content-box">
+        <div class="a4-tabs">
+            <button id="a4TypeNormal" class="active" onclick="a4ShowType('normal')">一般 QRCode</button>
+            <button id="a4TypeWifi" onclick="a4ShowType('wifi')">Wi-Fi QRCode</button>
+        </div>
+
+        <div class="a4-tabs">
+            <button id="a4ModeSame" class="active" onclick="a4ShowMode('same')">同資料多份</button>
+            <button id="a4ModeDifferent" onclick="a4ShowMode('different')">不同資料多份</button>
+        </div>
+
+        <div class="a4-checkbox">
+            <input type="checkbox" id="a4PhysicalRuler" checked>
+            <label for="a4PhysicalRuler">列印尺寸尺</label>
+        </div>
+
+        <div id="a4SameMode">
+            <div class="a4-checkbox">
+                <input type="checkbox" id="a4SamePrintLabel" checked onchange="a4SyncSameLabel()">
+                <label for="a4SamePrintLabel">列印標籤</label>
+            </div>
+            <div id="a4SameLabelField" class="field">
+                <label for="a4SameLabel">標籤：</label>
+                <input type="text" id="a4SameLabel">
+            </div>
+
+            <div id="a4SameNormal">
+                <div class="field"><label for="a4SameText">內容：</label><input type="text" id="a4SameText" placeholder="網址或任意文字"></div>
+            </div>
+
+            <div id="a4SameWifi" class="hidden">
+                <div class="field"><label for="a4SameSsid">Wi-Fi 名稱：</label><input type="text" id="a4SameSsid"></div>
+                <div class="field"><label for="a4SamePassword">Wi-Fi 密碼：</label><input type="text" id="a4SamePassword"></div>
+                <div class="field"><label for="a4SameWifiType">加密方式：</label><select id="a4SameWifiType"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="">無密碼</option></select></div>
+            </div>
+
+            <div class="field"><label for="a4SameCount">列印份數：</label><input type="number" id="a4SameCount" min="1" max="18" value="1"></div>
+            <div class="action-row">
+                <button onclick="a4GenerateSame()">產生四種尺寸 QRCode</button>
+            </div>
+            <div id="a4SamePrintButtons" class="action-row hidden">
+                <button onclick="a4PreviewSamePrint(80)">預覽 極小（80px）列印（A4最多18張）</button>
+                <button onclick="a4PreviewSamePrint(120)">預覽 小（120px）列印（A4最多18張）</button>
+                <button onclick="a4PreviewSamePrint(150)">預覽 中（150px）列印（A4最多12張）</button>
+                <button onclick="a4PreviewSamePrint(200)">預覽 大（200px）列印（A4最多9張）</button>
+                <button onclick="a4PreviewPhysicalSample(a4SameGeneratedItems[0])">預覽四尺寸實體樣張（列印請用 100%／實際大小）</button>
+                <button onclick="printCurrent()">列印目前預覽</button>
+            </div>
+        </div>
+
+        <div id="a4DifferentMode" class="hidden">
+            <p class="notice"><p>每一筆可獨立設定標籤、列印份數，資料只需輸入一次</p><p>同時產生 極小（80px）、小（120px）、中（150px）、大（200px） 四種尺寸，預覽後再列印。 </p><p>極小（80px）、小（120px）為 18 張 </p> <p>中（150px）為 12 張 </p> <p>大（200px）為 9 張</p>
+            <div id="a4DifferentRows"></div>
+            <div class="action-row">
+                <button id="a4AddRowButton" onclick="a4AddRow()">新增一筆</button>
+            </div>
+            <div id="a4DifferentPrintButtons" class="action-row hidden">
+                <button onclick="a4PreviewDifferentPrint(80)">預覽 極小（80px）列印（A4最多18張）</button>
+                <button onclick="a4PreviewDifferentPrint(120)">預覽 小（120px）列印（A4最多18張）</button>
+                <button onclick="a4PreviewDifferentPrint(150)">預覽 中（150px）列印（A4最多12張）</button>
+                <button onclick="a4PreviewDifferentPrint(200)">預覽 大（200px）列印（A4最多9張）</button>
+                <button onclick="printCurrent()">列印目前預覽</button>
+            </div>
+        </div>
+    </div>
+
+    <section id="a4QrPreviewArea" class="hidden">
+        <div class="section-head">
+            <div>
+                <h2>QRCode 預覽</h2>
+                <p>同一份資料同時顯示 極小（80px）、小（120px）、中（150px）、大（200px），先預覽再列印</p>
+            </div>
+        </div>
+        <div id="a4QrPreviewGrid" class="print-grid"></div>
+    </section>
+</section>
+
+<section id="printArea" class="print-preview hidden"></section>
 </main>
+
 <script>
 const ROOM_STORAGE_KEY = "hotel_wifi_room";
 const OTHER_STORAGE_KEY = "hotel_wifi_other";
@@ -883,6 +901,7 @@ function clearGenericQR() { document.getElementById("genericQrPreview").innerHTM
 
 /* ==================== A4 多份列印 ==================== */
 const A4_QR_SIZES = [80, 120, 150, 200];
+const A4_SIZE_LABELS = { 80: "極小（80px）", 120: "小（120px）", 150: "中（150px）", 200: "大（200px）" };
 const A4_MAX_PRINT_COUNT = 18;
 const A4_PAGE_CAPACITY = { 80: 18, 120: 18, 150: 12, 200: 9 };
 
@@ -891,6 +910,66 @@ let a4PrintMode = "same";
 let a4SameGeneratedItems = [];
 
 function a4ClearPrintOnly() { clearPrintArea(); }
+
+function a4MakeNormalizedQrCanvas(payload, size) {
+    const renderSize = 1200;
+    const quietRatio = 0.06;
+
+    const source = document.createElement("canvas");
+    new QRious({
+        element: source,
+        value: payload,
+        size: renderSize,
+        level: "H"
+    });
+
+    const sourceContext = source.getContext("2d");
+    const image = sourceContext.getImageData(0, 0, source.width, source.height);
+    const data = image.data;
+
+    let minX = source.width;
+    let minY = source.height;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < source.height; y++) {
+        for (let x = 0; x < source.width; x++) {
+            const i = (y * source.width + x) * 4;
+            if (data[i + 3] > 0 && data[i] < 128 && data[i + 1] < 128 && data[i + 2] < 128) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = renderSize;
+    canvas.height = renderSize;
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#fff";
+    context.fillRect(0, 0, renderSize, renderSize);
+    context.imageSmoothingEnabled = false;
+
+    if (maxX >= minX && maxY >= minY) {
+        const sourceWidth = maxX - minX + 1;
+        const sourceHeight = maxY - minY + 1;
+        const quiet = Math.round(renderSize * quietRatio);
+        const targetSize = renderSize - quiet * 2;
+
+        context.drawImage(
+            source,
+            minX, minY, sourceWidth, sourceHeight,
+            quiet, quiet, targetSize, targetSize
+        );
+    }
+
+    return canvas;
+}
 
 function a4MakeCard(label, payload, printLabel, size = 120) {
     const card = document.createElement("div");
@@ -903,8 +982,7 @@ function a4MakeCard(label, payload, printLabel, size = 120) {
         card.appendChild(title);
     }
 
-    const canvas = document.createElement("canvas");
-    new QRious({ element: canvas, value: payload, size: size, level: "H" });
+    const canvas = a4MakeNormalizedQrCanvas(payload, size);
     card.appendChild(canvas);
     return card;
 }
@@ -953,7 +1031,7 @@ function a4MakeSizePreview(label, payload, printLabel) {
 
         const sizeLabel = document.createElement("div");
         sizeLabel.className = "a4-size-preview-label";
-        sizeLabel.textContent = `${size}`;
+        sizeLabel.textContent = A4_SIZE_LABELS[size];
 
         item.appendChild(sizeLabel);
         item.appendChild(a4MakeCard(label, payload, printLabel, size));
@@ -1248,7 +1326,7 @@ function a4RenderPrint(items, size) {
 
     const capacity = A4_PAGE_CAPACITY[size];
     if (items.length > capacity) {
-        alert(`${size} 尺寸一張 A4 最多 ${capacity} 張，目前共 ${items.length} 張。請減少列印份數。`);
+        alert(`${A4_SIZE_LABELS[size]}尺寸一張 A4 最多 ${capacity} 張，目前共 ${items.length} 張。請減少列印份數。`);
         return;
     }
 
@@ -1342,15 +1420,9 @@ function a4PreviewPhysicalSample(item) {
 
         const sizeLabel = document.createElement("div");
         sizeLabel.className = "a4-physical-size-label";
-        sizeLabel.textContent = `${size}px`;
+        sizeLabel.textContent = A4_SIZE_LABELS[size];
 
-        const canvas = document.createElement("canvas");
-        new QRious({
-            element: canvas,
-            value: item.payload,
-            size: size,
-            level: "H"
-        });
+        const canvas = a4MakeNormalizedQrCanvas(item.payload, size);
 
         const physicalMm = a4PxToMm(size);
         canvas.style.width = `${physicalMm}mm`;
