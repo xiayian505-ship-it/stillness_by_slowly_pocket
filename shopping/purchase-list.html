@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8dddd" />
+  <title>採買清單</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="purchase-list.css">
+</head>
+
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="brand" type="button" onclick="goHome()" aria-label="回到採買清單首頁">
+        <div class="brand-copy">
+          <div class="brand-title">採買清單</div>
+          <div class="brand-kicker">Think twice, buy once.</div>
+          <div class="topbar-stats" aria-label="清單統計">
+            <span>想買 <strong id="statWanted">0</strong></span>
+            <span class="topbar-stat-dot">·</span>
+            <span>觀望 <strong id="statWatching">0</strong></span>
+            <span class="topbar-stat-dot">·</span>
+            <span>已買 <strong id="statPurchased">0</strong></span>
+            <span class="topbar-spent">已買支出 <strong id="statSpent">0</strong></span>
+          </div>
+        </div>
+      </button>
+      <div class="topbar-search">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input id="searchInput" type="search" placeholder="搜尋商品、品牌、標籤、商店或採買來源" autocomplete="off">
+          <button id="searchClear" class="search-clear" type="button" aria-label="清除搜尋">×</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="pocket-layout">
+    <aside class="pocket-sidebar">
+      <div class="sidebar-head">
+        <div class="hero-eyebrow">Before you buy it</div>
+        <h1>採買清單</h1>
+        <p>在買下去以前，先看看這次到底為什麼要買。</p>
+      </div>
+
+      
+
+      
+      <div class="sidebar-section category-section">
+        <div class="sidebar-label">購買模式</div>
+        <div id="sidebarCategories" class="sidebar-categories"></div>
+        <div id="sidebarActiveFilters" class="sidebar-active-filters"></div>
+      </div>
+    </aside>
+
+    <section class="pocket-content">
+      <div class="content-head">
+        <div id="statusFilters" class="status-strip top-status-strip"></div>
+
+
+
+        <div class="index-toolbar">
+          <div class="index-title">
+            <h2>採買索引</h2>
+            <p id="resultCount">0 個項目</p>
+          </div>
+
+          <div class="index-actions">
+            <button class="sort-btn active" id="newestSortBtn" type="button" onclick="setSort('newest')">最新</button>
+            <button class="sort-btn" id="oldestSortBtn" type="button" onclick="setSort('oldest')">最早</button>
+            <button class="primary-btn" type="button" onclick="openProductForm()">＋ 新增商品</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="productList" class="product-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>localStorage purchase-list_v1</span>
+      <div class="footer-data-actions">
+        <input id="importFileInput" type="file" accept="application/json,.json" hidden onchange="importData(event)">
+        <button class="clear-all" type="button" onclick="document.getElementById('importFileInput').click()">匯入資料</button>
+        <button class="clear-all" type="button" onclick="exportData()">匯出資料</button>
+      </div>
+    </div>
+
+    <div class="footer-signature">
+      慢 慢 <span class="en">| stillness by slowly</span>
+    </div>
+  </footer>
+</div>
+
+<div id="detailOverlay" class="overlay" onclick="closeDetail()"></div>
+<aside id="detailDrawer" class="drawer" aria-hidden="true">
+  <div class="drawer-grabber"></div>
+  <div class="drawer-header">
+    <span class="drawer-header-title">商品詳情</span>
+    <button class="icon-btn" type="button" onclick="closeDetail()" aria-label="關閉">×</button>
+  </div>
+  <div id="detailBody" class="drawer-body"></div>
+</aside>
+
+<div id="modalWrap" class="modal-wrap" onclick="handleModalBackdrop(event)">
+  <div id="modalCard" class="modal-card"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const STORAGE_KEY = "purchase-list_v1";
+
+const STATUS_OPTIONS = [
+  { id: "wanted", label: "想買" },
+  { id: "watching", label: "觀望" },
+  { id: "purchased", label: "已買" },
+  { id: "abandoned", label: "放棄" }
+];
+
+const CATEGORIES = [
+  {
+    id: "purchase-mode",
+    label: "購買模式",
+    options: [
+      "固定補貨",
+      "快用完再買",
+      "壞了再買",
+      "有特價囤貨",
+      "偶爾需要",
+      "總有一天會用到",
+      "心癢難耐",
+      "我也不知道"
+    ],
+    tree: [
+      { label: "固定補貨", value: "固定補貨" },
+      { label: "快用完再買", value: "快用完再買" },
+      { label: "壞了再買", value: "壞了再買" },
+      { label: "有特價囤貨", value: "有特價囤貨" },
+      { label: "偶爾需要", value: "偶爾需要" },
+      { label: "總有一天會用到", value: "總有一天會用到" },
+      { label: "心癢難耐", value: "心癢難耐" },
+      { label: "我也不知道", value: "我也不知道" }
+    ]
+  }
+];
+
+let products = loadProducts();
+let searchText = "";
+let selectedStatus = "all";
+let selectedCategories = new Set();
+let openCategoryId = "";
+let openSubcategoryIds = new Set();
+let sortMode = "newest";
+let activeDetailId = null;
+let formState = null;
+let pendingImageInfo = "";
+
+function uid(prefix = "p") {
+  if (crypto?.randomUUID) return crypto.randomUUID();
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function todayString() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function escapeAttr(value) {
+  return escapeHTML(value).replace(/`/g, "&#096;");
+}
+
+function safeUrl(url) {
+  const value = String(url || "").trim();
+  return /^https?:\/\//i.test(value) ? value : "#";
+}
+
+function normalizeProduct(raw) {
+  return {
+    id: raw.id || uid(),
+    name: String(raw.name || "").trim(),
+    status: STATUS_OPTIONS.some(s => s.id === raw.status) ? raw.status : "wanted",
+    categories: Array.isArray(raw.categories) ? raw.categories.filter(isValidCategory) : [],
+    tags: Array.isArray(raw.tags) ? [...new Set(raw.tags.map(x => String(x).trim()).filter(Boolean))] : [],
+    source: String(raw.source || "").trim(),
+    currentPrice: raw.currentPrice ?? "",
+    currentPriceCurrency: String(raw.currentPriceCurrency || "NT$"),
+    lastPurchaseDate: String(raw.lastPurchaseDate || ""),
+    budget: raw.budget ?? "",
+    budgetCurrency: String(raw.budgetCurrency || "NT$"),
+    image: String(raw.image || ""),
+    imageInfo: String(raw.imageInfo || ""),
+    note: String(raw.note || ""),
+    purchasePrice: raw.purchasePrice ?? "",
+    purchaseCurrency: String(raw.purchaseCurrency || "NT$"),
+    purchaseDate: String(raw.purchaseDate || ""),
+    purchaseStore: String(raw.purchaseStore || ""),
+    orderNumber: String(raw.orderNumber || ""),
+    invoiceNumber: String(raw.invoiceNumber || ""),
+    invoiceImage: String(raw.invoiceImage || ""),
+    warrantyEnd: String(raw.warrantyEnd || ""),
+    purchaseNote: String(raw.purchaseNote || ""),
+    offers: Array.isArray(raw.offers) ? raw.offers.map(normalizeOffer) : [],
+    createdAt: raw.createdAt || nowIso(),
+    updatedAt: raw.updatedAt || raw.createdAt || nowIso(),
+    lastViewedAt: raw.lastViewedAt || "",
+    viewCount: Number(raw.viewCount || 0),
+    resolvedAt: raw.resolvedAt || ""
+  };
+}
+
+function normalizeOffer(raw = {}) {
+  return {
+    id: raw.id || uid("o"),
+    brand: String(raw.brand || ""),
+    model: String(raw.model || ""),
+    store: String(raw.store || ""),
+    currency: String(raw.currency || "NT$"),
+    originalPrice: raw.originalPrice ?? "",
+    salePrice: raw.salePrice ?? "",
+    directDiscount: raw.directDiscount ?? "",
+    shipping: raw.shipping ?? "",
+    expiry: String(raw.expiry || ""),
+    reward: String(raw.reward || ""),
+    url: String(raw.url || ""),
+    note: String(raw.note || ""),
+    updatedAt: raw.updatedAt || todayString(),
+    expiredNoticeSeen: Boolean(raw.expiredNoticeSeen),
+    priceHistory: Array.isArray(raw.priceHistory) ? raw.priceHistory : []
+  };
+}
+
+function loadProducts() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed.map(normalizeProduct) : [];
+  } catch (error) {
+    console.error("讀取資料失敗", error);
+    return [];
+  }
+}
+
+function saveProducts() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    return true;
+  } catch (error) {
+    console.error("儲存失敗", error);
+    alert("資料儲存失敗。若你上傳了很多圖片，可能已超過瀏覽器 localStorage 容量。");
+    return false;
+  }
+}
+
+function isValidCategory(value) {
+  return CATEGORIES.some(group => group.options.includes(value));
+}
+
+function getStatusLabel(status) {
+  return STATUS_OPTIONS.find(s => s.id === status)?.label || status;
+}
+
+function parseMoney(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function hasMoney(value) {
+  return value !== "" && value !== null && value !== undefined && Number.isFinite(Number(value));
+}
+
+function isExpired(offer) {
+  if (!offer.expiry) return false;
+  return offer.expiry < todayString();
+}
+
+function offerEffectivePrice(offer) {
+  const expired = isExpired(offer);
+  let base = null;
+
+  if (!expired && hasMoney(offer.salePrice)) {
+    base = Number(offer.salePrice);
+  } else if (hasMoney(offer.originalPrice)) {
+    base = Number(offer.originalPrice);
+  } else if (hasMoney(offer.salePrice)) {
+    base = Number(offer.salePrice);
+  }
+
+  if (base === null) return null;
+
+  return Math.max(
+    0,
+    base - parseMoney(offer.directDiscount) + parseMoney(offer.shipping)
+  );
+}
+
+function getLowestSummary(product) {
+  const valid = product.offers
+    .map(o => ({ offer: o, price: offerEffectivePrice(o) }))
+    .filter(x => x.price !== null);
+
+  if (!valid.length) return "";
+
+  const currencies = [...new Set(valid.map(x => x.offer.currency || "NT$"))];
+  if (currencies.length !== 1) return "多幣別";
+
+  const min = Math.min(...valid.map(x => x.price));
+  return `${currencies[0]}${formatMoney(min)}`;
+}
+
+
+
+function getCurrentPriceSummary(product) {
+  const lowest = getLowestSummary(product);
+  if (lowest) return lowest;
+
+  if (hasMoney(product.currentPrice)) {
+    return `${product.currentPriceCurrency || "NT$"}${formatMoney(product.currentPrice)}`;
+  }
+
+  return "";
+}
+
+function getLowestDisplayOffer(product) {
+  const valid = product.offers
+    .map(o => ({ offer: o, price: offerEffectivePrice(o) }))
+    .filter(x => x.price !== null);
+
+  if (!valid.length) return null;
+
+  const currencies = [...new Set(valid.map(x => x.offer.currency || "NT$"))];
+  if (currencies.length !== 1) return null;
+
+  return valid.reduce((lowest, current) =>
+    current.price < lowest.price ? current : lowest
+  );
+}
+
+function formatMonthDay(value) {
+  if (!value) return "";
+  const parts = String(value).split("-");
+  if (parts.length !== 3) return value;
+  return `${Number(parts[1])} 月 ${Number(parts[2])} 日`;
+}
+
+
+function formatMoney(n) {
+  return Number(n).toLocaleString("zh-TW", { maximumFractionDigits: 2 });
+}
+
+function daysBetween(start, end = todayString()) {
+  if (!start) return 0;
+  const a = new Date(String(start).slice(0, 10) + "T00:00:00");
+  const b = new Date(String(end).slice(0, 10) + "T00:00:00");
+  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
+  return Math.max(0, Math.floor((b - a) / 86400000));
+}
+
+function relativeViewed(value) {
+  if (!value) return "";
+  const days = daysBetween(value, todayString());
+  if (days === 0) return "今天看過";
+  if (days === 1) return "昨天看過";
+  return `${days} 天前看過`;
+}
+
+function watchDays(product) {
+  const end = product.resolvedAt || todayString();
+  return daysBetween(product.createdAt, end);
+}
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"), 2100);
+}
+
+function goHome() {
+  searchText = "";
+  selectedStatus = "all";
+  selectedCategories.clear();
+  openCategoryId = "";
+  openSubcategoryIds.clear();
+  document.getElementById("searchInput").value = "";
+  document.getElementById("searchClear").classList.remove("show");
+  closeDetail();
+  renderAll();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderFilters() {
+  const statusBox = document.getElementById("statusFilters");
+  if (statusBox) {
+    statusBox.innerHTML = [
+      `<button class="status-filter ${selectedStatus === "all" ? "active" : ""}" onclick="setStatusFilter('all')">全部</button>`,
+      ...STATUS_OPTIONS.map(s =>
+        `<button class="status-filter ${selectedStatus === s.id ? "active" : ""}" onclick="setStatusFilter('${s.id}')">${s.label}</button>`
+      )
+    ].join("");
+  }
+
+  const sidebar = document.getElementById("sidebarCategories");
+  if (sidebar) {
+    sidebar.innerHTML = CATEGORIES.map(group => {
+      const count = group.options.filter(x => selectedCategories.has(x)).length;
+      const isOpen = openCategoryId === group.id;
+
+      return `
+        <div class="sidebar-category-group">
+          <button class="sidebar-category-toggle" type="button" onclick="toggleCategoryGroup('${group.id}')">
+            <span>${escapeHTML(group.label)}${count ? ` <span style="color:var(--accent);font-weight:700;">${count}</span>` : ""}</span>
+            <span class="sidebar-category-symbol">${isOpen ? "−" : "+"}</span>
+          </button>
+
+          <div class="sidebar-category-children ${isOpen ? "show" : ""}">
+            ${renderSidebarCategoryTree(group)}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  const activeBox = document.getElementById("sidebarActiveFilters");
+  if (activeBox) {
+    const active = [...selectedCategories];
+    activeBox.classList.toggle("show", active.length > 0);
+    activeBox.innerHTML = active.length
+      ? `
+        <div class="sidebar-active-title">已選模式</div>
+        ${active.map(tag => `
+          <button class="sidebar-active-chip" type="button" onclick="toggleCategoryFilter('${escapeAttr(tag)}')">
+            ${escapeHTML(tag)} ×
+          </button>
+        `).join("")}
+        <button class="sidebar-clear-all" type="button" onclick="clearCategoryFilters()">清除模式</button>
+      `
+      : "";
+  }
+
+  const legacyActive = document.getElementById("activeFilters");
+  if (legacyActive) {
+    legacyActive.classList.remove("show");
+    legacyActive.innerHTML = "";
+  }
+
+  const legacyTriggers = document.getElementById("categoryTriggers");
+  if (legacyTriggers) legacyTriggers.innerHTML = "";
+
+  const legacyDrawers = document.getElementById("categoryDrawers");
+  if (legacyDrawers) legacyDrawers.innerHTML = "";
+}
+
+function renderSidebarCategoryTree(group) {
+  return (group.tree || []).map(item => {
+    if (Array.isArray(item.options)) {
+      const branchKey = `${group.id}:${item.id}`;
+      const isOpen = openSubcategoryIds.has(branchKey);
+      const count = item.options.filter(option => selectedCategories.has(option.value)).length;
+
+      return `
+        <div class="sidebar-subcategory-group">
+          <button class="sidebar-subcategory-toggle" type="button" onclick="toggleSubcategoryGroup('${escapeAttr(branchKey)}')">
+            <span>${escapeHTML(item.label)}${count ? ` <span class="subcategory-count">${count}</span>` : ""}</span>
+            <span class="sidebar-subcategory-symbol">${isOpen ? "−" : "+"}</span>
+          </button>
+          <div class="sidebar-subcategory-children ${isOpen ? "show" : ""}">
+            ${item.options.map(option => `
+              <button class="sidebar-child sidebar-grandchild ${selectedCategories.has(option.value) ? "active" : ""}" type="button" onclick="toggleCategoryFilter('${escapeAttr(option.value)}')">
+                ${escapeHTML(option.label)}
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <button class="sidebar-child ${selectedCategories.has(item.value) ? "active" : ""}" type="button" onclick="toggleCategoryFilter('${escapeAttr(item.value)}')">
+        ${escapeHTML(item.label)}
+      </button>
+    `;
+  }).join("");
+}
+
+function toggleSubcategoryGroup(key) {
+  openSubcategoryIds.has(key) ? openSubcategoryIds.delete(key) : openSubcategoryIds.add(key);
+  renderFilters();
+}
+
+function setStatusFilter(status) {
+  selectedStatus = status;
+  renderAll();
+}
+
+function toggleCategoryGroup(id) {
+  openCategoryId = openCategoryId === id ? "" : id;
+  renderFilters();
+}
+
+function toggleCategoryFilter(category) {
+  selectedCategories.has(category) ? selectedCategories.delete(category) : selectedCategories.add(category);
+  renderAll();
+}
+
+function clearFilters() {
+  selectedStatus = "all";
+  selectedCategories.clear();
+  searchText = "";
+  document.getElementById("searchInput").value = "";
+  document.getElementById("searchClear").classList.remove("show");
+  renderAll();
+}
+
+function clearCategoryFilters() {
+  selectedCategories.clear();
+  renderAll();
+}
+
+function filterProducts() {
+  const q = searchText.trim().toLocaleLowerCase("zh-Hant");
+
+  return products.filter(product => {
+    const blob = [
+      product.name,
+      product.source,
+      product.note,
+      ...product.tags,
+      ...product.categories,
+      ...product.offers.flatMap(o => [o.brand, o.model, o.store, o.note])
+    ].join(" ").toLocaleLowerCase("zh-Hant");
+
+    const searchOk = !q || blob.includes(q);
+    const statusOk = selectedStatus === "all" || product.status === selectedStatus;
+    const categoryOk =
+      selectedCategories.size === 0 ||
+      [...selectedCategories].every(tag => product.categories.includes(tag));
+
+    return searchOk && statusOk && categoryOk;
+  });
+}
+
+function setSort(mode) {
+  sortMode = mode;
+  document.querySelectorAll(".sort-btn").forEach(btn => btn.classList.remove("active"));
+  document.getElementById(mode === "newest" ? "newestSortBtn" : "oldestSortBtn").classList.add("active");
+  renderProductList();
+}
+
+function renderStats() {
+  document.getElementById("statWanted").textContent = products.filter(p => p.status === "wanted").length;
+  document.getElementById("statWatching").textContent = products.filter(p => p.status === "watching").length;
+  document.getElementById("statPurchased").textContent = products.filter(p => p.status === "purchased").length;
+
+  const spent = products
+    .filter(p => p.status === "purchased" && p.purchaseCurrency === "NT$" && hasMoney(p.purchasePrice))
+    .reduce((sum, p) => sum + Number(p.purchasePrice), 0);
+
+  document.getElementById("statSpent").textContent = `NT$${formatMoney(spent)}`;
+}
+
+function renderProductList() {
+  const list = document.getElementById("productList");
+  let filtered = filterProducts();
+
+  filtered.sort((a, b) => {
+    const da = new Date(a.createdAt).getTime() || 0;
+    const db = new Date(b.createdAt).getTime() || 0;
+    return sortMode === "newest" ? db - da : da - db;
+  });
+
+  document.getElementById("resultCount").textContent =
+    `${filtered.length} 個項目${filtered.length !== products.length ? `／共 ${products.length} 個` : ""}`;
+
+  if (!filtered.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <strong>目前沒有符合條件的商品</strong>
+        可以換個關鍵字、取消篩選，或新增第一個要買的東西。
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = filtered.map(p => {
+    const currentPrice = getCurrentPriceSummary(p);
+    const joinedDays = watchDays(p);
+    const lastPurchaseDate = p.lastPurchaseDate
+      ? formatMonthDay(p.lastPurchaseDate)
+      : "";
+    const budget = hasMoney(p.budget)
+      ? `${p.budgetCurrency || "NT$"}${formatMoney(p.budget)}`
+      : "";
+
+    return `
+      <article class="product-row decision-row" onclick="openDetail('${p.id}')">
+        <div class="decision-row-inner">
+          <div class="decision-primary">
+            <span class="decision-status">${escapeHTML(getStatusLabel(p.status))}</span>
+            <span class="decision-separator">｜</span>
+            <h3 class="decision-name">${escapeHTML(p.name)}</h3>
+          </div>
+
+          ${(currentPrice || budget) ? `
+            <div class="decision-price-row">
+              ${currentPrice ? `<span>目前 ${escapeHTML(currentPrice)}</span>` : ""}
+              ${currentPrice && budget ? `<span class="decision-separator">｜</span>` : ""}
+              ${budget ? `<span>預算 ${escapeHTML(budget)}</span>` : ""}
+            </div>
+          ` : ""}
+
+          <div class="decision-secondary">
+            <span>已加入 ${joinedDays} 天</span>
+            ${lastPurchaseDate ? `<span class="decision-separator">｜</span><span>最後可購買 ${escapeHTML(lastPurchaseDate)}</span>` : ""}
+          </div>
+
+          <span class="row-arrow decision-arrow">›</span>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function applyCategory(tag) {
+  selectedCategories.add(tag);
+  renderAll();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function searchTag(tag) {
+  searchText = tag;
+  document.getElementById("searchInput").value = tag;
+  document.getElementById("searchClear").classList.add("show");
+  renderAll();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function findProduct(id) {
+  return products.find(p => String(p.id) === String(id)) || null;
+}
+
+function checkExpiredOffers(product) {
+  const newlyExpired = product.offers.filter(o => isExpired(o) && !o.expiredNoticeSeen);
+
+  if (!newlyExpired.length) return;
+
+  newlyExpired.forEach(o => o.expiredNoticeSeen = true);
+  saveProducts();
+
+  setTimeout(() => {
+    alert(
+      `有 ${newlyExpired.length} 筆優惠已過期。\n\n` +
+      `系統已不再使用過期優惠價，若有原價則改以原價計算。\n` +
+      `實際目前價格請重新確認。`
+    );
+  }, 120);
+}
+
+function openDetail(id) {
+  const product = findProduct(id);
+  if (!product) return;
+
+  product.lastViewedAt = nowIso();
+  product.viewCount = Number(product.viewCount || 0) + 1;
+  saveProducts();
+
+  activeDetailId = id;
+  checkExpiredOffers(product);
+
+  const body = document.getElementById("detailBody");
+  const drawer = document.getElementById("detailDrawer");
+  const overlay = document.getElementById("detailOverlay");
+
+  const lowest = getLowestSummary(product);
+  const currentPrice = getCurrentPriceSummary(product);
+
+  body.innerHTML = `
+    ${product.image ? `<img class="detail-image" src="${product.image}" alt="${escapeAttr(product.name)}">` : ""}
+
+    <h2 class="detail-title">${escapeHTML(product.name)}</h2>
+    <div class="detail-subtitle">
+      加入清單 ${watchDays(product)} 天
+      ${product.lastViewedAt ? ` · 已查看 ${product.viewCount} 次` : ""}
+      ${lowest ? ` · 目前參考 ${escapeHTML(lowest)}` : ""}
+    </div>
+
+    <section class="detail-section">
+      <div class="detail-line">
+        <span class="detail-key">狀態</span>
+        <span class="detail-value detail-status-text status-${product.status}">${escapeHTML(getStatusLabel(product.status))}</span>
+      </div>
+
+      ${currentPrice ? `
+        <div class="detail-line">
+          <span class="detail-key">目前價格</span>
+          <span class="detail-value">${escapeHTML(currentPrice)}</span>
+        </div>
+      ` : ""}
+
+      ${product.lastPurchaseDate ? `
+        <div class="detail-line">
+          <span class="detail-key">最後可購買日</span>
+          <span class="detail-value">${escapeHTML(product.lastPurchaseDate)}</span>
+        </div>
+      ` : ""}
+
+      ${product.budget !== "" ? `
+        <div class="detail-line">
+          <span class="detail-key">預算</span>
+          <span class="detail-value">${escapeHTML(product.budgetCurrency)}${escapeHTML(formatMoney(product.budget))}</span>
+        </div>
+      ` : ""}
+
+      ${product.source ? `
+        <div class="detail-line">
+          <span class="detail-key">採買來源</span>
+          <span class="detail-value">${escapeHTML(product.source)}</span>
+        </div>
+      ` : ""}
+
+      <div class="detail-line">
+        <span class="detail-key">首次加入</span>
+        <span class="detail-value">${escapeHTML(String(product.createdAt).slice(0,10))}</span>
+      </div>
+    </section>
+
+    ${product.categories.length || product.tags.length ? `
+      <section class="detail-section">
+        ${product.categories.length ? `
+          <div class="detail-label">購買模式</div>
+          <div class="tag-wrap">
+            ${product.categories.map(tag => `<button class="detail-tag" onclick="closeDetail(); applyCategory('${escapeAttr(tag)}')">${escapeHTML(tag)}</button>`).join("")}
+          </div>
+        ` : ""}
+
+        ${product.tags.length ? `
+          <div class="detail-label" style="margin-top:${product.categories.length ? "16px" : "0"};">自由標籤</div>
+          <div class="tag-wrap">
+            ${product.tags.map(tag => `<button class="custom-tag" onclick="closeDetail(); searchTag('${escapeAttr(tag)}')">${escapeHTML(tag)}</button>`).join("")}
+          </div>
+        ` : ""}
+      </section>
+    ` : ""}
+
+    ${product.note ? `
+      <section class="detail-section">
+        <div class="detail-label">備註</div>
+        <p class="detail-copy">${escapeHTML(product.note)}</p>
+      </section>
+    ` : ""}
+
+    ${product.offers.length ? `
+      <section class="detail-section">
+        <div class="detail-label">比價紀錄</div>
+        <div class="offer-list">
+          ${product.offers.map(renderOfferCard).join("")}
+        </div>
+      </section>
+    ` : ""}
+
+    ${renderPurchaseDetail(product)}
+
+    <section class="detail-section">
+      <div class="detail-label">管理</div>
+      <div class="admin-actions">
+        <button class="action-btn accent" type="button" onclick="openProductForm('${product.id}')">編輯商品</button>
+        <button class="action-btn danger" type="button" onclick="confirmDeleteProduct('${product.id}')">刪除商品</button>
+      </div>
+    </section>
+  `;
+
+  drawer.classList.add("show");
+  overlay.classList.add("show");
+  drawer.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  renderAll();
+}
+
+function renderOfferCard(offer) {
+  const expired = isExpired(offer);
+  const effective = offerEffectivePrice(offer);
+  const title = [offer.brand, offer.model].filter(Boolean).join(" ") || "未命名方案";
+
+  const meta = [];
+  if (hasMoney(offer.originalPrice)) meta.push(`原價 ${offer.currency}${formatMoney(offer.originalPrice)}`);
+  if (hasMoney(offer.salePrice)) meta.push(`優惠價 ${offer.currency}${formatMoney(offer.salePrice)}`);
+  if (hasMoney(offer.directDiscount)) meta.push(`帳內折價 ${offer.currency}${formatMoney(offer.directDiscount)}`);
+  if (hasMoney(offer.shipping)) meta.push(`運費 ${offer.currency}${formatMoney(offer.shipping)}`);
+  if (offer.expiry) meta.push(`${expired ? "優惠已過期" : "優惠至"} ${offer.expiry}`);
+  if (offer.reward) meta.push(`帳外回饋：${offer.reward}`);
+  if (offer.updatedAt) meta.push(`更新 ${offer.updatedAt}`);
+  if (offer.note) meta.push(offer.note);
+
+  return `
+    <div class="offer-card ${expired ? "expired" : ""}">
+      <div class="offer-head">
+        <div>
+          <div class="offer-name">${escapeHTML(title)}</div>
+          ${offer.store ? `<div class="offer-store">${escapeHTML(offer.store)}</div>` : ""}
+        </div>
+        ${effective !== null ? `<div class="offer-price">${escapeHTML(offer.currency)}${escapeHTML(formatMoney(effective))}</div>` : ""}
+      </div>
+
+      ${meta.length ? `<div class="offer-meta">${meta.map(x => `<div>${escapeHTML(x)}</div>`).join("")}</div>` : ""}
+
+      ${/^https?:\/\//i.test(offer.url) ? `<a class="offer-link" href="${escapeAttr(offer.url)}" target="_blank" rel="noopener noreferrer">前往商品頁 ↗</a>` : ""}
+    </div>
+  `;
+}
+
+function renderPurchaseDetail(product) {
+  const rows = [];
+
+  if (product.purchasePrice !== "") rows.push(["實際購入價", `${product.purchaseCurrency}${formatMoney(product.purchasePrice)}`]);
+  if (product.purchaseDate) rows.push(["購入日期", product.purchaseDate]);
+  if (product.purchaseStore) rows.push(["購入通路", product.purchaseStore]);
+  if (product.orderNumber) rows.push(["訂單編號", product.orderNumber]);
+  if (product.invoiceNumber) rows.push(["發票號碼", product.invoiceNumber]);
+  if (product.warrantyEnd) rows.push(["保固至", product.warrantyEnd]);
+
+  if (!rows.length && !product.invoiceImage && !product.purchaseNote) return "";
+
+  return `
+    <section class="detail-section">
+      <div class="detail-label">購買紀錄</div>
+      ${rows.map(([k,v]) => `
+        <div class="detail-line">
+          <span class="detail-key">${escapeHTML(k)}</span>
+          <span class="detail-value">${escapeHTML(v)}</span>
+        </div>
+      `).join("")}
+
+      ${product.invoiceImage ? `<img class="detail-image" style="margin-top:16px;margin-bottom:0;" src="${product.invoiceImage}" alt="發票圖片">` : ""}
+      ${product.purchaseNote ? `<p class="detail-copy" style="margin-top:16px;">${escapeHTML(product.purchaseNote)}</p>` : ""}
+    </section>
+  `;
+}
+
+function closeDetail() {
+  document.getElementById("detailDrawer").classList.remove("show");
+  document.getElementById("detailOverlay").classList.remove("show");
+  document.getElementById("detailDrawer").setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  activeDetailId = null;
+}
+
+function createEmptyProduct() {
+  return {
+    id: "",
+    name: "",
+    status: "wanted",
+    categories: [],
+    tags: [],
+    source: "",
+    currentPrice: "",
+    currentPriceCurrency: "NT$",
+    lastPurchaseDate: "",
+    budget: "",
+    budgetCurrency: "NT$",
+    image: "",
+    imageInfo: "",
+    note: "",
+    purchasePrice: "",
+    purchaseCurrency: "NT$",
+    purchaseDate: "",
+    purchaseStore: "",
+    orderNumber: "",
+    invoiceNumber: "",
+    invoiceImage: "",
+    warrantyEnd: "",
+    purchaseNote: "",
+    offers: [],
+    createdAt: nowIso(),
+    updatedAt: nowIso(),
+    lastViewedAt: "",
+    viewCount: 0,
+    resolvedAt: ""
+  };
+}
+
+function openProductForm(id = "") {
+  closeDetail();
+
+  if (id) {
+    const existing = findProduct(id);
+    if (!existing) return;
+    formState = JSON.parse(JSON.stringify(existing));
+  } else {
+    formState = createEmptyProduct();
+  }
+
+  pendingImageInfo = formState.imageInfo || "";
+  renderProductForm();
+}
+
+function renderProductForm() {
+  const editing = Boolean(formState.id);
+
+  openModal(`
+    <div class="modal-head">
+      <h3>${editing ? "編輯商品" : "新增商品"}</h3>
+      <button class="icon-btn" type="button" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <section class="form-section">
+        <div class="form-section-title">基本資料</div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>商品名稱 *</label>
+            <input id="formName" value="${escapeAttr(formState.name)}" placeholder="例如：20cm 角色娃">
+          </div>
+
+          <div class="field">
+            <label>採買來源</label>
+            <input id="formSource" value="${escapeAttr(formState.source)}" placeholder="補貨、特價、臨時需要、朋友推薦……">
+          </div>
+
+          <div class="form-grid three">
+            <div class="field">
+              <label>目前價格</label>
+              <input id="formCurrentPrice" type="number" step="0.01" min="0" value="${escapeAttr(formState.currentPrice)}" placeholder="選填">
+            </div>
+
+            <div class="field">
+              <label>目前價格幣別</label>
+              <input id="formCurrentPriceCurrency" value="${escapeAttr(formState.currentPriceCurrency || "NT$")}" placeholder="NT$">
+            </div>
+
+            <div class="field">
+              <label>最後可購買日</label>
+              <input id="formLastPurchaseDate" type="date" value="${escapeAttr(formState.lastPurchaseDate)}">
+            </div>
+          </div>
+
+          <div class="form-grid two">
+            <div class="field">
+              <label>預算</label>
+              <input id="formBudget" type="number" step="0.01" min="0" value="${escapeAttr(formState.budget)}" placeholder="選填">
+            </div>
+
+            <div class="field">
+              <label>預算幣別</label>
+              <input id="formBudgetCurrency" value="${escapeAttr(formState.budgetCurrency || "NT$")}" placeholder="NT$">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>備註</label>
+            <textarea id="formNote" placeholder="為什麼要買、尺寸、規格、比較重點……">${escapeHTML(formState.note)}</textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="form-section-title">狀態</div>
+        <div class="segmented">
+          ${STATUS_OPTIONS.map(s => `
+            <button class="segment ${formState.status === s.id ? "active" : ""}" type="button" onclick="setFormStatus('${s.id}')">${s.label}</button>
+          `).join("")}
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="form-section-title">購買模式（可複選）</div>
+
+        <div class="series-editor">
+          ${CATEGORIES.map(group => `
+            <div class="series-block">
+              <button class="series-toggle" type="button" onclick="toggleFormCategoryGroup('${group.id}')">
+                <span>${escapeHTML(group.label)}</span>
+                <span>${group.options.filter(x => formState.categories.includes(x)).length || "＋"}</span>
+              </button>
+
+              <div id="formCat-${group.id}" class="series-children">
+                ${renderFormCategoryTree(group)}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="form-section-title">自由標籤</div>
+
+        <div class="tag-entry">
+          <input id="tagInput" placeholder="自己 Key，Enter 或逗號加入" onkeydown="handleTagKeydown(event)" oninput="renderTagSuggestions(this.value)">
+          <button class="small-btn" type="button" onclick="addTag()">新增</button>
+        </div>
+
+        <div id="tagSuggestions" class="tag-suggestions"></div>
+
+        <div id="tagPreview" class="tag-preview">
+          ${renderFormTags()}
+        </div>
+
+        <div class="link-note">自由標籤會參與搜尋，也用來判斷「你以前是不是也想買過這種東西」。</div>
+      </section>
+
+      <section class="form-section">
+        <div class="form-section-title">商品圖片</div>
+
+        <div class="field">
+          <input type="file" accept="image/jpeg,image/png,image/webp" onchange="handleProductImage(event)">
+        </div>
+
+        <div id="productImagePreview" class="image-preview ${formState.image ? "show" : ""}">
+          ${formState.image ? `<img src="${formState.image}" alt="商品圖片預覽">` : ""}
+          <div class="image-info">
+            ${escapeHTML(pendingImageInfo || "圖片會強制壓縮後才存入 localStorage。")}
+            ${formState.image ? `<br><button class="mini-btn danger" type="button" style="margin-top:6px;" onclick="removeProductImage()">移除圖片</button>` : ""}
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="form-section-title">比價紀錄</div>
+
+        <div id="offerEditorList" class="offer-editor-list">
+          ${renderOfferEditorRows()}
+        </div>
+
+        <button class="small-btn" style="margin-top:10px;padding:9px 12px;" type="button" onclick="addOffer()">＋ 新增比價</button>
+
+        <div class="link-note">
+          折價算帳內；信用卡點數、平台幣、回饋金等記在帳外回饋。不同幣別不互相比最低價。
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="form-section-title">購買紀錄（全部選填）</div>
+
+        <div class="form-grid two">
+          <div class="field">
+            <label>實際購入價</label>
+            <input id="formPurchasePrice" type="number" step="0.01" min="0" value="${escapeAttr(formState.purchasePrice)}">
+          </div>
+
+          <div class="field">
+            <label>購入幣別</label>
+            <input id="formPurchaseCurrency" value="${escapeAttr(formState.purchaseCurrency || "NT$")}">
+          </div>
+
+          <div class="field">
+            <label>購入日期</label>
+            <input id="formPurchaseDate" type="date" value="${escapeAttr(formState.purchaseDate)}">
+          </div>
+
+          <div class="field">
+            <label>購入通路</label>
+            <input id="formPurchaseStore" value="${escapeAttr(formState.purchaseStore)}">
+          </div>
+
+          <div class="field">
+            <label>訂單編號</label>
+            <input id="formOrderNumber" value="${escapeAttr(formState.orderNumber)}">
+          </div>
+
+          <div class="field">
+            <label>發票號碼</label>
+            <input id="formInvoiceNumber" value="${escapeAttr(formState.invoiceNumber)}">
+          </div>
+
+          <div class="field">
+            <label>保固至</label>
+            <input id="formWarrantyEnd" type="date" value="${escapeAttr(formState.warrantyEnd)}">
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:12px;">
+          <label>購買備註</label>
+          <textarea id="formPurchaseNote">${escapeHTML(formState.purchaseNote)}</textarea>
+        </div>
+
+        <div class="field" style="margin-top:12px;">
+          <label>發票圖片</label>
+          <input type="file" accept="image/jpeg,image/png,image/webp" onchange="handleInvoiceImage(event)">
+        </div>
+
+        <div id="invoiceImagePreview" class="image-preview ${formState.invoiceImage ? "show" : ""}">
+          ${formState.invoiceImage ? `<img src="${formState.invoiceImage}" alt="發票圖片預覽">` : ""}
+          <div class="image-info">
+            ${formState.invoiceImage ? `發票圖片已壓縮儲存。<br><button class="mini-btn danger" type="button" style="margin-top:6px;" onclick="removeInvoiceImage()">移除發票圖片</button>` : "發票圖片同樣會強制壓縮。"}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="form-footer">
+      <button class="ghost-btn" type="button" onclick="closeModal()">取消</button>
+      <button class="save-btn" type="button" onclick="saveProductFromForm()">${editing ? "儲存變更" : "新增商品"}</button>
+    </div>
+  `);
+}
+
+function setFormStatus(status) {
+  syncBasicFormFields();
+  formState.status = status;
+  renderProductForm();
+}
+
+function renderFormCategoryTree(group) {
+  return (group.tree || []).map(item => {
+    if (Array.isArray(item.options)) {
+      const branchId = `formSub-${group.id}-${item.id}`;
+      const count = item.options.filter(option => formState.categories.includes(option.value)).length;
+      return `
+        <div class="form-subcategory-group">
+          <button class="form-subcategory-toggle" type="button" onclick="toggleFormCategoryBranch('${branchId}')">
+            <span>${escapeHTML(item.label)}</span>
+            <span>${count || "＋"}</span>
+          </button>
+          <div id="${branchId}" class="form-subcategory-children">
+            ${item.options.map(option => `
+              <button class="check-chip ${formState.categories.includes(option.value) ? "active" : ""}" data-category="${escapeAttr(option.value)}" type="button" onclick="toggleFormCategory('${escapeAttr(option.value)}')">
+                ${escapeHTML(option.label)}
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <button class="check-chip ${formState.categories.includes(item.value) ? "active" : ""}" data-category="${escapeAttr(item.value)}" type="button" onclick="toggleFormCategory('${escapeAttr(item.value)}')">
+        ${escapeHTML(item.label)}
+      </button>
+    `;
+  }).join("");
+}
+
+function toggleFormCategoryGroup(id) {
+  document.getElementById(`formCat-${id}`)?.classList.toggle("show");
+}
+
+function toggleFormCategoryBranch(id) {
+  document.getElementById(id)?.classList.toggle("show");
+}
+
+function toggleFormCategory(category) {
+  const set = new Set(formState.categories);
+  set.has(category) ? set.delete(category) : set.add(category);
+  formState.categories = [...set];
+
+  document.querySelectorAll(".series-children .check-chip").forEach(btn => {
+    if (btn.dataset.category === category) btn.classList.toggle("active", set.has(category));
+  });
+}
+
+function handleTagKeydown(event) {
+  if (event.key === "Enter" || event.key === ",") {
+    event.preventDefault();
+    addTag();
+  }
+}
+
+function addTag(value = "") {
+  const input = document.getElementById("tagInput");
+  const tag = String(value || input?.value || "").trim().replace(/,+$/, "");
+  if (!tag) return;
+
+  if (!formState.tags.includes(tag)) formState.tags.push(tag);
+
+  if (input) input.value = "";
+  document.getElementById("tagPreview").innerHTML = renderFormTags();
+  document.getElementById("tagSuggestions").innerHTML = "";
+}
+
+function removeTag(index) {
+  formState.tags.splice(index, 1);
+  document.getElementById("tagPreview").innerHTML = renderFormTags();
+}
+
+function renderFormTags() {
+  return formState.tags.map((tag, index) => `
+    <span class="tag-edit-chip">
+      ${escapeHTML(tag)}
+      <button type="button" onclick="removeTag(${index})">×</button>
+    </span>
+  `).join("");
+}
+
+function getAllHistoricalTags() {
+  return [...new Set(products.flatMap(p => p.tags || []))].sort((a,b) => a.localeCompare(b, "zh-Hant"));
+}
+
+function renderTagSuggestions(value) {
+  const box = document.getElementById("tagSuggestions");
+  if (!box) return;
+
+  const q = String(value || "").trim().toLocaleLowerCase("zh-Hant");
+  if (!q) {
+    box.innerHTML = "";
+    return;
+  }
+
+  const matched = getAllHistoricalTags()
+    .filter(tag => tag.toLocaleLowerCase("zh-Hant").includes(q) && !formState.tags.includes(tag))
+    .slice(0, 8);
+
+  box.innerHTML = matched.map(tag => `
+    <button class="tag-suggestion" type="button" onclick="addTag('${escapeAttr(tag)}')">${escapeHTML(tag)}</button>
+  `).join("");
+}
+
+function addOffer() {
+  syncBasicFormFields();
+  formState.offers.push(normalizeOffer({}));
+  renderProductForm();
+}
+
+function removeOffer(index) {
+  syncBasicFormFields();
+  formState.offers.splice(index, 1);
+  renderProductForm();
+}
+
+function updateOffer(index, field, value) {
+  const offer = formState.offers[index];
+  if (!offer) return;
+
+  offer[field] = value;
+  offer.updatedAt = todayString();
+  offer.expiredNoticeSeen = false;
+}
+
+function renderOfferEditorRows() {
+  if (!formState.offers.length) {
+    return `<div class="link-note">目前沒有比價資料。需要時再新增就好。</div>`;
+  }
+
+  return formState.offers.map((o, index) => `
+    <div class="offer-editor-row">
+      <div class="form-grid two">
+        <div class="field">
+          <label>品牌</label>
+          <input value="${escapeAttr(o.brand)}" oninput="updateOffer(${index}, 'brand', this.value)">
+        </div>
+
+        <div class="field">
+          <label>型號／方案</label>
+          <input value="${escapeAttr(o.model)}" oninput="updateOffer(${index}, 'model', this.value)">
+        </div>
+
+        <div class="field">
+          <label>商店／平台</label>
+          <input value="${escapeAttr(o.store)}" oninput="updateOffer(${index}, 'store', this.value)">
+        </div>
+
+        <div class="field">
+          <label>幣別</label>
+          <input value="${escapeAttr(o.currency || "NT$")}" oninput="updateOffer(${index}, 'currency', this.value)">
+        </div>
+
+        <div class="field">
+          <label>原價</label>
+          <input type="number" step="0.01" min="0" value="${escapeAttr(o.originalPrice)}" oninput="updateOffer(${index}, 'originalPrice', this.value)">
+        </div>
+
+        <div class="field">
+          <label>優惠價</label>
+          <input type="number" step="0.01" min="0" value="${escapeAttr(o.salePrice)}" oninput="updateOffer(${index}, 'salePrice', this.value)">
+        </div>
+
+        <div class="field">
+          <label>帳內折價</label>
+          <input type="number" step="0.01" min="0" value="${escapeAttr(o.directDiscount)}" oninput="updateOffer(${index}, 'directDiscount', this.value)">
+        </div>
+
+        <div class="field">
+          <label>運費</label>
+          <input type="number" step="0.01" min="0" value="${escapeAttr(o.shipping)}" oninput="updateOffer(${index}, 'shipping', this.value)">
+        </div>
+
+        <div class="field">
+          <label>優惠期限</label>
+          <input type="date" value="${escapeAttr(o.expiry)}" oninput="updateOffer(${index}, 'expiry', this.value)">
+        </div>
+
+        <div class="field">
+          <label>帳外回饋</label>
+          <input value="${escapeAttr(o.reward)}" placeholder="例如：信用卡 3%、平台幣 100" oninput="updateOffer(${index}, 'reward', this.value)">
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:10px;">
+        <label>購買網址</label>
+        <input value="${escapeAttr(o.url)}" placeholder="https://..." oninput="updateOffer(${index}, 'url', this.value)">
+      </div>
+
+      <div class="field" style="margin-top:10px;">
+        <label>備註</label>
+        <input value="${escapeAttr(o.note)}" oninput="updateOffer(${index}, 'note', this.value)">
+      </div>
+
+      <div class="offer-row-actions">
+        <button class="mini-btn danger" type="button" onclick="removeOffer(${index})">刪除此比價</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function syncBasicFormFields() {
+  if (!formState) return;
+
+  const ids = [
+    ["formName", "name"],
+    ["formSource", "source"],
+    ["formCurrentPrice", "currentPrice"],
+    ["formCurrentPriceCurrency", "currentPriceCurrency"],
+    ["formLastPurchaseDate", "lastPurchaseDate"],
+    ["formBudget", "budget"],
+    ["formBudgetCurrency", "budgetCurrency"],
+    ["formNote", "note"],
+    ["formPurchasePrice", "purchasePrice"],
+    ["formPurchaseCurrency", "purchaseCurrency"],
+    ["formPurchaseDate", "purchaseDate"],
+    ["formPurchaseStore", "purchaseStore"],
+    ["formOrderNumber", "orderNumber"],
+    ["formInvoiceNumber", "invoiceNumber"],
+    ["formWarrantyEnd", "warrantyEnd"],
+    ["formPurchaseNote", "purchaseNote"]
+  ];
+
+  ids.forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) formState[key] = el.value;
+  });
+}
+
+async function handleProductImage(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const result = await compressImage(file);
+    formState.image = result.dataUrl;
+    formState.imageInfo = `原始 ${formatBytes(file.size)} → 儲存 ${formatBytes(result.bytes)}`;
+    pendingImageInfo = formState.imageInfo;
+    renderProductForm();
+  } catch (error) {
+    console.error(error);
+    alert("圖片處理失敗，請改用 JPG、PNG 或 WebP。");
+  }
+}
+
+async function handleInvoiceImage(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const result = await compressImage(file);
+    formState.invoiceImage = result.dataUrl;
+    renderProductForm();
+  } catch (error) {
+    console.error(error);
+    alert("發票圖片處理失敗。");
+  }
+}
+
+function removeProductImage() {
+  formState.image = "";
+  formState.imageInfo = "";
+  pendingImageInfo = "";
+  renderProductForm();
+}
+
+function removeInvoiceImage() {
+  formState.invoiceImage = "";
+  renderProductForm();
+}
+
+async function compressImage(file) {
+  const dataUrl = await fileToDataUrl(file);
+  const img = await loadImage(dataUrl);
+
+  let width = img.naturalWidth;
+  let height = img.naturalHeight;
+  const maxEdge = 800;
+
+  if (Math.max(width, height) > maxEdge) {
+    const scale = maxEdge / Math.max(width, height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+
+  let canvas = document.createElement("canvas");
+  let ctx = canvas.getContext("2d");
+  let quality = 0.78;
+
+  async function encode(w, h, q) {
+    canvas.width = w;
+    canvas.height = h;
+    ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/webp", q));
+    if (!blob) throw new Error("無法壓縮圖片");
+    return blob;
+  }
+
+  let blob = await encode(width, height, quality);
+
+  while (blob.size > 150 * 1024 && quality > 0.40) {
+    quality -= 0.08;
+    blob = await encode(width, height, quality);
+  }
+
+  if (blob.size > 150 * 1024) {
+    width = Math.max(320, Math.round(width * 0.75));
+    height = Math.max(320, Math.round(height * 0.75));
+    quality = 0.58;
+    blob = await encode(width, height, quality);
+
+    while (blob.size > 150 * 1024 && quality > 0.36) {
+      quality -= 0.07;
+      blob = await encode(width, height, quality);
+    }
+  }
+
+  const compressedDataUrl = await blobToDataUrl(blob);
+  return { dataUrl: compressedDataUrl, bytes: blob.size };
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
+function snapshotOfferPrice(offer) {
+  const effective = offerEffectivePrice(offer);
+  if (effective === null) return;
+
+  const signature = JSON.stringify([
+    offer.currency,
+    offer.originalPrice,
+    offer.salePrice,
+    offer.directDiscount,
+    offer.shipping,
+    offer.expiry
+  ]);
+
+  const last = offer.priceHistory?.[offer.priceHistory.length - 1];
+  if (last?.signature === signature) return;
+
+  if (!Array.isArray(offer.priceHistory)) offer.priceHistory = [];
+  offer.priceHistory.push({
+    date: todayString(),
+    currency: offer.currency,
+    originalPrice: offer.originalPrice,
+    salePrice: offer.salePrice,
+    directDiscount: offer.directDiscount,
+    shipping: offer.shipping,
+    effectivePrice: effective,
+    signature
+  });
+}
+
+function saveProductFromForm() {
+  syncBasicFormFields();
+
+  formState.name = String(formState.name || "").trim();
+  if (!formState.name) {
+    showToast("商品名稱是唯一必填欄位");
+    return;
+  }
+
+  const old = formState.id ? findProduct(formState.id) : null;
+  const oldStatus = old?.status || "";
+
+  formState.offers = formState.offers.map(normalizeOffer);
+  formState.offers.forEach(snapshotOfferPrice);
+  formState.updatedAt = nowIso();
+
+  if (["purchased", "abandoned"].includes(formState.status)) {
+    if (!formState.resolvedAt || oldStatus !== formState.status) {
+      formState.resolvedAt = todayString();
+    }
+  } else {
+    formState.resolvedAt = "";
+  }
+
+  const isNew = !formState.id;
+
+  if (isNew) {
+    formState.id = uid();
+    formState.createdAt = nowIso();
+    products.unshift(normalizeProduct(formState));
+  } else {
+    const index = products.findIndex(p => String(p.id) === String(formState.id));
+    if (index >= 0) products[index] = normalizeProduct(formState);
+  }
+
+  if (!saveProducts()) return;
+
+  const savedId = formState.id;
+  closeModal();
+  renderAll();
+  showToast(isNew ? "已加入採買清單" : "商品已更新");
+
+  if (isNew) {
+    offerSimilarPrompt(savedId);
+  } else if (activeDetailId === savedId) {
+    openDetail(savedId);
+  }
+}
+
+function offerSimilarPrompt(productId) {
+  const product = findProduct(productId);
+  if (!product) return;
+
+  const ownTags = new Set(product.tags.map(t => t.toLocaleLowerCase("zh-Hant")));
+  const name = product.name.toLocaleLowerCase("zh-Hant");
+
+  const related = products.filter(other => {
+    if (other.id === product.id) return false;
+
+    const sharedTag = other.tags.some(tag => ownTags.has(tag.toLocaleLowerCase("zh-Hant")));
+    const nameHit =
+      name.length >= 2 &&
+      (other.name.toLocaleLowerCase("zh-Hant").includes(name) ||
+       name.includes(other.name.toLocaleLowerCase("zh-Hant")));
+
+    const keywordHit = product.tags.some(tag =>
+      tag.length >= 2 &&
+      other.name.toLocaleLowerCase("zh-Hant").includes(tag.toLocaleLowerCase("zh-Hant"))
+    );
+
+    return sharedTag || nameHit || keywordHit;
+  });
+
+  if (!related.length) return;
+
+  const keyTags = product.tags.filter(tag =>
+    related.some(other => other.tags.includes(tag) || other.name.includes(tag))
+  );
+
+  const label = keyTags[0] || product.name;
+  const totalIncludingCurrent = related.length + 1;
+
+  openModal(`
+    <div class="modal-head">
+      <h3>你以前也想買過</h3>
+      <button class="icon-btn" type="button" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="detail-copy">
+        你目前已經有 ${totalIncludingCurrent} 個和「${escapeHTML(label)}」相關的項目。
+        要不要打開來看看以前的自己想過什麼？
+      </p>
+    </div>
+
+    <div class="form-footer">
+      <button class="ghost-btn" type="button" onclick="closeModal()">先不用</button>
+      <button class="save-btn" type="button" onclick="openSimilar('${escapeAttr(label)}')">打開看看</button>
+    </div>
+  `, true);
+}
+
+function openSimilar(keyword) {
+  closeModal();
+  searchText = keyword;
+  document.getElementById("searchInput").value = keyword;
+  document.getElementById("searchClear").classList.add("show");
+  selectedStatus = "all";
+  selectedCategories.clear();
+  renderAll();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function confirmDeleteProduct(id) {
+  const product = findProduct(id);
+  if (!product) return;
+
+  openModal(`
+    <div class="modal-head">
+      <h3>刪除商品</h3>
+      <button class="icon-btn" type="button" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="detail-copy">確定要刪除「${escapeHTML(product.name)}」嗎？刪除後無法復原。</p>
+    </div>
+
+    <div class="form-footer">
+      <button class="ghost-btn" type="button" onclick="closeModal()">取消</button>
+      <button class="save-btn" style="background:var(--danger);" type="button" onclick="deleteProduct('${product.id}')">確定刪除</button>
+    </div>
+  `, true);
+}
+
+function deleteProduct(id) {
+  products = products.filter(p => String(p.id) !== String(id));
+  saveProducts();
+  closeModal();
+  closeDetail();
+  renderAll();
+  showToast("商品已刪除");
+}
+
+function openModal(html, small = false) {
+  const wrap = document.getElementById("modalWrap");
+  const card = document.getElementById("modalCard");
+  card.className = `modal-card${small ? " small" : ""}`;
+  card.innerHTML = html;
+  wrap.classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  document.getElementById("modalWrap").classList.remove("show");
+  document.getElementById("modalCard").innerHTML = "";
+  document.body.style.overflow = activeDetailId ? "hidden" : "";
+}
+
+function handleModalBackdrop(event) {
+  if (event.target.id === "modalWrap") closeModal();
+}
+
+
+function importData(event) {
+  const input = event.target;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+
+      if (!Array.isArray(parsed)) {
+        throw new Error("匯入檔案格式錯誤");
+      }
+
+      const imported = parsed.map(normalizeProduct);
+
+      const confirmed = confirm(
+        `確定要匯入 ${imported.length} 筆資料嗎？\n\n` +
+        `匯入後會覆蓋目前採買清單中的 ${products.length} 筆資料。`
+      );
+
+      if (!confirmed) {
+        input.value = "";
+        return;
+      }
+
+      products = imported;
+
+      if (!saveProducts()) {
+        input.value = "";
+        return;
+      }
+
+      searchText = "";
+      selectedStatus = "all";
+      selectedCategories.clear();
+      openCategoryId = "";
+      openSubcategoryIds.clear();
+
+      document.getElementById("searchInput").value = "";
+      document.getElementById("searchClear").classList.remove("show");
+
+      closeDetail();
+      renderAll();
+      showToast(`已匯入 ${products.length} 筆資料`);
+    } catch (error) {
+      console.error("匯入資料失敗", error);
+      alert("匯入失敗。請確認這是由採買清單匯出的 JSON 備份檔。");
+    } finally {
+      input.value = "";
+    }
+  };
+
+  reader.onerror = () => {
+    input.value = "";
+    alert("無法讀取這個檔案。");
+  };
+
+  reader.readAsText(file, "utf-8");
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(products, null, 2)], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `purchase-list_backup_${todayString()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast("資料已匯出");
+}
+
+function renderAll() {
+  renderFilters();
+  renderStats();
+  renderProductList();
+}
+
+document.getElementById("searchInput").addEventListener("input", event => {
+  searchText = event.target.value;
+  document.getElementById("searchClear").classList.toggle("show", Boolean(searchText));
+  renderProductList();
+});
+
+document.getElementById("searchClear").addEventListener("click", () => {
+  searchText = "";
+  document.getElementById("searchInput").value = "";
+  document.getElementById("searchClear").classList.remove("show");
+  renderProductList();
+});
+
+renderAll();
+</script>
+</body>
+</html>
