@@ -1,0 +1,3262 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>通用 Wi-Fi QRCode</title>
+
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
+<link rel="stylesheet" href="manager_v1.css">
+
+</head>
+
+
+<body>
+
+
+<header class="topbar">
+
+    <div class="topbar-inner">
+
+        <div class="brand">
+            Wi-Fi QRCode 工具
+        </div>
+
+        <nav class="main-nav">
+
+            <button
+                id="navGeneric"
+                class="active"
+                onclick="showMain('generic')"
+            >
+                通用 Wi-Fi QRCode
+            </button>
+
+            <button
+                id="navManage"
+                onclick="showMain('manage')"
+            >
+                通用 Wi-Fi QRCode 管理
+            </button>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+<main class="page">
+
+
+<!-- ==================== 通用 Wi-Fi ==================== -->
+
+<section
+    id="sectionGeneric"
+    class="main-section"
+>
+
+    <div class="hero">
+
+        <div class="hero-kicker">
+            General Wi-Fi
+        </div>
+
+        <h1>
+            通用 Wi-Fi
+        </h1>
+
+        <p>
+            可查看已建立 Wi-Fi 名稱、SSID、密碼，先預覽再將 Wi-Fi QRCode 印出。
+        </p>
+
+    </div>
+
+
+    <div class="section-head">
+
+        <div>
+
+            <h2>
+                Wi-Fi 清單
+            </h2>
+
+            <p>
+                切換通用與其他 Wi-Fi。
+            </p>
+
+        </div>
+
+
+        <div class="sub-nav">
+
+            <button
+                id="genericNavMain"
+                class="active"
+                onclick="showGenericMode('main')"
+            >
+                通用
+            </button>
+
+            <button
+                id="genericNavPublic"
+                onclick="showGenericMode('public')"
+            >
+                其他
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- 通用 -->
+
+    <div
+        id="genericMain"
+        class="hotel-section content-box"
+    >
+
+        <h3>
+            通用
+        </h3>
+
+
+        <div class="field">
+
+            <label for="qrSizeMain">
+                QRCode 大小：
+            </label>
+
+            <select
+                id="qrSizeMain"
+                onchange="syncQrSize(this.value)"
+            >
+                <option value="120">
+                    小
+                </option>
+
+                <option
+                    value="150"
+                    selected
+                >
+                    中
+                </option>
+
+                <option value="200">
+                    大
+                </option>
+            </select>
+
+        </div>
+
+
+        <div class="action-row">
+
+            <button onclick="showWifiList()">
+                顯示 Wi-Fi 清單
+            </button>
+
+            <button onclick="showWifiPrintPreview()">
+                預覽列印
+            </button>
+
+            <button onclick="printCurrent()">
+                列印
+            </button>
+
+        </div>
+
+
+        <div id="wifiList"></div>
+
+    </div>
+
+
+    <!-- 其他 -->
+
+    <div
+        id="genericPublic"
+        class="hotel-section content-box hidden"
+    >
+
+        <h3>
+            其他
+        </h3>
+
+
+        <div class="field">
+
+            <label for="qrSizePublic">
+                QRCode 大小：
+            </label>
+
+            <select
+                id="qrSizePublic"
+                onchange="syncQrSize(this.value)"
+            >
+                <option value="120">
+                    小
+                </option>
+
+                <option
+                    value="150"
+                    selected
+                >
+                    中
+                </option>
+
+                <option value="200">
+                    大
+                </option>
+            </select>
+
+        </div>
+
+
+        <div class="action-row">
+
+            <button onclick="showPublicList()">
+                顯示 Wi-Fi 清單
+            </button>
+
+            <button onclick="showPublicPrintPreview()">
+                預覽列印
+            </button>
+
+            <button onclick="printCurrent()">
+                列印
+            </button>
+
+        </div>
+
+
+        <div id="publicList"></div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==================== Wi-Fi 管理 ==================== -->
+
+<section
+    id="sectionManage"
+    class="main-section hidden"
+>
+
+    <div class="hero">
+
+        <div class="hero-kicker">
+            Wi-Fi Management
+        </div>
+
+        <h1>
+            Wi-Fi 管理
+        </h1>
+
+        <p>
+            建立與管理通用及其他 Wi-Fi 的名稱、SSID、密碼。
+        </p>
+
+    </div>
+
+
+    <div class="section-head">
+
+        <div>
+
+            <h2>
+                資料管理
+            </h2>
+
+            <p>
+                選擇要管理的 Wi-Fi 類型。
+            </p>
+
+        </div>
+
+
+        <div class="sub-nav">
+
+            <button
+                id="manageNavMain"
+                class="active"
+                onclick="showManageMode('main')"
+            >
+                通用
+            </button>
+
+            <button
+                id="manageNavPublic"
+                onclick="showManageMode('public')"
+            >
+                其他
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- 通用管理 -->
+
+    <div
+        id="manageMain"
+        class="content-box"
+    >
+
+        <h3>
+            通用 Wi-Fi
+        </h3>
+
+
+        <div class="action-row">
+
+            <button onclick="openWifiAddPanel()">
+                新增
+            </button>
+
+            <button onclick="openWifiBatchPanel()">
+                批次新增
+            </button>
+
+        </div>
+
+
+        <div class="field">
+
+            <label for="wifiSearch">
+                搜尋：
+            </label>
+
+            <input
+                type="text"
+                id="wifiSearch"
+                placeholder="名稱或 SSID"
+                oninput="renderWifiManageList()"
+            >
+
+        </div>
+
+
+        <div id="wifiManageList"></div>
+
+
+        <!-- 批次新增 -->
+
+        <div
+            id="wifiBatchPanel"
+            class="edit-panel hidden"
+        >
+
+            <h3>
+                批次新增通用 Wi-Fi
+            </h3>
+
+
+            <div class="field">
+
+                <label for="batchMode">
+                    產生方式：
+                </label>
+
+                <select
+                    id="batchMode"
+                    onchange="toggleBatchMode()"
+                >
+                    <option value="number">
+                        依數字產生
+                    </option>
+
+                    <option value="list">
+                        依清單產生
+                    </option>
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="batchSsidPrefix">
+                    SSID 前綴：
+                </label>
+
+                <input
+                    type="text"
+                    id="batchSsidPrefix"
+                    placeholder="可留空"
+                >
+
+            </div>
+
+
+            <div id="batchNumberFields">
+
+                <div class="field">
+
+                    <label for="batchStartNumber">
+                        起始數字：
+                    </label>
+
+                    <input
+                        type="number"
+                        id="batchStartNumber"
+                        step="1"
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label for="batchEndNumber">
+                        結束數字：
+                    </label>
+
+                    <input
+                        type="number"
+                        id="batchEndNumber"
+                        step="1"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="batchListFields"
+                class="hidden"
+            >
+
+                <div class="field">
+
+                    <label for="batchCustomList">
+                        自訂清單：
+                    </label>
+
+                    <textarea
+                        id="batchCustomList"
+                        placeholder="每行一筆"
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="batchPassword">
+                    共同密碼：
+                </label>
+
+                <input
+                    type="text"
+                    id="batchPassword"
+                >
+
+            </div>
+
+
+            <p class="notice">
+                名稱會直接使用數字或清單內容。建立後每筆都可獨立修改或刪除。
+            </p>
+
+
+            <button onclick="saveWifiBatch()">
+                批次新增
+            </button>
+
+            <button onclick="closeWifiBatchPanel()">
+                取消
+            </button>
+
+        </div>
+
+
+        <!-- 新增 / 修改 -->
+
+        <div
+            id="wifiEditPanel"
+            class="edit-panel hidden"
+        >
+
+            <h3 id="wifiEditTitle">
+                新增通用 Wi-Fi
+            </h3>
+
+
+            <input
+                type="hidden"
+                id="wifiEditId"
+            >
+
+
+            <div class="field">
+
+                <label for="wifiEditName">
+                    名稱：
+                </label>
+
+                <input
+                    type="text"
+                    id="wifiEditName"
+                    maxlength="4"
+                    placeholder="最多 4 個字"
+                >
+
+            </div>
+
+
+            <p class="notice">
+                名稱最多 4 個字，列印時固定顯示「名稱 | Wi-Fi」。
+            </p>
+
+
+            <div class="field">
+
+                <label for="wifiEditSsid">
+                    SSID：
+                </label>
+
+                <input
+                    type="text"
+                    id="wifiEditSsid"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="wifiEditPassword">
+                    密碼：
+                </label>
+
+                <input
+                    type="text"
+                    id="wifiEditPassword"
+                >
+
+            </div>
+
+
+            <button onclick="saveWifiItem()">
+                儲存
+            </button>
+
+            <button onclick="closeWifiEditPanel()">
+                取消
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- 其他 Wi-Fi 管理 -->
+
+    <div
+        id="managePublic"
+        class="content-box hidden"
+    >
+
+        <h3>
+            其他 Wi-Fi
+        </h3>
+
+
+        <div class="action-row">
+
+            <button onclick="openPublicAddPanel()">
+                新增
+            </button>
+
+            <button onclick="openPublicBatchPanel()">
+                批次新增
+            </button>
+
+        </div>
+
+
+        <div id="publicManageList"></div>
+
+
+        <!-- 批次新增 -->
+
+        <div
+            id="publicBatchPanel"
+            class="edit-panel hidden"
+        >
+
+            <h3>
+                批次新增其他 Wi-Fi
+            </h3>
+
+
+            <p class="notice">
+                每列一筆。名稱最多 4 個字，空白列會自動忽略。
+            </p>
+
+
+            <div id="publicBatchRows"></div>
+
+
+            <div>
+
+                <button onclick="addPublicBatchRow()">
+                    ＋新增一列
+                </button>
+
+            </div>
+
+
+            <div>
+
+                <button onclick="savePublicBatch()">
+                    批次新增
+                </button>
+
+                <button onclick="closePublicBatchPanel()">
+                    取消
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- 新增 / 修改 -->
+
+        <div
+            id="publicEditPanel"
+            class="edit-panel hidden"
+        >
+
+            <h3 id="publicEditTitle">
+                新增其他 Wi-Fi
+            </h3>
+
+
+            <input
+                type="hidden"
+                id="publicEditId"
+            >
+
+
+            <div class="field">
+
+                <label for="publicEditName">
+                    名稱：
+                </label>
+
+                <input
+                    type="text"
+                    id="publicEditName"
+                    maxlength="4"
+                    placeholder="例如 大廳、餐廳"
+                >
+
+            </div>
+
+
+            <p class="notice">
+                名稱最多 4 個字，列印時固定顯示「名稱 | Wi-Fi」。
+            </p>
+
+
+            <div class="field">
+
+                <label for="publicEditSsid">
+                    SSID：
+                </label>
+
+                <input
+                    type="text"
+                    id="publicEditSsid"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="publicEditPassword">
+                    密碼：
+                </label>
+
+                <input
+                    type="text"
+                    id="publicEditPassword"
+                >
+
+            </div>
+
+
+            <button onclick="savePublicItem()">
+                儲存
+            </button>
+
+            <button onclick="closePublicEditPanel()">
+                取消
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==================== 列印區 ==================== -->
+
+<section
+    id="printArea"
+    class="print-preview hidden"
+></section>
+
+
+</main>
+
+
+
+<script>
+
+
+/* ==================== 資料設定 ==================== */
+
+
+const STORAGE_KEY =
+    "manager_v1";
+
+
+const DEFAULT_QR_SIZE =
+    150;
+
+
+let currentQrSize =
+    DEFAULT_QR_SIZE;
+
+
+const NAME_MAX =
+    4;
+
+
+let managerData =
+    loadManagerData();
+
+
+let wifiItems =
+    managerData.list;
+
+
+let otherWifi =
+    managerData.other;
+
+
+
+/* ==================== LocalStorage ==================== */
+
+
+function loadManagerData() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                STORAGE_KEY
+            );
+
+
+        if (saved) {
+
+            const parsed =
+                JSON.parse(saved);
+
+
+            if (
+                parsed
+                &&
+                typeof parsed === "object"
+                &&
+                !Array.isArray(parsed)
+            ) {
+
+                return {
+
+                    list:
+                        Array.isArray(parsed.list)
+                        ? parsed.list
+                        : [],
+
+                    other:
+                        Array.isArray(parsed.other)
+                        ? parsed.other
+                        : []
+
+                };
+
+            }
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.warn(
+            "Wi-Fi 管理資料讀取失敗。",
+            error
+        );
+
+    }
+
+
+    return {
+        list: [],
+        other: []
+    };
+
+}
+
+
+function saveManagerData() {
+
+    managerData = {
+
+        list:
+            wifiItems,
+
+        other:
+            otherWifi
+
+    };
+
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(
+            managerData
+        )
+    );
+
+}
+
+
+
+/* ==================== 共用 ==================== */
+
+
+function createId(prefix) {
+
+    return (
+        prefix
+        +
+        "_"
+        +
+        Date.now()
+        +
+        "_"
+        +
+        Math.random()
+            .toString(36)
+            .slice(2, 8)
+    );
+
+}
+
+
+function wifiPayload(
+    ssid,
+    password,
+    type = "WPA"
+) {
+
+    const wifiType =
+        type || "nopass";
+
+
+    return `WIFI:T:${wifiType};S:${ssid};P:${password};;`;
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(
+        value ?? ""
+    )
+    .replaceAll(
+        "&",
+        "&amp;"
+    )
+    .replaceAll(
+        "<",
+        "&lt;"
+    )
+    .replaceAll(
+        ">",
+        "&gt;"
+    )
+    .replaceAll(
+        '"',
+        "&quot;"
+    )
+    .replaceAll(
+        "'",
+        "&#039;"
+    );
+
+}
+
+
+function setActive(
+    ids,
+    activeId
+) {
+
+    ids.forEach(
+        id => {
+
+            document
+                .getElementById(id)
+                ?.classList
+                .toggle(
+                    "active",
+                    id === activeId
+                );
+
+        }
+    );
+
+}
+
+
+function syncQrSize(value) {
+
+    const size =
+        Number(value);
+
+
+    if (
+        ![120, 150, 200].includes(size)
+    ) {
+
+        return;
+
+    }
+
+
+    currentQrSize =
+        size;
+
+
+    const mainSelect =
+        document.getElementById(
+            "qrSizeMain"
+        );
+
+
+    const publicSelect =
+        document.getElementById(
+            "qrSizePublic"
+        );
+
+
+    if (
+        mainSelect
+    ) {
+
+        mainSelect.value =
+            String(size);
+
+    }
+
+
+    if (
+        publicSelect
+    ) {
+
+        publicSelect.value =
+            String(size);
+
+    }
+
+
+    clearPrintArea();
+
+}
+
+
+
+function clearPrintArea() {
+
+    const printArea =
+        document.getElementById(
+            "printArea"
+        );
+
+
+    printArea.innerHTML =
+        "";
+
+
+    printArea.classList.add(
+        "hidden"
+    );
+
+}
+
+
+
+/* ==================== 主頁切換 ==================== */
+
+
+function showMain(target) {
+
+    document
+        .getElementById(
+            "sectionGeneric"
+        )
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById(
+            "sectionManage"
+        )
+        .classList
+        .add("hidden");
+
+
+    clearPrintArea();
+
+
+    setActive(
+
+        [
+            "navGeneric",
+            "navManage"
+        ],
+
+        target === "generic"
+            ? "navGeneric"
+            : "navManage"
+
+    );
+
+
+    if (
+        target === "generic"
+    ) {
+
+        document
+            .getElementById(
+                "sectionGeneric"
+            )
+            .classList
+            .remove("hidden");
+
+    }
+
+
+    else if (
+        target === "manage"
+    ) {
+
+        document
+            .getElementById(
+                "sectionManage"
+            )
+            .classList
+            .remove("hidden");
+
+
+        showManageMode(
+            "main"
+        );
+
+    }
+
+}
+
+
+
+/* ==================== 通用顯示模式 ==================== */
+
+
+function showGenericMode(target) {
+
+    document
+        .getElementById(
+            "genericMain"
+        )
+        .classList
+        .toggle(
+            "hidden",
+            target !== "main"
+        );
+
+
+    document
+        .getElementById(
+            "genericPublic"
+        )
+        .classList
+        .toggle(
+            "hidden",
+            target !== "public"
+        );
+
+
+    setActive(
+
+        [
+            "genericNavMain",
+            "genericNavPublic"
+        ],
+
+        target === "main"
+            ? "genericNavMain"
+            : "genericNavPublic"
+
+    );
+
+
+    clearPrintArea();
+
+
+    if (
+        target === "main"
+    ) {
+
+        resetWifiListView();
+
+    }
+
+    else {
+
+        resetPublicListView();
+
+    }
+
+}
+
+
+
+/* ==================== 管理模式 ==================== */
+
+
+function showManageMode(target) {
+
+    document
+        .getElementById(
+            "manageMain"
+        )
+        .classList
+        .toggle(
+            "hidden",
+            target !== "main"
+        );
+
+
+    document
+        .getElementById(
+            "managePublic"
+        )
+        .classList
+        .toggle(
+            "hidden",
+            target !== "public"
+        );
+
+
+    setActive(
+
+        [
+            "manageNavMain",
+            "manageNavPublic"
+        ],
+
+        target === "main"
+            ? "manageNavMain"
+            : "manageNavPublic"
+
+    );
+
+
+    if (
+        target === "main"
+    ) {
+
+        document
+            .getElementById(
+                "wifiSearch"
+            )
+            .value = "";
+
+
+        renderWifiManageList();
+
+    }
+
+    else {
+
+        renderPublicManageList();
+
+    }
+
+}
+
+
+
+/* ==================== 通用 Wi-Fi 顯示 ==================== */
+
+
+function resetWifiListView() {
+
+    document
+        .getElementById(
+            "wifiList"
+        )
+        .innerHTML = "";
+
+}
+
+
+function showWifiList() {
+
+    clearPrintArea();
+
+
+    const box =
+        document.getElementById(
+            "wifiList"
+        );
+
+
+    if (
+        !wifiItems.length
+    ) {
+
+        box.innerHTML =
+            "<p>目前沒有通用 Wi-Fi。</p>";
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        wifiItems
+
+        .map(
+            item => `
+                <div class="wifi-row">
+
+                    <strong>
+                        ${escapeHtml(item.name)}
+                    </strong>
+
+                    <div>
+                        SSID：
+                        ${escapeHtml(item.ssid)}
+                    </div>
+
+                    <div>
+                        密碼：
+                        ${escapeHtml(item.password || "")}
+                    </div>
+
+                </div>
+            `
+        )
+
+        .join("");
+
+}
+
+
+
+/* ==================== 通用 Wi-Fi 列印 ==================== */
+
+
+function showWifiPrintPreview() {
+
+    const configured =
+        wifiItems.filter(
+            item =>
+                item
+                &&
+                item.ssid
+        );
+
+
+    if (
+        !configured.length
+    ) {
+
+        alert(
+            "目前沒有已設定的通用 Wi-Fi"
+        );
+
+        return;
+
+    }
+
+
+    const printArea =
+        document.getElementById(
+            "printArea"
+        );
+
+
+    printArea.innerHTML =
+        "";
+
+
+    const grid =
+        document.createElement(
+            "div"
+        );
+
+
+    grid.className =
+        "print-grid";
+
+
+    configured.forEach(
+        item => {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "print-card";
+
+
+            const title =
+                document.createElement(
+                    "div"
+                );
+
+
+            title.className =
+                "print-title";
+
+
+            title.textContent =
+                `${item.name} | Wi-Fi`;
+
+
+            const canvas =
+                document.createElement(
+                    "canvas"
+                );
+
+
+            new QRious({
+
+                element: canvas,
+
+                value:
+                    wifiPayload(
+                        item.ssid,
+                        item.password
+                        ||
+                        ""
+                    ),
+
+                size:
+                    currentQrSize,
+
+                level:
+                    "H"
+
+            });
+
+
+            card.appendChild(
+                title
+            );
+
+
+            card.appendChild(
+                canvas
+            );
+
+
+            grid.appendChild(
+                card
+            );
+
+        }
+    );
+
+
+    printArea.appendChild(
+        grid
+    );
+
+
+    printArea.classList.remove(
+        "hidden"
+    );
+
+
+    printArea.scrollIntoView({
+
+        behavior: "smooth",
+        block: "start"
+
+    });
+
+}
+
+
+
+/* ==================== 其他 Wi-Fi 顯示 ==================== */
+
+
+function resetPublicListView() {
+
+    document
+        .getElementById(
+            "publicList"
+        )
+        .innerHTML = "";
+
+}
+
+
+function showPublicList() {
+
+    clearPrintArea();
+
+
+    const box =
+        document.getElementById(
+            "publicList"
+        );
+
+
+    if (
+        !otherWifi.length
+    ) {
+
+        box.innerHTML =
+            "<p>目前沒有其他 Wi-Fi。</p>";
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        otherWifi
+
+        .map(
+            item => `
+                <div class="wifi-row">
+
+                    <strong>
+                        ${escapeHtml(item.name)}
+                    </strong>
+
+                    <div>
+                        SSID：
+                        ${escapeHtml(item.ssid)}
+                    </div>
+
+                    <div>
+                        密碼：
+                        ${escapeHtml(item.password || "")}
+                    </div>
+
+                </div>
+            `
+        )
+
+        .join("");
+
+}
+
+
+
+/* ==================== 其他 Wi-Fi 列印 ==================== */
+
+
+function showPublicPrintPreview() {
+
+    const configured =
+        otherWifi.filter(
+            item =>
+                item
+                &&
+                item.ssid
+        );
+
+
+    if (
+        !configured.length
+    ) {
+
+        alert(
+            "目前沒有已設定的其他 Wi-Fi"
+        );
+
+        return;
+
+    }
+
+
+    const printArea =
+        document.getElementById(
+            "printArea"
+        );
+
+
+    printArea.innerHTML =
+        "";
+
+
+    const grid =
+        document.createElement(
+            "div"
+        );
+
+
+    grid.className =
+        "print-grid";
+
+
+    configured.forEach(
+        item => {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "print-card";
+
+
+            const title =
+                document.createElement(
+                    "div"
+                );
+
+
+            title.className =
+                "print-title";
+
+
+            title.textContent =
+                `${item.name} | Wi-Fi`;
+
+
+            const canvas =
+                document.createElement(
+                    "canvas"
+                );
+
+
+            new QRious({
+
+                element: canvas,
+
+                value:
+                    wifiPayload(
+                        item.ssid,
+                        item.password
+                        ||
+                        ""
+                    ),
+
+                size:
+                    currentQrSize,
+
+                level:
+                    "H"
+
+            });
+
+
+            card.appendChild(
+                title
+            );
+
+
+            card.appendChild(
+                canvas
+            );
+
+
+            grid.appendChild(
+                card
+            );
+
+        }
+    );
+
+
+    printArea.appendChild(
+        grid
+    );
+
+
+    printArea.classList.remove(
+        "hidden"
+    );
+
+
+    printArea.scrollIntoView({
+
+        behavior: "smooth",
+        block: "start"
+
+    });
+
+}
+
+
+
+/* ==================== 列印 ==================== */
+
+
+function printCurrent() {
+
+    const printArea =
+        document.getElementById(
+            "printArea"
+        );
+
+
+    if (
+        printArea.classList.contains(
+            "hidden"
+        )
+        ||
+        !printArea.children.length
+    ) {
+
+        alert(
+            "請先預覽列印"
+        );
+
+        return;
+
+    }
+
+
+    window.print();
+
+}
+
+
+
+/* ==================== 通用 Wi-Fi 管理 ==================== */
+
+
+function renderWifiManageList() {
+
+    const keyword =
+        document
+            .getElementById(
+                "wifiSearch"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    const box =
+        document.getElementById(
+            "wifiManageList"
+        );
+
+
+    const filtered =
+        wifiItems.filter(
+            item => {
+
+                if (
+                    !keyword
+                ) {
+
+                    return true;
+
+                }
+
+
+                return (
+                    String(item.name || "")
+                        .toLowerCase()
+                        .includes(keyword)
+                    ||
+                    String(item.ssid || "")
+                        .toLowerCase()
+                        .includes(keyword)
+                );
+
+            }
+        );
+
+
+    if (
+        !filtered.length
+    ) {
+
+        box.innerHTML =
+            keyword
+            ? "<p>找不到符合的 Wi-Fi。</p>"
+            : "<p>目前沒有通用 Wi-Fi。</p>";
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        filtered
+
+        .map(
+            item => `
+                <div class="manage-row">
+
+                    <div>
+                        <strong>
+                            ${escapeHtml(item.name)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        SSID：
+                        ${escapeHtml(item.ssid)}
+                    </div>
+
+                    <button
+                        onclick="openWifiEditPanel('${item.id}')"
+                    >
+                        修改
+                    </button>
+
+                    <button
+                        onclick="deleteWifiItem('${item.id}')"
+                    >
+                        刪除
+                    </button>
+
+                </div>
+            `
+        )
+
+        .join("");
+
+}
+
+
+function openWifiAddPanel() {
+
+    document
+        .getElementById(
+            "wifiEditTitle"
+        )
+        .textContent =
+            "新增通用 Wi-Fi";
+
+
+    document
+        .getElementById(
+            "wifiEditId"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "wifiEditName"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "wifiEditSsid"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "wifiEditPassword"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "wifiEditPanel"
+        )
+        .classList
+        .remove("hidden");
+
+
+    document
+        .getElementById(
+            "wifiEditPanel"
+        )
+        .scrollIntoView({
+
+            behavior: "smooth",
+            block: "start"
+
+        });
+
+}
+
+
+function openWifiEditPanel(id) {
+
+    const item =
+        wifiItems.find(
+            entry =>
+                entry.id === id
+        );
+
+
+    if (
+        !item
+    ) {
+
+        return;
+
+    }
+
+
+    document
+        .getElementById(
+            "wifiEditTitle"
+        )
+        .textContent =
+            "修改通用 Wi-Fi";
+
+
+    document
+        .getElementById(
+            "wifiEditId"
+        )
+        .value =
+            item.id;
+
+
+    document
+        .getElementById(
+            "wifiEditName"
+        )
+        .value =
+            item.name;
+
+
+    document
+        .getElementById(
+            "wifiEditSsid"
+        )
+        .value =
+            item.ssid;
+
+
+    document
+        .getElementById(
+            "wifiEditPassword"
+        )
+        .value =
+            item.password;
+
+
+    document
+        .getElementById(
+            "wifiEditPanel"
+        )
+        .classList
+        .remove("hidden");
+
+
+    document
+        .getElementById(
+            "wifiEditPanel"
+        )
+        .scrollIntoView({
+
+            behavior: "smooth",
+            block: "start"
+
+        });
+
+}
+
+
+function closeWifiEditPanel() {
+
+    document
+        .getElementById(
+            "wifiEditPanel"
+        )
+        .classList
+        .add("hidden");
+
+}
+
+
+function saveWifiItem() {
+
+    const id =
+        document
+            .getElementById(
+                "wifiEditId"
+            )
+            .value;
+
+
+    const name =
+        document
+            .getElementById(
+                "wifiEditName"
+            )
+            .value
+            .trim();
+
+
+    const ssid =
+        document
+            .getElementById(
+                "wifiEditSsid"
+            )
+            .value
+            .trim();
+
+
+    const password =
+        document
+            .getElementById(
+                "wifiEditPassword"
+            )
+            .value;
+
+
+    if (
+        !name
+    ) {
+
+        alert(
+            "請輸入名稱"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        [...name].length
+        >
+        NAME_MAX
+    ) {
+
+        alert(
+            `名稱最多 ${NAME_MAX} 個字`
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !ssid
+    ) {
+
+        alert(
+            "請輸入 SSID"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        id
+    ) {
+
+        const index =
+            wifiItems.findIndex(
+                item =>
+                    item.id === id
+            );
+
+
+        if (
+            index === -1
+        ) {
+
+            return;
+
+        }
+
+
+        wifiItems[index] = {
+
+            ...wifiItems[index],
+
+            name,
+            ssid,
+            password
+
+        };
+
+    }
+
+    else {
+
+        wifiItems.push({
+
+            id:
+                createId(
+                    "wifi"
+                ),
+
+            name,
+            ssid,
+            password
+
+        });
+
+    }
+
+
+    saveManagerData();
+
+
+    closeWifiEditPanel();
+
+
+    renderWifiManageList();
+
+
+    resetWifiListView();
+
+}
+
+
+function deleteWifiItem(id) {
+
+    const item =
+        wifiItems.find(
+            entry =>
+                entry.id === id
+        );
+
+
+    if (
+        !item
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !confirm(
+            `確定刪除「${item.name}」？`
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    wifiItems =
+        wifiItems.filter(
+            entry =>
+                entry.id !== id
+        );
+
+
+    saveManagerData();
+
+
+    renderWifiManageList();
+
+
+    resetWifiListView();
+
+}
+
+
+
+/* ==================== 通用批次新增 ==================== */
+
+
+function openWifiBatchPanel() {
+
+    document
+        .getElementById(
+            "batchMode"
+        )
+        .value =
+            "number";
+
+
+    document
+        .getElementById(
+            "batchSsidPrefix"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "batchStartNumber"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "batchEndNumber"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "batchCustomList"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "batchPassword"
+        )
+        .value = "";
+
+
+    toggleBatchMode();
+
+
+    document
+        .getElementById(
+            "wifiBatchPanel"
+        )
+        .classList
+        .remove("hidden");
+
+
+    document
+        .getElementById(
+            "wifiBatchPanel"
+        )
+        .scrollIntoView({
+
+            behavior: "smooth",
+            block: "start"
+
+        });
+
+}
+
+
+function closeWifiBatchPanel() {
+
+    document
+        .getElementById(
+            "wifiBatchPanel"
+        )
+        .classList
+        .add("hidden");
+
+}
+
+
+function toggleBatchMode() {
+
+    const mode =
+        document
+            .getElementById(
+                "batchMode"
+            )
+            .value;
+
+
+    document
+        .getElementById(
+            "batchNumberFields"
+        )
+        .classList
+        .toggle(
+            "hidden",
+            mode !== "number"
+        );
+
+
+    document
+        .getElementById(
+            "batchListFields"
+        )
+        .classList
+        .toggle(
+            "hidden",
+            mode !== "list"
+        );
+
+}
+
+
+function saveWifiBatch() {
+
+    const mode =
+        document
+            .getElementById(
+                "batchMode"
+            )
+            .value;
+
+
+    const prefix =
+        document
+            .getElementById(
+                "batchSsidPrefix"
+            )
+            .value;
+
+
+    const password =
+        document
+            .getElementById(
+                "batchPassword"
+            )
+            .value;
+
+
+    let names =
+        [];
+
+
+    if (
+        mode === "number"
+    ) {
+
+        const startValue =
+            document
+                .getElementById(
+                    "batchStartNumber"
+                )
+                .value;
+
+
+        const endValue =
+            document
+                .getElementById(
+                    "batchEndNumber"
+                )
+                .value;
+
+
+        if (
+            startValue === ""
+            ||
+            endValue === ""
+        ) {
+
+            alert(
+                "請輸入起始數字與結束數字"
+            );
+
+            return;
+
+        }
+
+
+        const start =
+            Number(
+                startValue
+            );
+
+
+        const end =
+            Number(
+                endValue
+            );
+
+
+        if (
+            !Number.isInteger(start)
+            ||
+            !Number.isInteger(end)
+        ) {
+
+            alert(
+                "起始數字與結束數字必須是整數"
+            );
+
+            return;
+
+        }
+
+
+        if (
+            start > end
+        ) {
+
+            alert(
+                "起始數字不可大於結束數字"
+            );
+
+            return;
+
+        }
+
+
+        for (
+            let number = start;
+            number <= end;
+            number++
+        ) {
+
+            names.push(
+                String(number)
+            );
+
+        }
+
+    }
+
+
+    else if (
+        mode === "list"
+    ) {
+
+        names =
+            document
+                .getElementById(
+                    "batchCustomList"
+                )
+                .value
+                .split(/\r?\n/)
+                .map(
+                    value =>
+                        value.trim()
+                )
+                .filter(Boolean);
+
+    }
+
+
+    if (
+        !names.length
+    ) {
+
+        alert(
+            "請至少輸入一筆資料"
+        );
+
+        return;
+
+    }
+
+
+    const tooLong =
+        names.find(
+            name =>
+                [...name].length
+                >
+                NAME_MAX
+        );
+
+
+    if (
+        tooLong
+    ) {
+
+        alert(
+            `名稱最多 ${NAME_MAX} 個字：${tooLong}`
+        );
+
+        return;
+
+    }
+
+
+    names.forEach(
+        name => {
+
+            wifiItems.push({
+
+                id:
+                    createId(
+                        "wifi"
+                    ),
+
+                name,
+
+                ssid:
+                    prefix
+                    +
+                    name,
+
+                password
+
+            });
+
+        }
+    );
+
+
+    saveManagerData();
+
+
+    closeWifiBatchPanel();
+
+
+    renderWifiManageList();
+
+
+    resetWifiListView();
+
+
+    alert(
+        `已新增 ${names.length} 筆通用 Wi-Fi。`
+    );
+
+}
+
+
+
+/* ==================== 其他 Wi-Fi 管理 ==================== */
+
+
+function renderPublicManageList() {
+
+    const box =
+        document.getElementById(
+            "publicManageList"
+        );
+
+
+    if (
+        !otherWifi.length
+    ) {
+
+        box.innerHTML =
+            "<p>目前沒有其他 Wi-Fi。</p>";
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        otherWifi
+
+        .map(
+            item => `
+                <div class="manage-row">
+
+                    <div>
+                        <strong>
+                            ${escapeHtml(item.name)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        SSID：
+                        ${escapeHtml(item.ssid)}
+                    </div>
+
+                    <button
+                        onclick="openPublicEditPanel('${item.id}')"
+                    >
+                        修改
+                    </button>
+
+                    <button
+                        onclick="deletePublicItem('${item.id}')"
+                    >
+                        刪除
+                    </button>
+
+                </div>
+            `
+        )
+
+        .join("");
+
+}
+
+
+function makePublicBatchRow() {
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+
+    row.className =
+        "manage-row public-batch-row";
+
+
+    row.innerHTML =
+        `
+            <div class="field">
+
+                <label>
+                    名稱：
+                </label>
+
+                <input
+                    type="text"
+                    class="batch-public-name"
+                    maxlength="4"
+                    placeholder="最多 4 個字"
+                >
+
+            </div>
+
+            <div class="field">
+
+                <label>
+                    SSID：
+                </label>
+
+                <input
+                    type="text"
+                    class="batch-public-ssid"
+                >
+
+            </div>
+
+            <div class="field">
+
+                <label>
+                    密碼：
+                </label>
+
+                <input
+                    type="text"
+                    class="batch-public-password"
+                >
+
+            </div>
+
+            <button
+                type="button"
+                onclick="removePublicBatchRow(this)"
+            >
+                刪除此列
+            </button>
+        `;
+
+
+    return row;
+
+}
+
+
+function addPublicBatchRow() {
+
+    document
+        .getElementById(
+            "publicBatchRows"
+        )
+        .appendChild(
+            makePublicBatchRow()
+        );
+
+}
+
+
+function removePublicBatchRow(
+    button
+) {
+
+    const rows =
+        document.querySelectorAll(
+            "#publicBatchRows .public-batch-row"
+        );
+
+
+    if (
+        rows.length <= 1
+    ) {
+
+        const row =
+            button.closest(
+                ".public-batch-row"
+            );
+
+
+        row
+            .querySelector(
+                ".batch-public-name"
+            )
+            .value = "";
+
+
+        row
+            .querySelector(
+                ".batch-public-ssid"
+            )
+            .value = "";
+
+
+        row
+            .querySelector(
+                ".batch-public-password"
+            )
+            .value = "";
+
+
+        return;
+
+    }
+
+
+    button
+        .closest(
+            ".public-batch-row"
+        )
+        .remove();
+
+}
+
+
+function openPublicBatchPanel() {
+
+    const box =
+        document.getElementById(
+            "publicBatchRows"
+        );
+
+
+    box.innerHTML =
+        "";
+
+
+    addPublicBatchRow();
+
+    addPublicBatchRow();
+
+    addPublicBatchRow();
+
+
+    document
+        .getElementById(
+            "publicBatchPanel"
+        )
+        .classList
+        .remove("hidden");
+
+
+    document
+        .getElementById(
+            "publicBatchPanel"
+        )
+        .scrollIntoView({
+
+            behavior: "smooth",
+            block: "start"
+
+        });
+
+}
+
+
+function closePublicBatchPanel() {
+
+    document
+        .getElementById(
+            "publicBatchPanel"
+        )
+        .classList
+        .add("hidden");
+
+}
+
+
+function savePublicBatch() {
+
+    const rows =
+        [
+            ...document.querySelectorAll(
+                "#publicBatchRows .public-batch-row"
+            )
+        ];
+
+
+    const parsed =
+        [];
+
+
+    const errors =
+        [];
+
+
+    rows.forEach(
+        (
+            row,
+            index
+        ) => {
+
+            const name =
+                row
+                    .querySelector(
+                        ".batch-public-name"
+                    )
+                    .value
+                    .trim();
+
+
+            const ssid =
+                row
+                    .querySelector(
+                        ".batch-public-ssid"
+                    )
+                    .value
+                    .trim();
+
+
+            const password =
+                row
+                    .querySelector(
+                        ".batch-public-password"
+                    )
+                    .value;
+
+
+            if (
+                !name
+                &&
+                !ssid
+                &&
+                !password
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                !name
+            ) {
+
+                errors.push(
+                    `第 ${index + 1} 列：請輸入名稱`
+                );
+
+                return;
+
+            }
+
+
+            if (
+                [...name].length
+                >
+                NAME_MAX
+            ) {
+
+                errors.push(
+                    `第 ${index + 1} 列：名稱最多 ${NAME_MAX} 個字`
+                );
+
+                return;
+
+            }
+
+
+            if (
+                !ssid
+            ) {
+
+                errors.push(
+                    `第 ${index + 1} 列：請輸入 SSID`
+                );
+
+                return;
+
+            }
+
+
+            parsed.push({
+
+                name,
+                ssid,
+                password
+
+            });
+
+        }
+    );
+
+
+    if (
+        errors.length
+    ) {
+
+        alert(
+            "以下資料未新增：\n\n"
+            +
+            errors.join("\n")
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !parsed.length
+    ) {
+
+        alert(
+            "請至少輸入一筆 Wi-Fi 資料"
+        );
+
+        return;
+
+    }
+
+
+    parsed.forEach(
+        item => {
+
+            otherWifi.push({
+
+                id:
+                    createId(
+                        "other"
+                    ),
+
+                name:
+                    item.name,
+
+                ssid:
+                    item.ssid,
+
+                password:
+                    item.password
+
+            });
+
+        }
+    );
+
+
+    saveManagerData();
+
+
+    closePublicBatchPanel();
+
+
+    renderPublicManageList();
+
+
+    resetPublicListView();
+
+
+    alert(
+        `已新增 ${parsed.length} 筆其他 Wi-Fi。`
+    );
+
+}
+
+
+function openPublicAddPanel() {
+
+    document
+        .getElementById(
+            "publicEditTitle"
+        )
+        .textContent =
+            "新增其他 Wi-Fi";
+
+
+    document
+        .getElementById(
+            "publicEditId"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "publicEditName"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "publicEditSsid"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "publicEditPassword"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "publicEditPanel"
+        )
+        .classList
+        .remove("hidden");
+
+
+    document
+        .getElementById(
+            "publicEditPanel"
+        )
+        .scrollIntoView({
+
+            behavior: "smooth",
+            block: "start"
+
+        });
+
+}
+
+
+function openPublicEditPanel(id) {
+
+    const item =
+        otherWifi.find(
+            entry =>
+                entry.id === id
+        );
+
+
+    if (
+        !item
+    ) {
+
+        return;
+
+    }
+
+
+    document
+        .getElementById(
+            "publicEditTitle"
+        )
+        .textContent =
+            "修改其他 Wi-Fi";
+
+
+    document
+        .getElementById(
+            "publicEditId"
+        )
+        .value =
+            item.id;
+
+
+    document
+        .getElementById(
+            "publicEditName"
+        )
+        .value =
+            item.name;
+
+
+    document
+        .getElementById(
+            "publicEditSsid"
+        )
+        .value =
+            item.ssid;
+
+
+    document
+        .getElementById(
+            "publicEditPassword"
+        )
+        .value =
+            item.password;
+
+
+    document
+        .getElementById(
+            "publicEditPanel"
+        )
+        .classList
+        .remove("hidden");
+
+
+    document
+        .getElementById(
+            "publicEditPanel"
+        )
+        .scrollIntoView({
+
+            behavior: "smooth",
+            block: "start"
+
+        });
+
+}
+
+
+function closePublicEditPanel() {
+
+    document
+        .getElementById(
+            "publicEditPanel"
+        )
+        .classList
+        .add("hidden");
+
+}
+
+
+function savePublicItem() {
+
+    const id =
+        document
+            .getElementById(
+                "publicEditId"
+            )
+            .value;
+
+
+    const name =
+        document
+            .getElementById(
+                "publicEditName"
+            )
+            .value
+            .trim();
+
+
+    const ssid =
+        document
+            .getElementById(
+                "publicEditSsid"
+            )
+            .value
+            .trim();
+
+
+    const password =
+        document
+            .getElementById(
+                "publicEditPassword"
+            )
+            .value;
+
+
+    if (
+        !name
+    ) {
+
+        alert(
+            "請輸入名稱"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        [...name].length
+        >
+        NAME_MAX
+    ) {
+
+        alert(
+            `名稱最多 ${NAME_MAX} 個字`
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !ssid
+    ) {
+
+        alert(
+            "請輸入 SSID"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        id
+    ) {
+
+        const index =
+            otherWifi.findIndex(
+                item =>
+                    item.id === id
+            );
+
+
+        if (
+            index === -1
+        ) {
+
+            return;
+
+        }
+
+
+        otherWifi[index] = {
+
+            ...otherWifi[index],
+
+            name,
+            ssid,
+            password
+
+        };
+
+    }
+
+    else {
+
+        otherWifi.push({
+
+            id:
+                createId(
+                    "other"
+                ),
+
+            name,
+            ssid,
+            password
+
+        });
+
+    }
+
+
+    saveManagerData();
+
+
+    closePublicEditPanel();
+
+
+    renderPublicManageList();
+
+
+    resetPublicListView();
+
+}
+
+
+function deletePublicItem(id) {
+
+    const item =
+        otherWifi.find(
+            entry =>
+                entry.id === id
+        );
+
+
+    if (
+        !item
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !confirm(
+            `確定刪除「${item.name}」？`
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    otherWifi =
+        otherWifi.filter(
+            entry =>
+                entry.id !== id
+        );
+
+
+    saveManagerData();
+
+
+    renderPublicManageList();
+
+
+    resetPublicListView();
+
+}
+
+
+
+/* ==================== 初始化 ==================== */
+
+
+window.addEventListener(
+    "load",
+    () => {
+
+        syncQrSize(
+            DEFAULT_QR_SIZE
+        );
+
+
+        showMain(
+            "generic"
+        );
+
+
+        showGenericMode(
+            "main"
+        );
+
+    }
+);
+
+
+</script>
+
+</body>
+</html>
