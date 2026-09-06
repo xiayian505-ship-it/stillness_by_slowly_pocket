@@ -49,9 +49,6 @@
         <p>在買下去以前，先看看以前的自己想過什麼。</p>
       </div>
 
-      
-
-      
       <div class="sidebar-section category-section">
         <div class="sidebar-label">分類</div>
         <div id="sidebarCategories" class="sidebar-categories"></div>
@@ -62,8 +59,6 @@
     <section class="pocket-content">
       <div class="content-head">
         <div id="statusFilters" class="status-strip top-status-strip"></div>
-
-
 
         <div class="index-toolbar">
           <div class="index-title">
@@ -85,7 +80,7 @@
 
   <footer>
     <div class="footer-inner">
-      <span>localStorage impulse-list_v1</span>
+      <span>FictionData CDN · impulse-list:products</span>
       <div class="footer-data-actions">
         <input id="importFileInput" type="file" accept="application/json,.json" hidden onchange="importData(event)">
         <button class="clear-all" type="button" onclick="document.getElementById('importFileInput').click()">匯入資料</button>
@@ -115,8 +110,24 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_data.js"></script>
 <script>
-const STORAGE_KEY = "impulse-list_v1";
+const LEGACY_STORAGE_KEY = "impulse-list_v1";
+const DATA_NAMESPACE = "impulse-list";
+const PRODUCT_COLLECTION = "products";
+const META_COLLECTION = "meta";
+
+const fictionDB = window.FictionData
+  ? FictionData.create({ namespace: DATA_NAMESPACE })
+  : null;
+
+const productsStore = fictionDB
+  ? fictionDB.collection(PRODUCT_COLLECTION)
+  : null;
+
+const metaStore = fictionDB
+  ? fictionDB.collection(META_COLLECTION)
+  : null;
 
 const STATUS_OPTIONS = [
   { id: "wanted", label: "想買" },
@@ -261,7 +272,7 @@ const CATEGORIES = [
   }
 ];
 
-let products = loadProducts();
+let products = [];
 let searchText = "";
 let selectedStatus = "all";
 let selectedCategories = new Set();
@@ -362,22 +373,64 @@ function normalizeOffer(raw = {}) {
   };
 }
 
-function loadProducts() {
+async function loadProducts() {
+  if (!productsStore || !metaStore) {
+    console.error("FictionData CDN 載入失敗");
+    alert("FictionData 載入失敗，請確認網路連線或 CDN。");
+    return [];
+  }
+
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    return Array.isArray(parsed) ? parsed.map(normalizeProduct) : [];
+    let stored = (await productsStore.all()).map(normalizeProduct);
+    const migrationId = "legacy-impulse-list-v1";
+    const migrationDone = await metaStore.get(migrationId);
+
+    if (!migrationDone) {
+      let migratedCount = 0;
+
+      try {
+        const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+
+        if (legacyRaw && stored.length === 0) {
+          const legacyParsed = JSON.parse(legacyRaw);
+
+          if (Array.isArray(legacyParsed) && legacyParsed.length) {
+            stored = legacyParsed.map(normalizeProduct);
+            await productsStore.replace(stored);
+            migratedCount = stored.length;
+            console.log(`[FictionData] 已從 ${LEGACY_STORAGE_KEY} 搬移 ${migratedCount} 筆資料`);
+          }
+        }
+      } catch (migrationError) {
+        console.error("舊資料搬移失敗", migrationError);
+      }
+
+      await metaStore.add({
+        id: migrationId,
+        source: LEGACY_STORAGE_KEY,
+        migratedCount,
+        migratedAt: nowIso()
+      });
+    }
+
+    return stored;
   } catch (error) {
-    console.error("讀取資料失敗", error);
+    console.error("FictionData 讀取資料失敗", error);
     return [];
   }
 }
 
-function saveProducts() {
+async function saveProducts() {
+  if (!productsStore) {
+    console.error("FictionData 尚未初始化");
+    return false;
+  }
+
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    await productsStore.replace(products.map(normalizeProduct));
     return true;
   } catch (error) {
-    console.error("儲存失敗", error);
+    console.error("FictionData 儲存失敗", error);
     alert("資料儲存失敗。若你上傳了很多圖片，可能已超過瀏覽器 localStorage 容量。");
     return false;
   }
@@ -419,10 +472,7 @@ function offerEffectivePrice(offer) {
 
   if (base === null) return null;
 
-  return Math.max(
-    0,
-    base - parseMoney(offer.directDiscount) + parseMoney(offer.shipping)
-  );
+  return Math.max(0, base - parseMoney(offer.directDiscount) + parseMoney(offer.shipping));
 }
 
 function getLowestSummary(product) {
@@ -438,8 +488,6 @@ function getLowestSummary(product) {
   const min = Math.min(...valid.map(x => x.price));
   return `${currencies[0]}${formatMoney(min)}`;
 }
-
-
 
 function getCurrentPriceSummary(product) {
   const lowest = getLowestSummary(product);
@@ -473,7 +521,6 @@ function formatMonthDay(value) {
   if (parts.length !== 3) return value;
   return `${Number(parts[1])} 月 ${Number(parts[2])} 日`;
 }
-
 
 function formatMoney(n) {
   return Number(n).toLocaleString("zh-TW", { maximumFractionDigits: 2 });
@@ -544,7 +591,6 @@ function renderFilters() {
             <span>${escapeHTML(group.label)}${count ? ` <span style="color:var(--accent);font-weight:700;">${count}</span>` : ""}</span>
             <span class="sidebar-category-symbol">${isOpen ? "−" : "+"}</span>
           </button>
-
           <div class="sidebar-category-children ${isOpen ? "show" : ""}">
             ${renderSidebarCategoryTree(group)}
           </div>
@@ -569,18 +615,6 @@ function renderFilters() {
       `
       : "";
   }
-
-  const legacyActive = document.getElementById("activeFilters");
-  if (legacyActive) {
-    legacyActive.classList.remove("show");
-    legacyActive.innerHTML = "";
-  }
-
-  const legacyTriggers = document.getElementById("categoryTriggers");
-  if (legacyTriggers) legacyTriggers.innerHTML = "";
-
-  const legacyDrawers = document.getElementById("categoryDrawers");
-  if (legacyDrawers) legacyDrawers.innerHTML = "";
 }
 
 function renderSidebarCategoryTree(group) {
@@ -632,15 +666,6 @@ function toggleCategoryGroup(id) {
 
 function toggleCategoryFilter(category) {
   selectedCategories.has(category) ? selectedCategories.delete(category) : selectedCategories.add(category);
-  renderAll();
-}
-
-function clearFilters() {
-  selectedStatus = "all";
-  selectedCategories.clear();
-  searchText = "";
-  document.getElementById("searchInput").value = "";
-  document.getElementById("searchClear").classList.remove("show");
   renderAll();
 }
 
@@ -717,9 +742,7 @@ function renderProductList() {
   list.innerHTML = filtered.map(p => {
     const currentPrice = getCurrentPriceSummary(p);
     const joinedDays = watchDays(p);
-    const lastPurchaseDate = p.lastPurchaseDate
-      ? formatMonthDay(p.lastPurchaseDate)
-      : "";
+    const lastPurchaseDate = p.lastPurchaseDate ? formatMonthDay(p.lastPurchaseDate) : "";
     const budget = hasMoney(p.budget)
       ? `${p.budgetCurrency || "NT$"}${formatMoney(p.budget)}`
       : "";
@@ -771,13 +794,13 @@ function findProduct(id) {
   return products.find(p => String(p.id) === String(id)) || null;
 }
 
-function checkExpiredOffers(product) {
+async function checkExpiredOffers(product) {
   const newlyExpired = product.offers.filter(o => isExpired(o) && !o.expiredNoticeSeen);
 
   if (!newlyExpired.length) return;
 
   newlyExpired.forEach(o => o.expiredNoticeSeen = true);
-  saveProducts();
+  await saveProducts();
 
   setTimeout(() => {
     alert(
@@ -788,16 +811,16 @@ function checkExpiredOffers(product) {
   }, 120);
 }
 
-function openDetail(id) {
+async function openDetail(id) {
   const product = findProduct(id);
   if (!product) return;
 
   product.lastViewedAt = nowIso();
   product.viewCount = Number(product.viewCount || 0) + 1;
-  saveProducts();
+  await saveProducts();
 
   activeDetailId = id;
-  checkExpiredOffers(product);
+  await checkExpiredOffers(product);
 
   const body = document.getElementById("detailBody");
   const drawer = document.getElementById("detailDrawer");
@@ -808,7 +831,6 @@ function openDetail(id) {
 
   body.innerHTML = `
     ${product.image ? `<img class="detail-image" src="${product.image}" alt="${escapeAttr(product.name)}">` : ""}
-
     <h2 class="detail-title">${escapeHTML(product.name)}</h2>
     <div class="detail-subtitle">
       加入清單 ${watchDays(product)} 天
@@ -821,35 +843,10 @@ function openDetail(id) {
         <span class="detail-key">狀態</span>
         <span class="detail-value detail-status-text status-${product.status}">${escapeHTML(getStatusLabel(product.status))}</span>
       </div>
-
-      ${currentPrice ? `
-        <div class="detail-line">
-          <span class="detail-key">目前價格</span>
-          <span class="detail-value">${escapeHTML(currentPrice)}</span>
-        </div>
-      ` : ""}
-
-      ${product.lastPurchaseDate ? `
-        <div class="detail-line">
-          <span class="detail-key">最後可購買日</span>
-          <span class="detail-value">${escapeHTML(product.lastPurchaseDate)}</span>
-        </div>
-      ` : ""}
-
-      ${product.budget !== "" ? `
-        <div class="detail-line">
-          <span class="detail-key">預算</span>
-          <span class="detail-value">${escapeHTML(product.budgetCurrency)}${escapeHTML(formatMoney(product.budget))}</span>
-        </div>
-      ` : ""}
-
-      ${product.source ? `
-        <div class="detail-line">
-          <span class="detail-key">剁手來源</span>
-          <span class="detail-value">${escapeHTML(product.source)}</span>
-        </div>
-      ` : ""}
-
+      ${currentPrice ? `<div class="detail-line"><span class="detail-key">目前價格</span><span class="detail-value">${escapeHTML(currentPrice)}</span></div>` : ""}
+      ${product.lastPurchaseDate ? `<div class="detail-line"><span class="detail-key">最後可購買日</span><span class="detail-value">${escapeHTML(product.lastPurchaseDate)}</span></div>` : ""}
+      ${product.budget !== "" ? `<div class="detail-line"><span class="detail-key">預算</span><span class="detail-value">${escapeHTML(product.budgetCurrency)}${escapeHTML(formatMoney(product.budget))}</span></div>` : ""}
+      ${product.source ? `<div class="detail-line"><span class="detail-key">剁手來源</span><span class="detail-value">${escapeHTML(product.source)}</span></div>` : ""}
       <div class="detail-line">
         <span class="detail-key">首次加入</span>
         <span class="detail-value">${escapeHTML(String(product.createdAt).slice(0,10))}</span>
@@ -864,7 +861,6 @@ function openDetail(id) {
             ${product.categories.map(tag => `<button class="detail-tag" onclick="closeDetail(); applyCategory('${escapeAttr(tag)}')">${escapeHTML(tag)}</button>`).join("")}
           </div>
         ` : ""}
-
         ${product.tags.length ? `
           <div class="detail-label" style="margin-top:${product.categories.length ? "16px" : "0"};">自由標籤</div>
           <div class="tag-wrap">
@@ -874,22 +870,8 @@ function openDetail(id) {
       </section>
     ` : ""}
 
-    ${product.note ? `
-      <section class="detail-section">
-        <div class="detail-label">備註</div>
-        <p class="detail-copy">${escapeHTML(product.note)}</p>
-      </section>
-    ` : ""}
-
-    ${product.offers.length ? `
-      <section class="detail-section">
-        <div class="detail-label">比價紀錄</div>
-        <div class="offer-list">
-          ${product.offers.map(renderOfferCard).join("")}
-        </div>
-      </section>
-    ` : ""}
-
+    ${product.note ? `<section class="detail-section"><div class="detail-label">備註</div><p class="detail-copy">${escapeHTML(product.note)}</p></section>` : ""}
+    ${product.offers.length ? `<section class="detail-section"><div class="detail-label">比價紀錄</div><div class="offer-list">${product.offers.map(renderOfferCard).join("")}</div></section>` : ""}
     ${renderPurchaseDetail(product)}
 
     <section class="detail-section">
@@ -933,9 +915,7 @@ function renderOfferCard(offer) {
         </div>
         ${effective !== null ? `<div class="offer-price">${escapeHTML(offer.currency)}${escapeHTML(formatMoney(effective))}</div>` : ""}
       </div>
-
       ${meta.length ? `<div class="offer-meta">${meta.map(x => `<div>${escapeHTML(x)}</div>`).join("")}</div>` : ""}
-
       ${/^https?:\/\//i.test(offer.url) ? `<a class="offer-link" href="${escapeAttr(offer.url)}" target="_blank" rel="noopener noreferrer">前往商品頁 ↗</a>` : ""}
     </div>
   `;
@@ -1040,64 +1020,33 @@ function renderProductForm() {
         <div class="form-section-title">基本資料</div>
 
         <div class="form-grid">
-          <div class="field">
-            <label>商品名稱 *</label>
-            <input id="formName" value="${escapeAttr(formState.name)}" placeholder="例如：20cm 角色娃">
-          </div>
-
-          <div class="field">
-            <label>剁手來源</label>
-            <input id="formSource" value="${escapeAttr(formState.source)}" placeholder="朋友、Threads、YouTube、逛街看到……">
-          </div>
+          <div class="field"><label>商品名稱 *</label><input id="formName" value="${escapeAttr(formState.name)}" placeholder="例如：20cm 角色娃"></div>
+          <div class="field"><label>剁手來源</label><input id="formSource" value="${escapeAttr(formState.source)}" placeholder="朋友、Threads、YouTube、逛街看到……"></div>
 
           <div class="form-grid three">
-            <div class="field">
-              <label>目前價格</label>
-              <input id="formCurrentPrice" type="number" step="0.01" min="0" value="${escapeAttr(formState.currentPrice)}" placeholder="選填">
-            </div>
-
-            <div class="field">
-              <label>目前價格幣別</label>
-              <input id="formCurrentPriceCurrency" value="${escapeAttr(formState.currentPriceCurrency || "NT$")}" placeholder="NT$">
-            </div>
-
-            <div class="field">
-              <label>最後可購買日</label>
-              <input id="formLastPurchaseDate" type="date" value="${escapeAttr(formState.lastPurchaseDate)}">
-            </div>
+            <div class="field"><label>目前價格</label><input id="formCurrentPrice" type="number" step="0.01" min="0" value="${escapeAttr(formState.currentPrice)}" placeholder="選填"></div>
+            <div class="field"><label>目前價格幣別</label><input id="formCurrentPriceCurrency" value="${escapeAttr(formState.currentPriceCurrency || "NT$")}" placeholder="NT$"></div>
+            <div class="field"><label>最後可購買日</label><input id="formLastPurchaseDate" type="date" value="${escapeAttr(formState.lastPurchaseDate)}"></div>
           </div>
 
           <div class="form-grid two">
-            <div class="field">
-              <label>預算</label>
-              <input id="formBudget" type="number" step="0.01" min="0" value="${escapeAttr(formState.budget)}" placeholder="選填">
-            </div>
-
-            <div class="field">
-              <label>預算幣別</label>
-              <input id="formBudgetCurrency" value="${escapeAttr(formState.budgetCurrency || "NT$")}" placeholder="NT$">
-            </div>
+            <div class="field"><label>預算</label><input id="formBudget" type="number" step="0.01" min="0" value="${escapeAttr(formState.budget)}" placeholder="選填"></div>
+            <div class="field"><label>預算幣別</label><input id="formBudgetCurrency" value="${escapeAttr(formState.budgetCurrency || "NT$")}" placeholder="NT$"></div>
           </div>
 
-          <div class="field">
-            <label>備註</label>
-            <textarea id="formNote" placeholder="為什麼想買、尺寸、顏色、猶豫點……">${escapeHTML(formState.note)}</textarea>
-          </div>
+          <div class="field"><label>備註</label><textarea id="formNote" placeholder="為什麼想買、尺寸、顏色、猶豫點……">${escapeHTML(formState.note)}</textarea></div>
         </div>
       </section>
 
       <section class="form-section">
         <div class="form-section-title">狀態</div>
         <div class="segmented">
-          ${STATUS_OPTIONS.map(s => `
-            <button class="segment ${formState.status === s.id ? "active" : ""}" type="button" onclick="setFormStatus('${s.id}')">${s.label}</button>
-          `).join("")}
+          ${STATUS_OPTIONS.map(s => `<button class="segment ${formState.status === s.id ? "active" : ""}" type="button" onclick="setFormStatus('${s.id}')">${s.label}</button>`).join("")}
         </div>
       </section>
 
       <section class="form-section">
         <div class="form-section-title">暫時分類（可跨系列複選）</div>
-
         <div class="series-editor">
           ${CATEGORIES.map(group => `
             <div class="series-block">
@@ -1105,7 +1054,6 @@ function renderProductForm() {
                 <span>${escapeHTML(group.label)}</span>
                 <span>${group.options.filter(x => formState.categories.includes(x)).length || "＋"}</span>
               </button>
-
               <div id="formCat-${group.id}" class="series-children">
                 ${renderFormCategoryTree(group)}
               </div>
@@ -1116,28 +1064,18 @@ function renderProductForm() {
 
       <section class="form-section">
         <div class="form-section-title">自由標籤</div>
-
         <div class="tag-entry">
           <input id="tagInput" placeholder="自己 Key，Enter 或逗號加入" onkeydown="handleTagKeydown(event)" oninput="renderTagSuggestions(this.value)">
           <button class="small-btn" type="button" onclick="addTag()">新增</button>
         </div>
-
         <div id="tagSuggestions" class="tag-suggestions"></div>
-
-        <div id="tagPreview" class="tag-preview">
-          ${renderFormTags()}
-        </div>
-
+        <div id="tagPreview" class="tag-preview">${renderFormTags()}</div>
         <div class="link-note">自由標籤會參與搜尋，也用來判斷「你以前是不是也想買過這種東西」。</div>
       </section>
 
       <section class="form-section">
         <div class="form-section-title">商品圖片</div>
-
-        <div class="field">
-          <input type="file" accept="image/jpeg,image/png,image/webp" onchange="handleProductImage(event)">
-        </div>
-
+        <div class="field"><input type="file" accept="image/jpeg,image/png,image/webp" onchange="handleProductImage(event)"></div>
         <div id="productImagePreview" class="image-preview ${formState.image ? "show" : ""}">
           ${formState.image ? `<img src="${formState.image}" alt="商品圖片預覽">` : ""}
           <div class="image-info">
@@ -1149,67 +1087,25 @@ function renderProductForm() {
 
       <section class="form-section">
         <div class="form-section-title">比價紀錄</div>
-
-        <div id="offerEditorList" class="offer-editor-list">
-          ${renderOfferEditorRows()}
-        </div>
-
+        <div id="offerEditorList" class="offer-editor-list">${renderOfferEditorRows()}</div>
         <button class="small-btn" style="margin-top:10px;padding:9px 12px;" type="button" onclick="addOffer()">＋ 新增比價</button>
-
-        <div class="link-note">
-          折價算帳內；信用卡點數、平台幣、回饋金等記在帳外回饋。不同幣別不互相比最低價。
-        </div>
+        <div class="link-note">折價算帳內；信用卡點數、平台幣、回饋金等記在帳外回饋。不同幣別不互相比最低價。</div>
       </section>
 
       <section class="form-section">
         <div class="form-section-title">購買紀錄（全部選填）</div>
-
         <div class="form-grid two">
-          <div class="field">
-            <label>實際購入價</label>
-            <input id="formPurchasePrice" type="number" step="0.01" min="0" value="${escapeAttr(formState.purchasePrice)}">
-          </div>
-
-          <div class="field">
-            <label>購入幣別</label>
-            <input id="formPurchaseCurrency" value="${escapeAttr(formState.purchaseCurrency || "NT$")}">
-          </div>
-
-          <div class="field">
-            <label>購入日期</label>
-            <input id="formPurchaseDate" type="date" value="${escapeAttr(formState.purchaseDate)}">
-          </div>
-
-          <div class="field">
-            <label>購入通路</label>
-            <input id="formPurchaseStore" value="${escapeAttr(formState.purchaseStore)}">
-          </div>
-
-          <div class="field">
-            <label>訂單編號</label>
-            <input id="formOrderNumber" value="${escapeAttr(formState.orderNumber)}">
-          </div>
-
-          <div class="field">
-            <label>發票號碼</label>
-            <input id="formInvoiceNumber" value="${escapeAttr(formState.invoiceNumber)}">
-          </div>
-
-          <div class="field">
-            <label>保固至</label>
-            <input id="formWarrantyEnd" type="date" value="${escapeAttr(formState.warrantyEnd)}">
-          </div>
+          <div class="field"><label>實際購入價</label><input id="formPurchasePrice" type="number" step="0.01" min="0" value="${escapeAttr(formState.purchasePrice)}"></div>
+          <div class="field"><label>購入幣別</label><input id="formPurchaseCurrency" value="${escapeAttr(formState.purchaseCurrency || "NT$")}"></div>
+          <div class="field"><label>購入日期</label><input id="formPurchaseDate" type="date" value="${escapeAttr(formState.purchaseDate)}"></div>
+          <div class="field"><label>購入通路</label><input id="formPurchaseStore" value="${escapeAttr(formState.purchaseStore)}"></div>
+          <div class="field"><label>訂單編號</label><input id="formOrderNumber" value="${escapeAttr(formState.orderNumber)}"></div>
+          <div class="field"><label>發票號碼</label><input id="formInvoiceNumber" value="${escapeAttr(formState.invoiceNumber)}"></div>
+          <div class="field"><label>保固至</label><input id="formWarrantyEnd" type="date" value="${escapeAttr(formState.warrantyEnd)}"></div>
         </div>
 
-        <div class="field" style="margin-top:12px;">
-          <label>購買備註</label>
-          <textarea id="formPurchaseNote">${escapeHTML(formState.purchaseNote)}</textarea>
-        </div>
-
-        <div class="field" style="margin-top:12px;">
-          <label>發票圖片</label>
-          <input type="file" accept="image/jpeg,image/png,image/webp" onchange="handleInvoiceImage(event)">
-        </div>
+        <div class="field" style="margin-top:12px;"><label>購買備註</label><textarea id="formPurchaseNote">${escapeHTML(formState.purchaseNote)}</textarea></div>
+        <div class="field" style="margin-top:12px;"><label>發票圖片</label><input type="file" accept="image/jpeg,image/png,image/webp" onchange="handleInvoiceImage(event)"></div>
 
         <div id="invoiceImagePreview" class="image-preview ${formState.invoiceImage ? "show" : ""}">
           ${formState.invoiceImage ? `<img src="${formState.invoiceImage}" alt="發票圖片預覽">` : ""}
@@ -1255,11 +1151,7 @@ function renderFormCategoryTree(group) {
       `;
     }
 
-    return `
-      <button class="check-chip ${formState.categories.includes(item.value) ? "active" : ""}" data-category="${escapeAttr(item.value)}" type="button" onclick="toggleFormCategory('${escapeAttr(item.value)}')">
-        ${escapeHTML(item.label)}
-      </button>
-    `;
+    return `<button class="check-chip ${formState.categories.includes(item.value) ? "active" : ""}" data-category="${escapeAttr(item.value)}" type="button" onclick="toggleFormCategory('${escapeAttr(item.value)}')">${escapeHTML(item.label)}</button>`;
   }).join("");
 }
 
@@ -1366,66 +1258,20 @@ function renderOfferEditorRows() {
   return formState.offers.map((o, index) => `
     <div class="offer-editor-row">
       <div class="form-grid two">
-        <div class="field">
-          <label>品牌</label>
-          <input value="${escapeAttr(o.brand)}" oninput="updateOffer(${index}, 'brand', this.value)">
-        </div>
-
-        <div class="field">
-          <label>型號／方案</label>
-          <input value="${escapeAttr(o.model)}" oninput="updateOffer(${index}, 'model', this.value)">
-        </div>
-
-        <div class="field">
-          <label>商店／平台</label>
-          <input value="${escapeAttr(o.store)}" oninput="updateOffer(${index}, 'store', this.value)">
-        </div>
-
-        <div class="field">
-          <label>幣別</label>
-          <input value="${escapeAttr(o.currency || "NT$")}" oninput="updateOffer(${index}, 'currency', this.value)">
-        </div>
-
-        <div class="field">
-          <label>原價</label>
-          <input type="number" step="0.01" min="0" value="${escapeAttr(o.originalPrice)}" oninput="updateOffer(${index}, 'originalPrice', this.value)">
-        </div>
-
-        <div class="field">
-          <label>優惠價</label>
-          <input type="number" step="0.01" min="0" value="${escapeAttr(o.salePrice)}" oninput="updateOffer(${index}, 'salePrice', this.value)">
-        </div>
-
-        <div class="field">
-          <label>帳內折價</label>
-          <input type="number" step="0.01" min="0" value="${escapeAttr(o.directDiscount)}" oninput="updateOffer(${index}, 'directDiscount', this.value)">
-        </div>
-
-        <div class="field">
-          <label>運費</label>
-          <input type="number" step="0.01" min="0" value="${escapeAttr(o.shipping)}" oninput="updateOffer(${index}, 'shipping', this.value)">
-        </div>
-
-        <div class="field">
-          <label>優惠期限</label>
-          <input type="date" value="${escapeAttr(o.expiry)}" oninput="updateOffer(${index}, 'expiry', this.value)">
-        </div>
-
-        <div class="field">
-          <label>帳外回饋</label>
-          <input value="${escapeAttr(o.reward)}" placeholder="例如：信用卡 3%、平台幣 100" oninput="updateOffer(${index}, 'reward', this.value)">
-        </div>
+        <div class="field"><label>品牌</label><input value="${escapeAttr(o.brand)}" oninput="updateOffer(${index}, 'brand', this.value)"></div>
+        <div class="field"><label>型號／方案</label><input value="${escapeAttr(o.model)}" oninput="updateOffer(${index}, 'model', this.value)"></div>
+        <div class="field"><label>商店／平台</label><input value="${escapeAttr(o.store)}" oninput="updateOffer(${index}, 'store', this.value)"></div>
+        <div class="field"><label>幣別</label><input value="${escapeAttr(o.currency || "NT$")}" oninput="updateOffer(${index}, 'currency', this.value)"></div>
+        <div class="field"><label>原價</label><input type="number" step="0.01" min="0" value="${escapeAttr(o.originalPrice)}" oninput="updateOffer(${index}, 'originalPrice', this.value)"></div>
+        <div class="field"><label>優惠價</label><input type="number" step="0.01" min="0" value="${escapeAttr(o.salePrice)}" oninput="updateOffer(${index}, 'salePrice', this.value)"></div>
+        <div class="field"><label>帳內折價</label><input type="number" step="0.01" min="0" value="${escapeAttr(o.directDiscount)}" oninput="updateOffer(${index}, 'directDiscount', this.value)"></div>
+        <div class="field"><label>運費</label><input type="number" step="0.01" min="0" value="${escapeAttr(o.shipping)}" oninput="updateOffer(${index}, 'shipping', this.value)"></div>
+        <div class="field"><label>優惠期限</label><input type="date" value="${escapeAttr(o.expiry)}" oninput="updateOffer(${index}, 'expiry', this.value)"></div>
+        <div class="field"><label>帳外回饋</label><input value="${escapeAttr(o.reward)}" placeholder="例如：信用卡 3%、平台幣 100" oninput="updateOffer(${index}, 'reward', this.value)"></div>
       </div>
 
-      <div class="field" style="margin-top:10px;">
-        <label>購買網址</label>
-        <input value="${escapeAttr(o.url)}" placeholder="https://..." oninput="updateOffer(${index}, 'url', this.value)">
-      </div>
-
-      <div class="field" style="margin-top:10px;">
-        <label>備註</label>
-        <input value="${escapeAttr(o.note)}" oninput="updateOffer(${index}, 'note', this.value)">
-      </div>
+      <div class="field" style="margin-top:10px;"><label>購買網址</label><input value="${escapeAttr(o.url)}" placeholder="https://..." oninput="updateOffer(${index}, 'url', this.value)"></div>
+      <div class="field" style="margin-top:10px;"><label>備註</label><input value="${escapeAttr(o.note)}" oninput="updateOffer(${index}, 'note', this.value)"></div>
 
       <div class="offer-row-actions">
         <button class="mini-btn danger" type="button" onclick="removeOffer(${index})">刪除此比價</button>
@@ -1618,7 +1464,7 @@ function snapshotOfferPrice(offer) {
   });
 }
 
-function saveProductFromForm() {
+async function saveProductFromForm() {
   syncBasicFormFields();
 
   formState.name = String(formState.name || "").trim();
@@ -1653,7 +1499,7 @@ function saveProductFromForm() {
     if (index >= 0) products[index] = normalizeProduct(formState);
   }
 
-  if (!saveProducts()) return;
+  if (!(await saveProducts())) return;
 
   const savedId = formState.id;
   closeModal();
@@ -1752,9 +1598,15 @@ function confirmDeleteProduct(id) {
   `, true);
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
+  const previous = products;
   products = products.filter(p => String(p.id) !== String(id));
-  saveProducts();
+
+  if (!(await saveProducts())) {
+    products = previous;
+    return;
+  }
+
   closeModal();
   closeDetail();
   renderAll();
@@ -1780,7 +1632,6 @@ function handleModalBackdrop(event) {
   if (event.target.id === "modalWrap") closeModal();
 }
 
-
 function importData(event) {
   const input = event.target;
   const file = input.files?.[0];
@@ -1788,7 +1639,7 @@ function importData(event) {
 
   const reader = new FileReader();
 
-  reader.onload = () => {
+  reader.onload = async () => {
     try {
       const parsed = JSON.parse(reader.result);
 
@@ -1808,9 +1659,11 @@ function importData(event) {
         return;
       }
 
+      const previous = products;
       products = imported;
 
-      if (!saveProducts()) {
+      if (!(await saveProducts())) {
+        products = previous;
         input.value = "";
         return;
       }
@@ -1875,7 +1728,33 @@ document.getElementById("searchClear").addEventListener("click", () => {
   renderProductList();
 });
 
-renderAll();
+async function initApp() {
+  if (!window.FictionData) {
+    console.error(
+      "FictionData CDN 載入失敗：",
+      "https://lib.stillnessbyslowly.com/fiction/Fiction_data.js"
+    );
+
+    document.getElementById("productList").innerHTML = `
+      <div class="empty-state">
+        <strong>FictionData 載入失敗</strong>
+        請確認網路連線或 CDN 狀態。
+      </div>
+    `;
+    return;
+  }
+
+  products = await loadProducts();
+  renderAll();
+
+  console.log("[impulse-list] FictionData ready", {
+    namespace: DATA_NAMESPACE,
+    collection: PRODUCT_COLLECTION,
+    records: products.length
+  });
+}
+
+initApp();
 </script>
 </body>
 </html>
