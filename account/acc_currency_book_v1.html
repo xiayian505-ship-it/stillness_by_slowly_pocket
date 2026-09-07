@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>慢 慢｜外幣帳本</title>
+
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+  <link rel="stylesheet" href="./acc_currency_book_v1.css">
+
+  <script defer src="https://lib.stillnessbyslowly.com/Fiction_data.js"></script>
+  <script defer src="./acc_currency_book_v1.js"></script>
+</head>
+
+<body>
+  <main class="app-shell responsive-container">
+    <header class="page-header">
+      <div>
+        <p class="brand">Stillness by Slowly</p>
+        <h1>外幣帳本</h1>
+        <p class="subtitle">只記錄實際買賣，不抓即時匯率。</p>
+      </div>
+
+      <div class="header-actions responsive-flex responsive-stack">
+        <button class="button button-primary responsive-full-mobile" id="addRecordBtn" type="button">
+          ＋ 新增紀錄
+        </button>
+        <button class="button responsive-full-mobile" id="exportBtn" type="button">
+          匯出 JSON
+        </button>
+        <button class="button responsive-full-mobile" id="importBtn" type="button">
+          匯入 JSON
+        </button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+      </div>
+    </header>
+
+    <section class="panel" aria-labelledby="currencyFilterTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="currencyFilterTitle">幣別</h2>
+          <p id="filterDescription">目前顯示全部紀錄；統計只合計 TWD。</p>
+        </div>
+      </div>
+
+      <div class="currency-tabs" id="currencyTabs" role="group" aria-label="幣別篩選">
+        <button class="chip is-active" type="button" data-currency="ALL">全部</button>
+        <button class="chip" type="button" data-currency="JPY">JPY</button>
+        <button class="chip" type="button" data-currency="USD">USD</button>
+        <button class="chip" type="button" data-currency="EUR">EUR</button>
+        <button class="chip" type="button" data-currency="CNY">CNY</button>
+        <button class="chip" type="button" data-currency="HKD">HKD</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="summaryTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="summaryTitle">金額統計</h2>
+          <p>依目前幣別篩選結果計算。</p>
+        </div>
+      </div>
+
+      <div class="summary-grid responsive-grid" id="summaryGrid"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="recordsTitle">
+      <div class="section-heading records-heading">
+        <div>
+          <h2 id="recordsTitle">交易紀錄</h2>
+          <p id="recordCount">0 筆</p>
+        </div>
+
+        <div class="sort-controls responsive-flex responsive-stack">
+          <div class="sort-buttons" role="group" aria-label="排序方式">
+            <button class="sort-button" type="button" data-sort="buyRate">買入匯率</button>
+            <button class="sort-button" type="button" data-sort="sellRate">賣出匯率</button>
+            <button class="sort-button" type="button" data-sort="amount">實際金額</button>
+          </div>
+
+          <button class="button button-small" id="sortDirectionBtn" type="button" aria-label="切換排序方向">
+            由低到高 ↑
+          </button>
+
+          <button class="button button-small" id="clearSortBtn" type="button">
+            回到最新
+          </button>
+        </div>
+      </div>
+
+      <p class="sort-hint" id="sortHint">
+        預設依日期由新到舊；「實際金額」以 TWD 金額排序。
+      </p>
+
+      <div id="recordsEmpty" class="empty-state" hidden>
+        還沒有交易紀錄。
+      </div>
+
+      <div class="record-list" id="recordList"></div>
+    </section>
+
+    <section class="panel danger-zone" aria-labelledby="dataTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="dataTitle">資料管理</h2>
+          <p>資料保存在目前瀏覽器的 localStorage，不會自動刪除舊紀錄。</p>
+        </div>
+
+        <button class="button button-danger" id="clearAllBtn" type="button">
+          清除全部紀錄
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="recordModal" hidden>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="recordModalTitle">
+      <div class="modal-header">
+        <div>
+          <p class="brand">Currency Book</p>
+          <h2 id="recordModalTitle">新增交易</h2>
+        </div>
+        <button class="icon-button" id="closeRecordModalBtn" type="button" aria-label="關閉">×</button>
+      </div>
+
+      <form id="recordForm">
+        <input id="recordId" type="hidden">
+
+        <div class="form-grid responsive-grid">
+          <label class="field">
+            <span>日期</span>
+            <input id="tradeDate" type="date" required>
+          </label>
+
+          <fieldset class="field fieldset-reset">
+            <legend>類型</legend>
+            <div class="segmented">
+              <label>
+                <input type="radio" name="tradeType" value="buy" checked>
+                <span>買入</span>
+              </label>
+              <label>
+                <input type="radio" name="tradeType" value="sell">
+                <span>賣出</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label class="field">
+            <span>外幣</span>
+            <select id="tradeCurrency" required>
+              <option value="JPY">JPY｜日幣</option>
+              <option value="USD">USD｜美金</option>
+              <option value="EUR">EUR｜歐元</option>
+              <option value="CNY">CNY｜人民幣</option>
+              <option value="HKD">HKD｜港幣</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>成交匯率</span>
+            <input
+              id="tradeRate"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="any"
+              placeholder="例如 0.2051"
+              required
+            >
+            <small>手動輸入實際成交匯率：1 外幣 = ? TWD</small>
+          </label>
+
+          <label class="field">
+            <span id="foreignAmountLabel">外幣金額</span>
+            <input
+              id="foreignAmount"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="any"
+              placeholder="輸入外幣金額"
+              required
+            >
+          </label>
+
+          <label class="field">
+            <span>TWD 金額</span>
+            <input
+              id="twdAmount"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="any"
+              placeholder="輸入台幣金額"
+              required
+            >
+          </label>
+        </div>
+
+        <p class="calc-note" id="calcNote">
+          輸入匯率後，可從外幣或 TWD 任一邊輸入，另一邊會自動換算。
+        </p>
+
+        <label class="field">
+          <span>備註</span>
+          <textarea
+            id="tradeNote"
+            rows="3"
+            maxlength="300"
+            placeholder="例如：中信、台新 App、旅遊剩餘日幣賣回"
+          ></textarea>
+        </label>
+
+        <p class="form-error" id="formError" role="alert" hidden></p>
+
+        <div class="modal-actions responsive-flex responsive-stack">
+          <button class="button" id="cancelRecordBtn" type="button">取消</button>
+          <button class="button button-primary" type="submit">儲存紀錄</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="confirmModal" hidden>
+    <section class="modal-card modal-card-small" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal-header">
+        <div>
+          <p class="brand">確認操作</p>
+          <h2 id="confirmTitle">確定要刪除嗎？</h2>
+        </div>
+      </div>
+
+      <p id="confirmMessage" class="confirm-message"></p>
+
+      <div class="modal-actions responsive-flex responsive-stack">
+        <button class="button" id="confirmCancelBtn" type="button">取消</button>
+        <button class="button button-danger" id="confirmOkBtn" type="button">確定刪除</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
