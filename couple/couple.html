@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>情侶交往紀錄｜事件卡</title>
 
+<!-- Slowly Responsive -->
+<link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+
+<!-- Slowly Calendar Component -->
 <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/component/calendar/calendar_component.css">
 
 <style>
@@ -47,6 +51,7 @@
     justify-content:space-between;
     margin:6px 0 14px;
   }
+
   .brand{display:flex;flex-direction:column;gap:4px}
   h1{margin:0;font-size:20px;letter-spacing:.5px}
   .sub{color:var(--muted);font-size:13px}
@@ -73,12 +78,18 @@
     transition:transform .08s ease,box-shadow .12s ease,border-color .12s ease;
     user-select:none;
   }
+
   button:hover,.btn:hover{
     transform:translateY(-1px);
     border-color:rgba(201,143,167,.45);
     box-shadow:0 14px 22px rgba(40,20,30,.12);
   }
-  button:active,.btn:active{transform:translateY(0);box-shadow:0 8px 14px rgba(40,20,30,.10)}
+
+  button:active,.btn:active{
+    transform:translateY(0);
+    box-shadow:0 8px 14px rgba(40,20,30,.10)
+  }
+
   .btn-primary{
     border-color:rgba(201,143,167,.55);
     background:linear-gradient(180deg,rgba(215,166,183,.35),rgba(255,248,250,.95));
@@ -94,6 +105,7 @@
 
   /* ===== Calendar consumer ===== */
   .calendar-panel{margin-bottom:12px}
+
   .calendar-panel-head{
     display:flex;
     align-items:center;
@@ -101,6 +113,7 @@
     gap:12px;
     margin-bottom:10px;
   }
+
   .calendar-panel-title{font-weight:900;font-size:14px}
   .calendar-panel-note{color:var(--muted);font-size:12px}
 
@@ -120,8 +133,15 @@
     --sc-today-ring:var(--rose);
   }
 
-  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}
-  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .grid{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:12px;
+  }
+
+  @media(max-width:900px){
+    .grid{grid-template-columns:1fr}
+  }
 
   label{
     display:flex;
@@ -131,6 +151,7 @@
     color:var(--muted);
     font-weight:700;
   }
+
   input,select,textarea{
     width:100%;
     border:1px solid var(--line);
@@ -141,10 +162,21 @@
     outline:none;
     font-size:14px;
   }
-  textarea{min-height:92px;resize:vertical}
 
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:560px){.row{grid-template-columns:1fr}}
+  textarea{
+    min-height:92px;
+    resize:vertical;
+  }
+
+  .row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+
+  @media(max-width:560px){
+    .row{grid-template-columns:1fr}
+  }
 
   .form-actions{
     display:flex;
@@ -155,7 +187,11 @@
     margin-top:10px;
   }
 
-  .divider{height:1px;background:var(--line);margin:12px 0}
+  .divider{
+    height:1px;
+    background:var(--line);
+    margin:12px 0;
+  }
 
   .filters{
     display:grid;
@@ -163,9 +199,18 @@
     gap:12px;
     align-items:end;
   }
-  @media(max-width:900px){.filters{grid-template-columns:1fr}}
 
-  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  @media(max-width:900px){
+    .filters{grid-template-columns:1fr}
+  }
+
+  .stats{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+
   .pill{
     border:1px solid var(--line);
     background:rgba(255,255,255,.75);
@@ -175,6 +220,7 @@
     color:var(--muted);
     font-weight:800;
   }
+
   .pill b{color:var(--ink)}
 
   .wall{
@@ -183,8 +229,14 @@
     grid-template-columns:repeat(3,minmax(0,1fr));
     gap:12px;
   }
-  @media(max-width:980px){.wall{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  @media(max-width:560px){.wall{grid-template-columns:1fr}}
+
+  @media(max-width:980px){
+    .wall{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+
+  @media(max-width:560px){
+    .wall{grid-template-columns:1fr}
+  }
 
   .card{
     background:rgba(255,255,255,.92);
@@ -195,6 +247,7 @@
     position:relative;
     overflow:hidden;
   }
+
   .card::before{
     content:"";
     position:absolute;
@@ -203,6 +256,7 @@
     background:linear-gradient(90deg,var(--pink),var(--mauve));
     opacity:.9;
   }
+
   .card-head{
     display:flex;
     gap:10px;
@@ -210,7 +264,14 @@
     justify-content:space-between;
     margin-top:4px;
   }
-  .meta{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+  .meta{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    min-width:0;
+  }
+
   .title{
     font-weight:900;
     letter-spacing:.2px;
@@ -219,6 +280,7 @@
     text-overflow:ellipsis;
     white-space:nowrap;
   }
+
   .tiny{
     display:flex;
     gap:8px;
@@ -227,6 +289,7 @@
     font-size:12px;
     font-weight:800;
   }
+
   .badge{
     display:inline-flex;
     align-items:center;
@@ -239,6 +302,7 @@
     font-size:12px;
     font-weight:900;
   }
+
   .content{
     margin-top:8px;
     font-size:13px;
@@ -247,7 +311,14 @@
     white-space:pre-wrap;
     word-break:break-word;
   }
-  .tags{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+
+  .tags{
+    margin-top:10px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
   .tag{
     font-size:12px;
     font-weight:900;
@@ -257,6 +328,7 @@
     padding:6px 10px;
     border-radius:999px;
   }
+
   .card-actions{
     display:flex;
     gap:8px;
@@ -265,11 +337,19 @@
     align-items:center;
     margin-top:10px;
   }
-  .mini{padding:8px 10px;font-size:12px;font-weight:900;box-shadow:none}
+
+  .mini{
+    padding:8px 10px;
+    font-size:12px;
+    font-weight:900;
+    box-shadow:none;
+  }
+
   .danger{
     border-color:rgba(200,60,90,.28);
     background:linear-gradient(180deg,rgba(200,60,90,.10),rgba(255,248,250,.95));
   }
+
   .empty{
     margin-top:14px;
     border:1px dashed rgba(43,35,38,.22);
@@ -290,6 +370,7 @@
     padding:18px;
     z-index:50;
   }
+
   .modal{
     width:min(820px,100%);
     max-height:90dvh;
@@ -299,6 +380,7 @@
     border-radius:22px;
     box-shadow:0 24px 60px rgba(10,5,8,.28);
   }
+
   .modal-top{
     padding:14px 14px 10px;
     display:flex;
@@ -307,8 +389,14 @@
     gap:10px;
     border-bottom:1px solid var(--line);
   }
-  .modal-title{font-weight:900;letter-spacing:.3px}
+
+  .modal-title{
+    font-weight:900;
+    letter-spacing:.3px;
+  }
+
   .modal-body{padding:14px}
+
   .modal-actions{
     display:flex;
     gap:10px;
@@ -358,6 +446,7 @@
       <div class="calendar-panel-title">日曆</div>
       <div class="calendar-panel-note">直接呼叫 Slowly Calendar</div>
     </div>
+
     <div id="coupleCalendar"></div>
   </section>
 
@@ -368,7 +457,9 @@
       </label>
 
       <label>類型
-        <select id="typeFilter"><option value="">全部</option></select>
+        <select id="typeFilter">
+          <option value="">全部</option>
+        </select>
       </label>
 
       <label>排序
@@ -406,6 +497,7 @@
             <label>日期
               <input id="fDate" type="date">
             </label>
+
             <label>類型
               <select id="fType"></select>
             </label>
@@ -415,6 +507,7 @@
             <label>標題
               <input id="fTitle" type="text">
             </label>
+
             <label>心情（可空）
               <input id="fMood" type="text">
             </label>
@@ -440,7 +533,15 @@
   </div>
 </div>
 
-<!-- Calendar Core -->
+<!-- ===== Slowly Data Core ===== -->
+<script src="https://lib.stillnessbyslowly.com/date/datetime.js"></script>
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_storage.js"></script>
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_search.js"></script>
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_filter.js"></script>
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_sort.js"></script>
+<script src="https://lib.stillnessbyslowly.com/data/Data_backup.js"></script>
+
+<!-- ===== Calendar Core ===== -->
 <script src="https://lib.stillnessbyslowly.com/calendar/lunar_data.js"></script>
 <script src="https://lib.stillnessbyslowly.com/calendar/lunar.js"></script>
 <script src="https://lib.stillnessbyslowly.com/calendar/lunar_festivals_data.js"></script>
@@ -451,11 +552,11 @@
 <script src="https://lib.stillnessbyslowly.com/calendar/solar_terms.js"></script>
 <script src="https://lib.stillnessbyslowly.com/calendar/calendar.js"></script>
 
-<!-- Calendar Component -->
+<!-- ===== Calendar Component ===== -->
 <script src="https://lib.stillnessbyslowly.com/component/calendar/calendar_component.js"></script>
 
 <script>
-(() => {
+(async () => {
   "use strict";
 
   SlowlyCalendar.mount("#coupleCalendar", {
@@ -463,12 +564,24 @@
     gridLines: false
   });
 
-  const STORAGE_KEY = "sbs_couple_log_cards_v1";
   const SETTINGS_KEY = "sbs_couple_log_settings_v1";
 
+  const recordStore = FictionStorage
+    .create({ namespace: "sbs-couple-log" })
+    .collection("records", {
+      normalize: normalizeRecord
+    });
+
   const DEFAULT_TYPES = [
-    "日常照顧","節日/儀式感","旅行/約會","吵架/摩擦",
-    "和好/溫柔","禮物/花錢","荒謬事件","里程碑","其他"
+    "日常照顧",
+    "節日/儀式感",
+    "旅行/約會",
+    "吵架/摩擦",
+    "和好/溫柔",
+    "禮物/花錢",
+    "荒謬事件",
+    "里程碑",
+    "其他"
   ];
 
   const wall = document.getElementById("wall");
@@ -497,395 +610,533 @@
   const fContent = document.getElementById("fContent");
   const fTags = document.getElementById("fTags");
 
-  let records = loadRecords();
+  let records = await recordStore.all();
   let settings = loadSettings();
   let editingId = null;
 
   init();
 
   function init(){
-    ensureTypeOptions();
-    hydrateTypeFilter();
-    hydrateTypeSelect();
+    q.value = settings.q;
+    sortBy.value = settings.sort;
 
-    q.value = settings.q || "";
-    typeFilter.value = settings.type || "";
-    sortBy.value = settings.sort || "date_desc";
+    refreshTypes();
 
-    q.addEventListener("input",()=>{settings.q=q.value;saveSettings();render()});
-    typeFilter.addEventListener("change",()=>{settings.type=typeFilter.value;saveSettings();render()});
-    sortBy.addEventListener("change",()=>{settings.sort=sortBy.value;saveSettings();render()});
+    if([...typeFilter.options].some(option => option.value === settings.type)){
+      typeFilter.value = settings.type;
+    }
 
-    btnOpenAdd.addEventListener("click",openAdd);
-    btnCloseModal.addEventListener("click",closeModal);
-    modalBackdrop.addEventListener("click",e=>{if(e.target===modalBackdrop)closeModal()});
-
-    btnSave.addEventListener("click",onSave);
-    btnDeleteInModal.addEventListener("click",onDeleteFromModal);
-
-    btnExport.addEventListener("click",exportJSON);
-    importFile.addEventListener("change",onImportFile);
-
-    btnClearAll.addEventListener("click",()=>{
-      if(!confirm("確定要清空全部資料？這是不可逆操作。")) return;
-      records=[];
-      saveRecords();
+    q.addEventListener("input", () => {
+      settings.q = q.value;
+      saveSettings();
       render();
     });
 
-    window.addEventListener("keydown",e=>{
-      if(e.key==="Escape"&&isModalOpen())closeModal();
+    typeFilter.addEventListener("change", () => {
+      settings.type = typeFilter.value;
+      saveSettings();
+      render();
+    });
+
+    sortBy.addEventListener("change", () => {
+      settings.sort = sortBy.value;
+      saveSettings();
+      render();
+    });
+
+    btnOpenAdd.addEventListener("click", openAdd);
+    btnCloseModal.addEventListener("click", closeModal);
+
+    modalBackdrop.addEventListener("click", event => {
+      if(event.target === modalBackdrop){
+        closeModal();
+      }
+    });
+
+    btnSave.addEventListener("click", onSave);
+    btnDeleteInModal.addEventListener("click", onDeleteFromModal);
+
+    btnExport.addEventListener("click", exportJSON);
+    importFile.addEventListener("change", onImportFile);
+
+    btnClearAll.addEventListener("click", async () => {
+      if(!confirm("確定要清空全部資料？這是不可逆操作。")){
+        return;
+      }
+
+      await recordStore.clear();
+      records = [];
+      render();
+    });
+
+    window.addEventListener("keydown", event => {
+      if(event.key === "Escape" && isModalOpen()){
+        closeModal();
+      }
     });
 
     render();
   }
 
-  function ensureTypeOptions(){
-    const set=new Set(DEFAULT_TYPES);
-    records.forEach(r=>{if(r.type)set.add(r.type)});
-    settings.customTypes=settings.customTypes||[];
-    settings.customTypes.forEach(t=>{if(t&&String(t).trim())set.add(String(t).trim())});
-    const extras=[...set].filter(t=>!DEFAULT_TYPES.includes(t)).sort((a,b)=>a.localeCompare(b,"zh-Hant"));
-    settings.types=[...DEFAULT_TYPES,...extras];
-    saveSettings();
+  function getTypes(){
+    const types = new Set(DEFAULT_TYPES);
+
+    records.forEach(record => {
+      if(record.type){
+        types.add(record.type);
+      }
+    });
+
+    return [...types];
   }
 
-  function hydrateTypeFilter(){
-    typeFilter.innerHTML=`<option value="">全部</option>`+
-      settings.types.map(t=>`<option value="${escapeHtmlAttr(t)}">${escapeHtml(t)}</option>`).join("");
-  }
+  function refreshTypes(){
+    const types = getTypes();
+    const currentFilter = typeFilter.value;
 
-  function hydrateTypeSelect(){
-    fType.innerHTML=settings.types.map(t=>`<option value="${escapeHtmlAttr(t)}">${escapeHtml(t)}</option>`).join("");
+    typeFilter.innerHTML =
+      `<option value="">全部</option>` +
+      types
+        .map(type =>
+          `<option value="${escapeHtmlAttr(type)}">${escapeHtml(type)}</option>`
+        )
+        .join("");
+
+    fType.innerHTML = types
+      .map(type =>
+        `<option value="${escapeHtmlAttr(type)}">${escapeHtml(type)}</option>`
+      )
+      .join("");
+
+    if(currentFilter === "" || types.includes(currentFilter)){
+      typeFilter.value = currentFilter;
+    }
   }
 
   function render(){
-    ensureTypeOptions();
-    hydrateTypeFilter();
-    hydrateTypeSelect();
-    const list=getFilteredSortedRecords();
+    refreshTypes();
+
+    const list = getFilteredSortedRecords();
+
     renderStats(list);
     renderWall(list);
   }
 
   function getFilteredSortedRecords(){
-    const query=(q.value||"").trim().toLowerCase();
-    const type=typeFilter.value||"";
-    let list=[...records];
-
-    if(type) list=list.filter(r=>(r.type||"")===type);
-
-    if(query){
-      list=list.filter(r=>{
-        const blob=[r.title,r.content,r.mood,(r.tags||[]).join(" "),r.type,r.date]
-          .filter(Boolean).join(" ").toLowerCase();
-        return blob.includes(query);
-      });
-    }
-
-    const sort=sortBy.value;
-    list.sort((a,b)=>{
-      if(sort==="date_desc") return (b.date||"").localeCompare(a.date||"");
-      if(sort==="date_asc") return (a.date||"").localeCompare(b.date||"");
-      if(sort==="updated_desc") return (b.updatedAt||0)-(a.updatedAt||0);
-      if(sort==="title_asc") return (a.title||"").localeCompare(b.title||"","zh-Hant");
-      if(sort==="title_desc") return (b.title||"").localeCompare(a.title||"","zh-Hant");
-      return 0;
+    let list = FictionFilter.filter(records, {
+      equals: {
+        type: typeFilter.value
+      }
     });
-    return list;
+
+    list = FictionSearch.search(
+      list,
+      q.value,
+      ["title", "content", "mood", "tags", "type", "date"]
+    );
+
+    const sorts = {
+      date_desc: {
+        field: "date",
+        direction: "desc",
+        type: "string"
+      },
+      date_asc: {
+        field: "date",
+        direction: "asc",
+        type: "string"
+      },
+      updated_desc: {
+        field: "updatedAt",
+        direction: "desc",
+        type: "date"
+      },
+      title_asc: {
+        field: "title",
+        direction: "asc",
+        type: "string"
+      },
+      title_desc: {
+        field: "title",
+        direction: "desc",
+        type: "string"
+      }
+    };
+
+    return FictionSort.sort(
+      list,
+      sorts[sortBy.value] || sorts.date_desc
+    );
   }
 
   function renderStats(currentList){
-    const total=records.length;
-    const showing=currentList.length;
-    const byType={};
+    const byType = {};
 
-    records.forEach(r=>{
-      const t=r.type||"未分類";
-      byType[t]=(byType[t]||0)+1;
+    records.forEach(record => {
+      const type = record.type || "未分類";
+      byType[type] = (byType[type] || 0) + 1;
     });
 
-    const topTypes=Object.entries(byType).sort((a,b)=>b[1]-a[1]).slice(0,3);
-    const absurdCount=records.filter(r=>r.type==="荒謬事件").length;
+    const topTypes = Object.entries(byType)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
 
-    statsEl.innerHTML=`
-      <div class="pill">總事件 <b>${total}</b>｜目前顯示 <b>${showing}</b></div>
-      <div class="pill">荒謬事件 <b>${absurdCount}</b></div>
-      ${topTypes.map(([t,c])=>`<div class="pill"><b>${escapeHtml(t)}</b> × <b>${c}</b></div>`).join("")}
+    const absurdCount = records.filter(
+      record => record.type === "荒謬事件"
+    ).length;
+
+    statsEl.innerHTML = `
+      <div class="pill">
+        總事件 <b>${records.length}</b>｜目前顯示 <b>${currentList.length}</b>
+      </div>
+
+      <div class="pill">
+        荒謬事件 <b>${absurdCount}</b>
+      </div>
+
+      ${topTypes.map(([type, count]) =>
+        `<div class="pill"><b>${escapeHtml(type)}</b> × <b>${count}</b></div>`
+      ).join("")}
     `;
   }
 
   function renderWall(list){
-    wall.innerHTML="";
-    empty.style.display=list.length?"none":"block";
+    wall.innerHTML = "";
+    empty.style.display = list.length ? "none" : "block";
 
-    list.forEach(r=>{
-      const badge=`<span class="badge">${escapeHtml(r.type||"未分類")}${r.mood?` · ${escapeHtml(r.mood)}`:""}</span>`;
-      const dt=r.date?formatDateYMD(r.date):"（無日期）";
-      const tags=(r.tags||[]).length
-        ? `<div class="tags">${r.tags.map(t=>`<span class="tag">#${escapeHtml(t)}</span>`).join("")}</div>`
+    list.forEach(record => {
+      const dateText = record.date
+        ? DateTime.formatDate(record.date)
+        : "（無日期）";
+
+      const tags = record.tags.length
+        ? `
+          <div class="tags">
+            ${record.tags.map(tag =>
+              `<span class="tag">#${escapeHtml(tag)}</span>`
+            ).join("")}
+          </div>
+        `
         : "";
 
-      const el=document.createElement("div");
-      el.className="card";
-      el.innerHTML=`
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
         <div class="card-head">
           <div class="meta">
-            <div class="title">${escapeHtml(r.title||"（未命名）")}</div>
-            <div class="tiny"><span>${escapeHtml(dt)}</span></div>
+            <div class="title">${escapeHtml(record.title || "（未命名）")}</div>
+            <div class="tiny"><span>${escapeHtml(dateText)}</span></div>
           </div>
-          <div>${badge}</div>
-        </div>
-        ${r.content?`<div class="content">${escapeHtml(r.content)}</div>`:`<div class="content" style="color:var(--muted)">（無內容）</div>`}
-        ${tags}
-        <div class="card-actions">
-          <button class="mini" data-act="edit" data-id="${escapeHtmlAttr(r.id)}">編輯</button>
-          <button class="mini danger" data-act="del" data-id="${escapeHtmlAttr(r.id)}">刪除</button>
-        </div>`;
 
-      el.addEventListener("click",e=>{
-        const btn=e.target.closest("button");
-        if(!btn)return;
-        const id=btn.dataset.id;
-        if(btn.dataset.act==="edit")openEdit(id);
-        if(btn.dataset.act==="del")deleteRecord(id);
+          <div>
+            <span class="badge">
+              ${escapeHtml(record.type || "未分類")}
+              ${record.mood ? ` · ${escapeHtml(record.mood)}` : ""}
+            </span>
+          </div>
+        </div>
+
+        ${
+          record.content
+            ? `<div class="content">${escapeHtml(record.content)}</div>`
+            : `<div class="content" style="color:var(--muted)">（無內容）</div>`
+        }
+
+        ${tags}
+
+        <div class="card-actions">
+          <button class="mini" data-act="edit" data-id="${escapeHtmlAttr(record.id)}">
+            編輯
+          </button>
+
+          <button class="mini danger" data-act="del" data-id="${escapeHtmlAttr(record.id)}">
+            刪除
+          </button>
+        </div>
+      `;
+
+      card.addEventListener("click", event => {
+        const button = event.target.closest("button");
+
+        if(!button){
+          return;
+        }
+
+        if(button.dataset.act === "edit"){
+          openEdit(button.dataset.id);
+        }
+
+        if(button.dataset.act === "del"){
+          deleteRecord(button.dataset.id);
+        }
       });
 
-      wall.appendChild(el);
+      wall.appendChild(card);
     });
   }
 
   function openAdd(){
-    editingId=null;
-    modalTitle.textContent="新增事件";
-    btnDeleteInModal.style.display="none";
-    fDate.value=toInputDate(new Date());
-    fType.value="日常照顧";
-    fTitle.value="";
-    fMood.value="";
-    fContent.value="";
-    fTags.value="";
+    editingId = null;
+
+    modalTitle.textContent = "新增事件";
+    btnDeleteInModal.style.display = "none";
+
+    fDate.value = DateTime.dateKey();
+    fType.value = "日常照顧";
+    fTitle.value = "";
+    fMood.value = "";
+    fContent.value = "";
+    fTags.value = "";
+
     openModal();
   }
 
   function openEdit(id){
-    const r=records.find(x=>x.id===id);
-    if(!r)return;
+    const record = records.find(
+      item => String(item.id) === String(id)
+    );
 
-    editingId=id;
-    modalTitle.textContent="編輯事件";
-    btnDeleteInModal.style.display="inline-flex";
-    fDate.value=r.date||"";
-    fType.value=r.type||"其他";
-    fTitle.value=r.title||"";
-    fMood.value=r.mood||"";
-    fContent.value=r.content||"";
-    fTags.value=(r.tags||[]).map(t=>"#"+t).join(" ");
+    if(!record){
+      return;
+    }
+
+    editingId = record.id;
+
+    modalTitle.textContent = "編輯事件";
+    btnDeleteInModal.style.display = "inline-flex";
+
+    fDate.value = record.date;
+    fType.value = record.type;
+    fTitle.value = record.title;
+    fMood.value = record.mood;
+    fContent.value = record.content;
+    fTags.value = record.tags.map(tag => `#${tag}`).join(" ");
+
     openModal();
   }
 
   function openModal(){
-    modalBackdrop.style.display="flex";
-    modalBackdrop.setAttribute("aria-hidden","false");
+    modalBackdrop.style.display = "flex";
+    modalBackdrop.setAttribute("aria-hidden", "false");
   }
 
   function closeModal(){
-    modalBackdrop.style.display="none";
-    modalBackdrop.setAttribute("aria-hidden","true");
-    editingId=null;
+    modalBackdrop.style.display = "none";
+    modalBackdrop.setAttribute("aria-hidden", "true");
+    editingId = null;
   }
 
-  function isModalOpen(){return modalBackdrop.style.display==="flex"}
+  function isModalOpen(){
+    return modalBackdrop.style.display === "flex";
+  }
 
-  function onSave(){
-    const date=(fDate.value||"").trim();
-    const type=(fType.value||"").trim()||"其他";
-    const title=(fTitle.value||"").trim();
-    const mood=(fMood.value||"").trim();
-    const content=(fContent.value||"").trim();
-    const tags=parseTags(fTags.value||"");
+  async function onSave(){
+    const data = {
+      date: fDate.value,
+      type: fType.value || "其他",
+      title: fTitle.value.trim(),
+      mood: fMood.value.trim(),
+      content: fContent.value.trim(),
+      tags: parseTags(fTags.value)
+    };
 
-    if(!title){
+    if(!data.title){
       alert("請先填標題。");
       fTitle.focus();
       return;
     }
 
-    const now=Date.now();
+    try{
+      if(editingId){
+        await recordStore.update(editingId, data);
+      }else{
+        await recordStore.add(data);
+      }
 
+      records = await recordStore.all();
+
+      closeModal();
+      render();
+    }catch(error){
+      console.error(error);
+      alert("儲存失敗：" + (error?.message || String(error)));
+    }
+  }
+
+  async function onDeleteFromModal(){
     if(editingId){
-      const idx=records.findIndex(x=>x.id===editingId);
-      if(idx===-1)return;
-      records[idx]={...records[idx],date,type,title,mood,content,tags,updatedAt:now};
-    }else{
-      records.unshift({
-        id:uid(),date,type,title,mood,content,tags,
-        createdAt:now,updatedAt:now
-      });
+      await deleteRecord(editingId, true);
+    }
+  }
+
+  async function deleteRecord(id, closeAfter = false){
+    const record = records.find(
+      item => String(item.id) === String(id)
+    );
+
+    if(!record){
+      return;
     }
 
-    saveRecords();
-    closeModal();
-    render();
-  }
+    if(!confirm(`確定刪除「${record.title}」？`)){
+      return;
+    }
 
-  function onDeleteFromModal(){
-    if(editingId)deleteRecord(editingId,{silentClose:true});
-  }
+    try{
+      await recordStore.remove(id);
+      records = await recordStore.all();
 
-  function deleteRecord(id,opt={}){
-    const r=records.find(x=>x.id===id);
-    if(!r)return;
-    if(!confirm(`確定刪除「${r.title}」？`))return;
-    records=records.filter(x=>x.id!==id);
-    saveRecords();
-    if(opt.silentClose)closeModal();
-    render();
+      if(closeAfter){
+        closeModal();
+      }
+
+      render();
+    }catch(error){
+      console.error(error);
+      alert("刪除失敗：" + (error?.message || String(error)));
+    }
   }
 
   function exportJSON(){
-    const payload={app:"sbs_couple_log_cards_v1",exportedAt:new Date().toISOString(),records};
-    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
-    const a=document.createElement("a");
-    const d=new Date();
-    const y=d.getFullYear();
-    const m=String(d.getMonth()+1).padStart(2,"0");
-    const dd=String(d.getDate()).padStart(2,"0");
-    a.href=URL.createObjectURL(blob);
-    a.download=`couple_log_backup_${y}${m}${dd}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href),800);
+    DataBackup.downloadJson(
+      `couple_log_backup_${DataBackup.todayISO().replaceAll("-", "")}.json`,
+      DataBackup.createPayload({
+        app: "sbs_couple_log_cards",
+        version: 1,
+        data: records
+      })
+    );
   }
 
   async function onImportFile(){
-    const file=importFile.files&&importFile.files[0];
-    if(!file)return;
+    const file = importFile.files?.[0];
+
+    if(!file){
+      return;
+    }
 
     try{
-      const data=JSON.parse(await file.text());
-      const incoming=Array.isArray(data?.records)?data.records:null;
-      if(!incoming)throw new Error("找不到 records。");
+      const json = await DataBackup.readJsonFile(file);
+      const incoming = DataBackup.extractData(json);
 
-      const normalized=incoming.map(normalizeRecord).filter(Boolean);
-      const mode=prompt("匯入模式：1 合併 / 2 覆蓋","1");
-
-      if(mode!=="1"&&mode!=="2")return;
-
-      if(mode==="2"){
-        records=normalized;
-      }else{
-        const map=new Map(records.map(r=>[r.id,r]));
-        normalized.forEach(r=>{
-          if(map.has(r.id)){
-            const old=map.get(r.id);
-            map.set(r.id,(r.updatedAt||0)>=(old.updatedAt||0)?r:old);
-          }else{
-            map.set(r.id,r);
-          }
-        });
-        records=Array.from(map.values());
+      if(!Array.isArray(incoming)){
+        throw new Error("備份資料必須是陣列。");
       }
 
-      saveRecords();
+      const imported = incoming
+        .filter(record =>
+          record &&
+          typeof record === "object" &&
+          String(record.title || "").trim()
+        )
+        .map(normalizeRecord);
+
+      const mode = prompt("匯入模式：1 合併 / 2 覆蓋", "1");
+
+      if(mode !== "1" && mode !== "2"){
+        return;
+      }
+
+      let nextRecords = imported;
+
+      if(mode === "1"){
+        const map = new Map(
+          records.map(record => [String(record.id), record])
+        );
+
+        imported.forEach(record => {
+          const old = map.get(String(record.id));
+
+          if(
+            !old ||
+            new Date(record.updatedAt || 0) >= new Date(old.updatedAt || 0)
+          ){
+            map.set(String(record.id), record);
+          }
+        });
+
+        nextRecords = [...map.values()];
+      }
+
+      await recordStore.replace(nextRecords);
+      records = await recordStore.all();
+
       render();
-    }catch(err){
-      alert("匯入失敗："+(err?.message||String(err)));
+    }catch(error){
+      console.error(error);
+      alert("匯入失敗：" + (error?.message || String(error)));
     }finally{
-      importFile.value="";
+      importFile.value = "";
     }
   }
 
-  function normalizeRecord(r){
-    if(!r||typeof r!=="object")return null;
-    const title=String(r.title||"").trim();
-    if(!title)return null;
-
-    return{
-      id:String(r.id||uid()),
-      date:String(r.date||"").slice(0,10),
-      type:String(r.type||"其他").trim()||"其他",
-      title,
-      mood:String(r.mood||"").trim(),
-      content:String(r.content||"").trim(),
-      tags:Array.isArray(r.tags)?r.tags.map(t=>String(t).trim()).filter(Boolean):[],
-      createdAt:Number(r.createdAt||Date.now()),
-      updatedAt:Number(r.updatedAt||Date.now())
+  function normalizeRecord(record){
+    return {
+      ...record,
+      date: DateTime.parseDateKey(String(record.date || "").slice(0, 10))
+        ? String(record.date).slice(0, 10)
+        : "",
+      type: String(record.type || "其他").trim() || "其他",
+      title: String(record.title || "").trim(),
+      mood: String(record.mood || "").trim(),
+      content: String(record.content || "").trim(),
+      tags: Array.isArray(record.tags)
+        ? record.tags
+            .map(tag => String(tag).trim())
+            .filter(Boolean)
+        : []
     };
-  }
-
-  function loadRecords(){
-    try{
-      const raw=localStorage.getItem(STORAGE_KEY);
-      if(!raw)return[];
-      const arr=JSON.parse(raw);
-      return Array.isArray(arr)?arr.map(normalizeRecord).filter(Boolean):[];
-    }catch(_){return[]}
-  }
-
-  function saveRecords(){
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(records));
   }
 
   function loadSettings(){
     try{
-      const raw=localStorage.getItem(SETTINGS_KEY);
-      if(!raw)return{q:"",type:"",sort:"date_desc",types:[...DEFAULT_TYPES],customTypes:[]};
-      const s=JSON.parse(raw);
-      return{
-        q:String(s.q||""),
-        type:String(s.type||""),
-        sort:String(s.sort||"date_desc"),
-        types:Array.isArray(s.types)&&s.types.length?s.types:[...DEFAULT_TYPES],
-        customTypes:Array.isArray(s.customTypes)?s.customTypes:[]
+      const saved = JSON.parse(
+        localStorage.getItem(SETTINGS_KEY) || "{}"
+      );
+
+      return {
+        q: String(saved.q || ""),
+        type: String(saved.type || ""),
+        sort: String(saved.sort || "date_desc")
       };
     }catch(_){
-      return{q:"",type:"",sort:"date_desc",types:[...DEFAULT_TYPES],customTypes:[]};
+      return {
+        q: "",
+        type: "",
+        sort: "date_desc"
+      };
     }
   }
 
   function saveSettings(){
-    localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));
+    localStorage.setItem(
+      SETTINGS_KEY,
+      JSON.stringify(settings)
+    );
   }
 
-  function uid(){
-    return "r_"+Math.random().toString(16).slice(2)+"_"+Date.now().toString(16);
-  }
-
-  function parseTags(s){
-    return Array.from(new Set(
-      String(s||"")
-        .replace(/，/g,",")
-        .split(/[\s,]+/g)
-        .map(x=>x.trim().replace(/^#/,""))
+  function parseTags(value){
+    return [...new Set(
+      String(value || "")
+        .replace(/，/g, ",")
+        .split(/[\s,]+/)
+        .map(tag => tag.trim().replace(/^#/, ""))
         .filter(Boolean)
-    ));
+    )];
   }
 
-  function toInputDate(d){
-    const y=d.getFullYear();
-    const m=String(d.getMonth()+1).padStart(2,"0");
-    const dd=String(d.getDate()).padStart(2,"0");
-    return `${y}-${m}-${dd}`;
+  function escapeHtml(value){
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
   }
 
-  function formatDateYMD(ymd){
-    const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
-    return m?`${m[1]}/${m[2]}/${m[3]}`:ymd;
-  }
-
-  function escapeHtml(str){
-    return String(str)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#39;");
-  }
-
-  function escapeHtmlAttr(str){
-    return escapeHtml(str);
+  function escapeHtmlAttr(value){
+    return escapeHtml(value);
   }
 })();
 </script>
