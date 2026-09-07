@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日曆生成器</title>
+
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #fff;
+      color: #000;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans TC", sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      font-size: 1.5rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      align-items: center;
+    }
+
+    .control-group label {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    select,
+    button {
+      font: inherit;
+    }
+
+    .festival-bold-option {
+      margin-left: 18px;
+    }
+
+    .calendar-pair {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px;
+    }
+
+    .month-title {
+      margin: 0 0 10px;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      border-top: 1px solid #000;
+      border-left: 1px solid #000;
+    }
+
+    .weekday,
+    .day,
+    .empty {
+      min-width: 0;
+      border-right: 1px solid #000;
+      border-bottom: 1px solid #000;
+    }
+
+    .weekday {
+      padding: 7px 4px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .day,
+    .empty {
+      min-height: 104px;
+      padding: 6px;
+    }
+
+    .day-number {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 1rem;
+    }
+
+    .weekend .day-number {
+      font-weight: 700;
+    }
+
+    .day-detail {
+      display: block;
+      overflow-wrap: anywhere;
+      font-size: 0.8rem;
+    }
+
+    .festival.is-bold {
+      font-weight: 700;
+    }
+
+    .status {
+      margin: 0 0 16px;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 16px;
+      }
+
+      .calendar-pair {
+        grid-template-columns: 1fr;
+      }
+
+      .day,
+      .empty {
+        min-height: 86px;
+        padding: 4px;
+      }
+
+      .day-detail {
+        font-size: 0.72rem;
+      }
+    }
+
+    /* 每 4 個月視為一張 A4：
+       第一列 2 個月、第二列 2 個月，中間水平線剛好分隔上下半頁。 */
+    .month:nth-child(4n + 3) {
+      position: relative;
+    }
+
+    .month:nth-child(4n + 3)::before {
+      content: "";
+      position: absolute;
+      top: -14px;
+      left: 0;
+      width: calc(200% + 28px);
+      border-top: 1px solid #000;
+    }
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 8mm 8mm;
+  }
+
+      body {
+        padding: 0;
+      }
+
+      .controls,
+      h1,
+      .status {
+        display: none;
+      }
+
+      .calendar-pair {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10mm 7mm;
+      }
+
+      .month {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .month.print-page-start {
+        break-before: page;
+        page-break-before: always;
+      }
+
+      .month-title {
+        margin-bottom: 2mm;
+        font-size: 11pt;
+      }
+
+      .weekday {
+        padding: 1.5mm 1mm;
+        font-size: 8pt;
+      }
+
+      .day,
+      .empty {
+        min-height: 15mm;
+        padding: 1.2mm;
+      }
+
+      .day-number {
+        margin-bottom: 0.5mm;
+        font-size: 8pt;
+      }
+
+      .day-detail {
+        font-size: 6.5pt;
+        line-height: 1.25;
+      }
+
+      .month:nth-child(4n + 3)::before {
+        top: -5mm;
+        width: calc(200% + 7mm);
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>日曆生成器</h1>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>
+        起始年份
+        <input id="yearInput" type="number" min="1901" max="2100" inputmode="numeric">
+      </label>
+
+      <label>
+        起始月份
+        <select id="monthSelect"></select>
+      </label>
+
+      <label>
+        產生月數
+        <select id="monthCountSelect">
+          <option value="2">2 個月</option>
+          <option value="4">4 個月</option>
+          <option value="6">6 個月</option>
+          <option value="8">8 個月</option>
+          <option value="10">10 個月</option>
+          <option value="12">12 個月</option>
+        </select>
+      </label>
+
+      <button type="button" id="generateButton">產生日曆</button>
+    </div>
+
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="showLunar" checked>
+        顯示農曆
+      </label>
+
+      <label>
+        <input type="checkbox" id="showFestivals" checked>
+        顯示節慶
+      </label>
+
+      <label class="festival-bold-option">
+        <input type="checkbox" id="boldFestivals">
+        節慶加粗
+      </label>
+
+      <label>
+        <input type="checkbox" id="showSolarTerms" checked>
+        顯示節氣
+      </label>
+    </div>
+  </div>
+
+  <p id="status" class="status" hidden></p>
+  <div id="calendarPair" class="calendar-pair"></div>
+</main>
+
+<!--
+  載入順序：
+  data → 功能模組 → Calendar 組裝層
+
+  這個頁面只是 consumer。
+  不在這裡重算農曆、節氣或節慶規則。
+-->
+<script src="https://lib.stillnessbyslowly.com/calendar/lunar_data.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/lunar.js"></script>
+
+<script src="https://lib.stillnessbyslowly.com/calendar/lunar_festivals_data.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/lunar_festivals.js"></script>
+
+<script src="https://lib.stillnessbyslowly.com/calendar/solar_festivals_data.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/solar_festivals.js"></script>
+
+<script src="https://lib.stillnessbyslowly.com/calendar/solar_terms_data.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/solar_terms.js"></script>
+
+<script src="https://lib.stillnessbyslowly.com/calendar/calendar.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  const yearInput = document.getElementById("yearInput");
+  const monthSelect = document.getElementById("monthSelect");
+  const monthCountSelect = document.getElementById("monthCountSelect");
+  const generateButton = document.getElementById("generateButton");
+
+  const showLunar = document.getElementById("showLunar");
+  const showFestivals = document.getElementById("showFestivals");
+  const boldFestivals = document.getElementById("boldFestivals");
+  const showSolarTerms = document.getElementById("showSolarTerms");
+
+  const status = document.getElementById("status");
+  const calendarPair = document.getElementById("calendarPair");
+
+  const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
+
+  function setupSelectors() {
+    for (let month = 1; month <= 12; month += 1) {
+      const option = document.createElement("option");
+      option.value = String(month);
+      option.textContent = month + " 月";
+      monthSelect.appendChild(option);
+    }
+
+    const today = new Date();
+    const currentYear = today.getFullYear();
+
+    yearInput.value = Calendar.isSupportedYear(currentYear)
+      ? String(currentYear)
+      : String(Calendar.SUPPORTED_RANGE.startYear);
+
+    monthSelect.value = String(today.getMonth() + 1);
+  }
+
+  function addMonths(year, month, offset) {
+    const zeroBased = (month - 1) + offset;
+    return {
+      year: year + Math.floor(zeroBased / 12),
+      month: (zeroBased % 12) + 1
+    };
+  }
+
+  function getLunarText(lunar) {
+    if (!lunar) return "";
+
+    // 每月初一顯示月份名稱，其餘顯示農曆日名。
+    if (lunar.day === 1) {
+      return lunar.monthName || "";
+    }
+
+    return lunar.dayName || "";
+  }
+
+  function getFestivalNames(date) {
+    const names = [];
+
+    if (window.SolarFestivals) {
+      names.push(...SolarFestivals.getNames(date));
+    }
+
+    if (window.LunarFestivals) {
+      names.push(...LunarFestivals.getNames(date));
+    }
+
+    return names;
+  }
+
+  function getSolarTermNames(solarTerm) {
+    if (!solarTerm) return [];
+
+    const terms = Array.isArray(solarTerm) ? solarTerm : [solarTerm];
+
+    return terms
+      .map(function (term) {
+        return term && term.name ? term.name : "";
+      })
+      .filter(Boolean);
+  }
+
+  function createTextLine(text, className) {
+    const line = document.createElement("span");
+    line.className = "day-detail " + className;
+    line.textContent = text;
+    return line;
+  }
+
+  function createDayCell(dayData) {
+    const cell = document.createElement("div");
+    cell.className = "day";
+
+    if (dayData.weekday === 0 || dayData.weekday === 6) {
+      cell.classList.add("weekend");
+    }
+
+    const number = document.createElement("span");
+    number.className = "day-number";
+    number.textContent = String(dayData.day);
+    cell.appendChild(number);
+
+    if (showLunar.checked) {
+      const lunarText = getLunarText(dayData.lunar);
+      if (lunarText) {
+        cell.appendChild(createTextLine(lunarText, "lunar"));
+      }
+    }
+
+    if (showFestivals.checked) {
+      const festivals = getFestivalNames(dayData.date);
+
+      for (const festival of festivals) {
+        const line = createTextLine(festival, "festival");
+        if (boldFestivals.checked) {
+          line.classList.add("is-bold");
+        }
+        cell.appendChild(line);
+      }
+    }
+
+    if (showSolarTerms.checked) {
+      const solarTerms = getSolarTermNames(dayData.solarTerm);
+
+      for (const solarTerm of solarTerms) {
+        cell.appendChild(createTextLine(solarTerm, "solar-term"));
+      }
+    }
+
+    return cell;
+  }
+
+  function renderMonth(monthData) {
+    const section = document.createElement("section");
+    section.className = "month";
+
+    const title = document.createElement("h2");
+    title.className = "month-title";
+    title.textContent = monthData.year + " 年 " + monthData.month + " 月";
+    section.appendChild(title);
+
+    const grid = document.createElement("div");
+    grid.className = "calendar-grid";
+
+    for (const weekday of WEEKDAYS) {
+      const header = document.createElement("div");
+      header.className = "weekday";
+      header.textContent = weekday;
+      grid.appendChild(header);
+    }
+
+    for (let i = 0; i < monthData.firstWeekday; i += 1) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.setAttribute("aria-hidden", "true");
+      grid.appendChild(empty);
+    }
+
+    for (const dayData of monthData.days) {
+      grid.appendChild(createDayCell(dayData));
+    }
+
+    section.appendChild(grid);
+    return section;
+  }
+
+  function showError(message) {
+    status.hidden = false;
+    status.textContent = message;
+  }
+
+  function clearError() {
+    status.hidden = true;
+    status.textContent = "";
+  }
+
+  function generate() {
+    clearError();
+
+    const year = Number(yearInput.value);
+    const month = Number(monthSelect.value);
+    const monthCount = Number(monthCountSelect.value);
+
+    if (!Number.isInteger(year) || !Calendar.isSupportedYear(year)) {
+      calendarPair.replaceChildren();
+      showError("年份請輸入 1901～2100。");
+      return;
+    }
+
+    const last = addMonths(year, month, monthCount - 1);
+
+    if (!Calendar.isSupportedYear(last.year)) {
+      calendarPair.replaceChildren();
+      showError(
+        "選擇的範圍超過 2100 年 12 月，請調整起始年月或產生月數。"
+      );
+      return;
+    }
+
+    try {
+      const fragments = [];
+
+      for (let offset = 0; offset < monthCount; offset += 1) {
+        const target = addMonths(year, month, offset);
+        const monthData = Calendar.getMonth(target.year, target.month);
+        const section = renderMonth(monthData);
+
+        // 每四個月是一張 A4：1-2、3-4｜水平切線｜5-6、7-8……
+        // 第 5、9 個月開始新的列印頁。
+        if (offset > 0 && offset % 4 === 0) {
+          section.classList.add("print-page-start");
+        }
+
+        fragments.push(section);
+      }
+
+      calendarPair.replaceChildren(...fragments);
+    } catch (error) {
+      calendarPair.replaceChildren();
+      showError(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  function syncFestivalBoldState() {
+    boldFestivals.disabled = !showFestivals.checked;
+  }
+
+  setupSelectors();
+  syncFestivalBoldState();
+
+  generateButton.addEventListener("click", generate);
+
+  showLunar.addEventListener("change", generate);
+  showFestivals.addEventListener("change", function () {
+    syncFestivalBoldState();
+    generate();
+  });
+  boldFestivals.addEventListener("change", generate);
+  showSolarTerms.addEventListener("change", generate);
+
+  yearInput.addEventListener("change", generate);
+  monthSelect.addEventListener("change", generate);
+  monthCountSelect.addEventListener("change", generate);
+
+  generate();
+})();
+</script>
+</body>
+</html>
