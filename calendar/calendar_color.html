@@ -28,6 +28,8 @@
 
       --cal-month:#000000;
       --cal-weekday:#000000;
+      --cal-sunday:#000000;
+      --cal-saturday:#000000;
       --cal-solar:#000000;
       --cal-lunar:#000000;
       --cal-festival:#000000;
@@ -39,6 +41,8 @@
 
       --month-weight:700;
       --weekday-weight:700;
+      --sunday-weight:700;
+      --saturday-weight:700;
       --solar-weight:400;
       --lunar-weight:400;
       --festival-weight:400;
@@ -525,6 +529,16 @@
       border-right:0.25mm solid var(--cal-grid);
     }
 
+    .weekday.sunday{
+      color:var(--cal-sunday);
+      font-weight:var(--sunday-weight);
+    }
+
+    .weekday.saturday{
+      color:var(--cal-saturday);
+      font-weight:var(--saturday-weight);
+    }
+
     .days{
       flex:1 1 auto;
       min-height:0;
@@ -560,6 +574,16 @@
       font-size:var(--solar-size);
       line-height:1;
       flex:0 0 auto;
+    }
+
+    .day.sunday .solar{
+      color:var(--cal-sunday);
+      font-weight:var(--sunday-weight);
+    }
+
+    .day.saturday .solar{
+      color:var(--cal-saturday);
+      font-weight:var(--saturday-weight);
     }
 
     .lunar,
@@ -855,6 +879,8 @@
     const STYLE_ITEMS = [
       { key:"month", label:"月份", css:"--cal-month", weight:"--month-weight" },
       { key:"weekday", label:"星期標題", css:"--cal-weekday", weight:"--weekday-weight" },
+      { key:"sunday", label:"星期日", css:"--cal-sunday", weight:"--sunday-weight" },
+      { key:"saturday", label:"星期六", css:"--cal-saturday", weight:"--saturday-weight" },
       { key:"solar", label:"國曆", css:"--cal-solar", weight:"--solar-weight" },
       { key:"lunar", label:"農曆", css:"--cal-lunar", weight:"--lunar-weight" },
       { key:"festival", label:"節慶", css:"--cal-festival", weight:"--festival-weight" },
@@ -876,6 +902,8 @@
         styles: {
           month: { color:"#000000", bold:true },
           weekday: { color:"#000000", bold:true },
+          sunday: { color:"#000000", bold:true },
+          saturday: { color:"#000000", bold:true },
           solar: { color:"#000000", bold:false },
           lunar: { color:"#000000", bold:false },
           festival: { color:"#000000", bold:false },
@@ -1063,6 +1091,8 @@
     function makeDay(day){
       const cell = document.createElement("div");
       cell.className = "day";
+      if (day.weekday === 0) cell.classList.add("sunday");
+      if (day.weekday === 6) cell.classList.add("saturday");
 
       const solar = document.createElement("span");
       solar.className = "solar";
@@ -1117,9 +1147,11 @@
 
       const weekdays = document.createElement("div");
       weekdays.className = "weekdays";
-      WEEKDAYS.forEach(name => {
+      WEEKDAYS.forEach((name, index) => {
         const item = document.createElement("div");
         item.className = "weekday";
+        if (index === 0) item.classList.add("sunday");
+        if (index === 6) item.classList.add("saturday");
         item.textContent = name;
         weekdays.appendChild(item);
       });
