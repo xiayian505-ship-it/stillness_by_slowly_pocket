@@ -44,6 +44,7 @@
       --sunday-weight:700;
       --saturday-weight:700;
       --solar-weight:400;
+      --solar-size-scale:1;
       --lunar-weight:400;
       --festival-weight:400;
       --term-weight:400;
@@ -571,7 +572,7 @@
     .solar{
       color:var(--cal-solar);
       font-weight:var(--solar-weight);
-      font-size:var(--solar-size);
+      font-size:calc(var(--solar-size) * var(--solar-size-scale));
       line-height:1;
       flex:0 0 auto;
     }
@@ -904,7 +905,7 @@
           weekday: { color:"#000000", bold:true },
           sunday: { color:"#000000", bold:true },
           saturday: { color:"#000000", bold:true },
-          solar: { color:"#000000", bold:false },
+          solar: { color:"#000000", bold:false, size:100 },
           lunar: { color:"#000000", bold:false },
           festival: { color:"#000000", bold:false },
           term: { color:"#000000", bold:false },
@@ -1015,6 +1016,12 @@
         rootStyle.setProperty(item.css, style.color);
         rootStyle.setProperty(item.weight, style.bold ? "700" : "400");
       });
+
+      const solarSize = Number(current.styles.solar.size);
+      rootStyle.setProperty(
+        "--solar-size-scale",
+        String(Number.isFinite(solarSize) ? Math.min(160, Math.max(60, solarSize)) / 100 : 1)
+      );
 
       rootStyle.setProperty("--cal-grid", current.styles.grid.color);
 
@@ -1463,6 +1470,36 @@
           boldLabel.append(bold, " 粗體");
           optionRow.appendChild(boldLabel);
           editor.appendChild(optionRow);
+
+          if (item.key === "solar") {
+            const sizeRow = document.createElement("div");
+            sizeRow.className = "sub-panel-row";
+
+            const sizeLine = document.createElement("div");
+            sizeLine.className = "opacity-line";
+
+            const sizeLabel = document.createElement("label");
+            sizeLabel.textContent = "數字大小";
+
+            const size = document.createElement("input");
+            size.type = "range";
+            size.min = "60";
+            size.max = "160";
+            size.step = "5";
+            size.value = String(current.styles.solar.size ?? 100);
+
+            const sizeValue = document.createElement("span");
+            sizeValue.textContent = size.value + "%";
+
+            size.addEventListener("input", () => {
+              sizeValue.textContent = size.value + "%";
+              setVisualValue("solar", { size:Number(size.value) });
+            });
+
+            sizeLine.append(sizeLabel, size, sizeValue);
+            sizeRow.appendChild(sizeLine);
+            editor.appendChild(sizeRow);
+          }
         });
       });
 
