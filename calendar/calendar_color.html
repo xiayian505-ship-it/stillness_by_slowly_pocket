@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar Color</title>
+
+  <!-- 慢慢的倉庫：曆法只呼叫，不在這頁重寫 -->
+  <script src="https://lib.stillnessbyslowly.com/calendar/lunar_data.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/calendar/lunar.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/calendar/lunar_festivals_data.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/calendar/lunar_festivals.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/calendar/solar_festivals_data.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/calendar/solar_festivals.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/calendar/solar_terms_data.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/calendar/solar_terms.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/calendar/calendar.js"></script>
+
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+
+  <style>
+    :root{
+      --ui-bg:#eeeeee;
+      --ui-panel:#ffffff;
+      --ui-text:#222222;
+      --ui-muted:#6f6f6f;
+      --ui-line:#d3d3d3;
+
+      --cal-month:#000000;
+      --cal-weekday:#000000;
+      --cal-solar:#000000;
+      --cal-lunar:#000000;
+      --cal-festival:#000000;
+      --cal-term:#000000;
+      --cal-grid:#999999;
+
+      --cell-bg-rgb:255,255,255;
+      --cell-bg-alpha:.50;
+
+      --month-weight:700;
+      --weekday-weight:700;
+      --solar-weight:400;
+      --lunar-weight:400;
+      --festival-weight:400;
+      --term-weight:400;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:Arial, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      color:var(--ui-text);
+      background:var(--ui-bg);
+    }
+
+    button,
+    input{
+      font:inherit;
+    }
+
+    button{
+      cursor:pointer;
+    }
+
+    .tool{
+      width:min(1180px, calc(100% - 24px));
+      margin:16px auto 0;
+      background:var(--ui-panel);
+      border:1px solid var(--ui-line);
+      padding:12px;
+    }
+
+    .generator-row,
+    .generator-date-row,
+    .action-row,
+    .display-row{
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .generator-row{
+      padding-bottom:8px;
+    }
+
+    .generator-date-row{
+      padding:2px 0 10px;
+      border-bottom:1px solid var(--ui-line);
+    }
+
+    .generator-main-row{
+      align-items:center;
+    }
+
+    .generator-title{
+      font-weight:700;
+      margin-right:4px;
+    }
+
+    .sep{
+      color:#aaa;
+      user-select:none;
+    }
+
+    .arrow-btn,
+    .action-btn,
+    .toggle-head,
+    .sub-head{
+      border:1px solid #999;
+      background:#fff;
+      color:#222;
+      min-height:32px;
+      padding:5px 10px;
+    }
+
+    .arrow-btn{
+      min-width:32px;
+      padding:5px 8px;
+    }
+
+    .inline-field{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+    }
+
+    .inline-field label{
+      color:#555;
+      font-size:13px;
+    }
+
+    .inline-field input[type="number"]{
+      width:78px;
+      height:32px;
+      border:1px solid #999;
+      padding:4px 7px;
+      background:#fff;
+    }
+
+    #yearInput{
+      width:86px;
+      text-align:center;
+    }
+
+    #monthInput,
+    #countInput{
+      width:64px;
+      text-align:center;
+    }
+
+    .count-field{
+      gap:6px;
+    }
+
+    .generator-date-row{
+      justify-content:flex-start;
+    }
+
+    .date-field{
+      flex:0 0 auto;
+    }
+
+    .action-row{
+      margin-top:10px;
+    }
+
+    .action-btn.primary{
+      border-color:#555;
+      font-weight:700;
+    }
+
+    .apply-state{
+      margin-left:auto;
+      font-size:13px;
+      color:var(--ui-muted);
+    }
+
+    .apply-state.dirty{
+      color:#9a3b35;
+      font-weight:700;
+    }
+
+    .display-row{
+      margin-top:10px;
+      padding:9px 0;
+      border-top:1px solid var(--ui-line);
+      border-bottom:1px solid var(--ui-line);
+      font-size:13px;
+    }
+
+    .display-label{
+      font-weight:700;
+      margin-right:3px;
+    }
+
+    .display-row label{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+    }
+
+    .visual{
+      margin-top:10px;
+    }
+
+    .toggle-head{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-weight:700;
+    }
+
+    .toggle-head .plus,
+    .sub-head .plus{
+      display:inline-block;
+      min-width:1em;
+      text-align:center;
+    }
+
+    .visual-body{
+      display:none;
+      margin-top:8px;
+      padding-top:8px;
+      border-top:1px solid var(--ui-line);
+    }
+
+    .visual.open .visual-body{
+      display:block;
+    }
+
+    .visual-tabs{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:6px;
+    }
+
+    .sub-item{
+      min-width:0;
+    }
+
+    .sub-head{
+      width:100%;
+      min-height:38px;
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:6px;
+      text-align:left;
+      padding:6px 8px;
+      white-space:nowrap;
+    }
+
+    .sub-head.active{
+      background:#eeeeee;
+      border-color:#666;
+      font-weight:700;
+    }
+
+    .visual-editor{
+      display:none;
+      margin-top:8px;
+      background:#fff;
+      border:1px solid #aaa;
+      padding:10px;
+    }
+
+    .visual-editor.open{
+      display:block;
+    }
+
+    .sub-panel-title{
+      font-weight:700;
+      font-size:13px;
+      margin-bottom:8px;
+      padding-bottom:6px;
+      border-bottom:1px solid var(--ui-line);
+    }
+
+    .sub-panel-row{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:8px;
+    }
+
+    .sub-panel-row + .sub-panel-row{
+      margin-top:8px;
+    }
+
+    .bold-control{
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+    }
+
+    .hex{
+      width:86px;
+      height:30px;
+      border:1px solid #999;
+      padding:4px 6px;
+      font-family:Consolas, monospace;
+      text-transform:uppercase;
+    }
+
+    .color-mode{
+      display:inline-flex;
+      border:1px solid #999;
+    }
+
+    .color-mode button{
+      min-height:30px;
+      padding:4px 9px;
+      border:0;
+      border-right:1px solid #999;
+      background:#fff;
+    }
+
+    .color-mode button:last-child{
+      border-right:0;
+    }
+
+    .color-mode button.active{
+      background:#e9e9e9;
+      font-weight:700;
+    }
+
+    .native-color{
+      width:52px;
+      height:30px;
+      padding:1px 2px;
+      border:1px solid #999;
+      background:#fff;
+    }
+
+    .quick-colors{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      align-items:center;
+    }
+
+    .quick-color{
+      width:32px;
+      height:32px;
+      min-height:32px;
+      padding:0;
+      border:1px solid #888;
+      background:var(--quick-color);
+    }
+
+    .quick-color[data-color="#FFFFFF"]{
+      border-color:#777;
+    }
+
+    .custom-color-label{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:32px;
+      padding:0 8px;
+      border:1px solid #999;
+      background:#fff;
+      cursor:pointer;
+    }
+
+    .custom-color-label .native-color{
+      width:26px;
+      height:26px;
+      border:0;
+      padding:0;
+    }
+
+    .color-input-wrap{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .color-input-wrap[hidden]{
+      display:none !important;
+    }
+
+    .opacity-line{
+      width:100%;
+      display:grid;
+      grid-template-columns:1fr 42px;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+    }
+
+    .opacity-line input{
+      width:100%;
+    }
+
+    .status{
+      min-height:18px;
+      margin-top:8px;
+      font-size:13px;
+      color:#9a3b35;
+    }
+
+    /* ===== 列印預覽 ===== */
+
+    .preview-wrap{
+      padding:18px 8px 40px;
+      overflow:hidden;
+    }
+
+    .print-pages{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      align-items:center;
+      width:100%;
+    }
+
+    .page-scale{
+      position:relative;
+      width:210mm;
+      height:297mm;
+      flex:0 0 auto;
+      overflow:hidden;
+    }
+
+    .a4-page{
+      width:210mm;
+      height:297mm;
+      transform-origin:top left;
+      background:#fff;
+      box-shadow:0 5px 24px rgba(0,0,0,.15);
+      padding:12mm; /* 古董印表機和平條約：永遠保留 */
+      overflow:hidden;
+      page-break-after:always;
+      break-after:page;
+    }
+
+    .a4-page:last-child{
+      page-break-after:auto;
+      break-after:auto;
+    }
+
+    .calendar-sheet{
+      width:100%;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      justify-content:flex-start;
+    }
+
+    .calendar-row{
+      display:grid;
+      grid-template-columns:repeat(var(--cols), minmax(0,1fr));
+      column-gap:var(--col-gap);
+      min-height:0;
+      height:calc((100% - var(--separator-total, 0mm)) / var(--row-count) * var(--month-scale));
+      flex:0 0 auto;
+      align-items:stretch;
+    }
+
+    .row-separator{
+      flex:0 0 5mm;
+      position:relative;
+    }
+
+    .row-separator::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      top:50%;
+      border-top:0.3mm solid var(--cal-grid);
+      transform:translateY(-50%);
+    }
+
+    .month{
+      min-width:0;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .month.empty{
+      visibility:hidden;
+    }
+
+    .month-title{
+      flex:0 0 auto;
+      text-align:center;
+      color:var(--cal-month);
+      font-weight:var(--month-weight);
+      font-size:var(--month-title-size);
+      line-height:1.15;
+      padding:0 0 var(--title-gap);
+    }
+
+    .weekdays,
+    .days{
+      display:grid;
+      grid-template-columns:repeat(7,minmax(0,1fr));
+    }
+
+    .weekdays{
+      flex:0 0 auto;
+    }
+
+    .weekday{
+      min-width:0;
+      text-align:center;
+      color:var(--cal-weekday);
+      font-weight:var(--weekday-weight);
+      font-size:var(--weekday-size);
+      line-height:1;
+      padding:var(--weekday-pad) 0;
+      border-top:0.25mm solid var(--cal-grid);
+      border-left:0.25mm solid var(--cal-grid);
+    }
+
+    .weekday:last-child{
+      border-right:0.25mm solid var(--cal-grid);
+    }
+
+    .days{
+      flex:1 1 auto;
+      min-height:0;
+      grid-template-rows:repeat(6,minmax(0,1fr));
+      border-right:0.25mm solid var(--cal-grid);
+      border-bottom:0.25mm solid var(--cal-grid);
+    }
+
+    .day,
+    .blank-day{
+      min-width:0;
+      min-height:0;
+      overflow:hidden;
+      border-top:0.25mm solid var(--cal-grid);
+      border-left:0.25mm solid var(--cal-grid);
+      background:rgba(var(--cell-bg-rgb), var(--cell-bg-alpha));
+    }
+
+    .blank-day{
+      background:transparent;
+    }
+
+    .day{
+      padding:var(--day-pad);
+      display:flex;
+      flex-direction:column;
+      gap:var(--day-gap);
+    }
+
+    .solar{
+      color:var(--cal-solar);
+      font-weight:var(--solar-weight);
+      font-size:var(--solar-size);
+      line-height:1;
+      flex:0 0 auto;
+    }
+
+    .lunar,
+    .festival,
+    .term{
+      display:block;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      line-height:1.05;
+      font-size:var(--detail-size);
+    }
+
+    .lunar{
+      color:var(--cal-lunar);
+      font-weight:var(--lunar-weight);
+    }
+
+    .festival{
+      color:var(--cal-festival);
+      font-weight:var(--festival-weight);
+    }
+
+    .term{
+      color:var(--cal-term);
+      font-weight:var(--term-weight);
+    }
+
+    /* 資訊越少：保持最多兩欄，整體等比例縮小，不改成三欄。 */
+    .density-3{
+      --month-title-size:12pt;
+      --weekday-size:6.5pt;
+      --solar-size:7.7pt;
+      --detail-size:5.3pt;
+      --weekday-pad:1.3mm;
+      --title-gap:2.2mm;
+      --day-pad:1mm 1.1mm .7mm;
+      --day-gap:.45mm;
+      --col-gap:6mm;
+      --month-scale:1;
+    }
+
+    .density-2{
+      --month-title-size:11pt;
+      --weekday-size:6pt;
+      --solar-size:7.1pt;
+      --detail-size:5pt;
+      --weekday-pad:1.05mm;
+      --title-gap:1.9mm;
+      --day-pad:.85mm .95mm .6mm;
+      --day-gap:.35mm;
+      --col-gap:6mm;
+      --month-scale:.88;
+    }
+
+    .density-1{
+      --month-title-size:10pt;
+      --weekday-size:5.6pt;
+      --solar-size:6.7pt;
+      --detail-size:4.8pt;
+      --weekday-pad:.9mm;
+      --title-gap:1.6mm;
+      --day-pad:.72mm .8mm .5mm;
+      --day-gap:.25mm;
+      --col-gap:6mm;
+      --month-scale:.78;
+    }
+
+    .density-0{
+      --month-title-size:9.2pt;
+      --weekday-size:5.2pt;
+      --solar-size:6.2pt;
+      --detail-size:4.6pt;
+      --weekday-pad:.8mm;
+      --title-gap:1.4mm;
+      --day-pad:.6mm .7mm .45mm;
+      --day-gap:.2mm;
+      --col-gap:6mm;
+      --month-scale:.68;
+    }
+
+    .preview-flash{
+      animation:previewFlash .6s ease;
+    }
+
+    @keyframes previewFlash{
+      0%{ outline:3px solid rgba(0,0,0,.18); }
+      100%{ outline:0 solid transparent; }
+    }
+
+
+    @media (max-width: 768px){
+      .tool{
+        width:calc(100% - 16px);
+        margin-top:8px;
+        padding:10px;
+      }
+
+      .generator-main-row{
+        align-items:center;
+        flex-wrap:nowrap;
+      }
+
+      .generator-main-row .generator-title,
+      .generator-main-row .sep{
+        flex:0 0 auto;
+      }
+
+      .generator-main-row .count-field{
+        flex:1 1 auto;
+        min-width:0;
+      }
+
+      .generator-date-row{
+        display:grid;
+        grid-template-columns:auto minmax(0,1fr) minmax(0,.7fr) auto;
+        gap:7px;
+        align-items:center;
+      }
+
+      .generator-date-row .inline-field{
+        min-width:0;
+      }
+
+      .generator-date-row input[type="number"]{
+        width:100%;
+      }
+
+      .generator-date-row .arrow-btn{
+        width:48px;
+      }
+
+      .action-row{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .action-btn{
+        width:100%;
+      }
+
+      .display-row{
+        align-items:flex-start;
+      }
+
+      .display-label{
+        width:100%;
+      }
+
+      .visual-tabs{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .sub-head{
+        width:100%;
+      }
+
+      .preview-wrap{
+        padding:12px 8px 28px;
+      }
+    }
+
+    @media (max-width: 820px){
+      .tool{
+        width:calc(100% - 16px);
+      }
+
+      .apply-state{
+        width:100%;
+        margin-left:0;
+      }
+
+    }
+
+    @page{
+      size:A4 portrait;
+      margin:0;
+    }
+
+    @media print{
+      html,
+      body{
+        margin:0;
+        padding:0;
+        background:#fff;
+      }
+
+      .tool{
+        display:none !important;
+      }
+
+      .preview-wrap{
+        padding:0;
+        overflow:visible;
+      }
+
+      .print-pages{
+        display:block;
+      }
+
+      .page-scale{
+        width:210mm !important;
+        height:297mm !important;
+        overflow:visible !important;
+        margin:0 !important;
+      }
+
+      .a4-page{
+        transform:none !important;
+        width:210mm;
+        height:297mm;
+        margin:0;
+        padding:12mm;
+        box-shadow:none;
+      }
+
+      *{
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <section class="tool">
+    <div class="generator-row generator-main-row">
+      <span class="generator-title">月曆生成</span>
+      <span class="sep">|</span>
+
+      <div class="inline-field count-field">
+        <label for="countInput">生成</label>
+        <input id="countInput" type="number" min="1" max="12" inputmode="numeric" aria-label="生成月數">
+        <span>個月</span>
+      </div>
+    </div>
+
+    <div class="generator-date-row">
+      <button type="button" class="arrow-btn" id="prevMonth" aria-label="上一月">←</button>
+
+      <div class="inline-field date-field">
+        <input id="yearInput" type="number" min="1901" max="2100" inputmode="numeric" aria-label="年份">
+        <span>年</span>
+      </div>
+
+      <div class="inline-field date-field">
+        <input id="monthInput" type="number" min="1" max="12" inputmode="numeric" aria-label="月份">
+        <span>月</span>
+      </div>
+
+      <button type="button" class="arrow-btn" id="nextMonth" aria-label="下一月">→</button>
+    </div>
+
+    <div class="action-row">
+      <button type="button" class="action-btn primary" id="printBtn">列印</button>
+      <button type="button" class="action-btn" id="previewBtn">預覽</button>
+      <button type="button" class="action-btn" id="defaultBtn">預設</button>
+      <button type="button" class="action-btn" id="applyBtn">套用</button>
+      <span class="apply-state" id="applyState">尚未套用</span>
+    </div>
+
+    <div class="display-row">
+      <span class="display-label">顯示內容</span>
+      <label><input type="checkbox" id="showLunar"> 農曆</label>
+      <label><input type="checkbox" id="showFestivals"> 節慶</label>
+      <label><input type="checkbox" id="showSolarTerms"> 節氣</label>
+    </div>
+
+    <div class="visual" id="visualSection">
+      <button type="button" class="toggle-head" id="visualToggle">
+        自定義視覺 <span class="plus">＋</span>
+      </button>
+      <div class="visual-body">
+        <div class="visual-tabs" id="visualTabs"></div>
+        <div class="visual-editor" id="visualEditor"></div>
+      </div>
+    </div>
+
+    <div class="status" id="status"></div>
+  </section>
+
+  <div class="preview-wrap" id="previewArea">
+    <div class="print-pages" id="printPages"></div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "sbs_calendar_color_settings_v1";
+    const WEEKDAYS = ["日","一","二","三","四","五","六"];
+
+    const STYLE_ITEMS = [
+      { key:"month", label:"月份", css:"--cal-month", weight:"--month-weight" },
+      { key:"weekday", label:"星期標題", css:"--cal-weekday", weight:"--weekday-weight" },
+      { key:"solar", label:"國曆", css:"--cal-solar", weight:"--solar-weight" },
+      { key:"lunar", label:"農曆", css:"--cal-lunar", weight:"--lunar-weight" },
+      { key:"festival", label:"節慶", css:"--cal-festival", weight:"--festival-weight" },
+      { key:"term", label:"節氣", css:"--cal-term", weight:"--term-weight" }
+    ];
+
+    const now = new Date();
+
+    function makeDefaultSettings(){
+      return {
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+        count: 4,
+        show: {
+          lunar: true,
+          festivals: true,
+          solarTerms: true
+        },
+        styles: {
+          month: { color:"#000000", bold:true },
+          weekday: { color:"#000000", bold:true },
+          solar: { color:"#000000", bold:false },
+          lunar: { color:"#000000", bold:false },
+          festival: { color:"#000000", bold:false },
+          term: { color:"#000000", bold:false },
+          grid: { color:"#999999" },
+          background: { color:"#FFFFFF", alpha:50 }
+        }
+      };
+    }
+
+    let current = makeDefaultSettings();
+    let applied = null;
+
+    const rootStyle = document.documentElement.style;
+    const yearInput = document.getElementById("yearInput");
+    const monthInput = document.getElementById("monthInput");
+    const countInput = document.getElementById("countInput");
+    const showLunar = document.getElementById("showLunar");
+    const showFestivals = document.getElementById("showFestivals");
+    const showSolarTerms = document.getElementById("showSolarTerms");
+    const statusEl = document.getElementById("status");
+    const applyState = document.getElementById("applyState");
+    const printPages = document.getElementById("printPages");
+
+    function deepClone(value){
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function normalizeHex(value){
+      let hex = String(value || "").trim().toUpperCase();
+      if (!hex.startsWith("#")) hex = "#" + hex;
+
+      if (/^#[0-9A-F]{3}$/.test(hex)) {
+        hex = "#" +
+          hex[1] + hex[1] +
+          hex[2] + hex[2] +
+          hex[3] + hex[3];
+      }
+
+      return /^#[0-9A-F]{6}$/.test(hex) ? hex : null;
+    }
+
+    function hexToRgb(hex){
+      const value = normalizeHex(hex);
+      if (!value) return [255,255,255];
+      return [
+        parseInt(value.slice(1,3),16),
+        parseInt(value.slice(3,5),16),
+        parseInt(value.slice(5,7),16)
+      ];
+    }
+
+    function settingsEqual(a, b){
+      return JSON.stringify(a) === JSON.stringify(b);
+    }
+
+    function loadSaved(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+
+        const saved = JSON.parse(raw);
+        if (saved && saved.current) {
+          current = Object.assign(makeDefaultSettings(), saved.current);
+          current.show = Object.assign(makeDefaultSettings().show, saved.current.show || {});
+          current.styles = Object.assign(makeDefaultSettings().styles, saved.current.styles || {});
+        }
+
+        applied = saved && saved.applied ? saved.applied : null;
+      }catch(error){
+        console.warn("讀取設定失敗，改用預設值。", error);
+      }
+    }
+
+    function saveState(){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          current,
+          applied
+        }));
+      }catch(error){
+        console.warn("儲存設定失敗。", error);
+      }
+    }
+
+    function markDirty(){
+      saveState();
+      updateApplyState();
+    }
+
+    function updateApplyState(){
+      const dirty = !applied || !settingsEqual(current, applied);
+      applyState.textContent = dirty ? "尚未套用" : "已套用，可列印";
+      applyState.classList.toggle("dirty", dirty);
+    }
+
+    function syncInputsFromCurrent(){
+      yearInput.value = current.year;
+      monthInput.value = current.month;
+      countInput.value = current.count;
+      showLunar.checked = current.show.lunar;
+      showFestivals.checked = current.show.festivals;
+      showSolarTerms.checked = current.show.solarTerms;
+    }
+
+    function applyStyles(){
+      STYLE_ITEMS.forEach(item => {
+        const style = current.styles[item.key];
+        rootStyle.setProperty(item.css, style.color);
+        rootStyle.setProperty(item.weight, style.bold ? "700" : "400");
+      });
+
+      rootStyle.setProperty("--cal-grid", current.styles.grid.color);
+
+      const rgb = hexToRgb(current.styles.background.color);
+      rootStyle.setProperty("--cell-bg-rgb", rgb.join(","));
+      rootStyle.setProperty("--cell-bg-alpha", String(current.styles.background.alpha / 100));
+    }
+
+    function monthOffset(year, month, offset){
+      const index = (year * 12 + (month - 1)) + offset;
+      return {
+        year: Math.floor(index / 12),
+        month: ((index % 12) + 12) % 12 + 1
+      };
+    }
+
+    function validateGeneration(){
+      const year = Number(yearInput.value);
+      const month = Number(monthInput.value);
+      const count = Number(countInput.value);
+
+      if (!Number.isInteger(year) || year < 1901 || year > 2100) {
+        throw new RangeError("年份僅支援 1901–2100。");
+      }
+
+      if (!Number.isInteger(month) || month < 1 || month > 12) {
+        throw new RangeError("月份請輸入 1–12。");
+      }
+
+      if (!Number.isInteger(count) || count < 1 || count > 12) {
+        throw new RangeError("一次生成月數請輸入 1–12。");
+      }
+
+      const end = monthOffset(year, month, count - 1);
+      if (end.year > 2100) {
+        throw new RangeError("生成範圍超出 2100 年。");
+      }
+
+      return { year, month, count };
+    }
+
+    function readGenerationInputs(){
+      const next = validateGeneration();
+      current.year = next.year;
+      current.month = next.month;
+      current.count = next.count;
+    }
+
+    function lunarText(lunar){
+      if (!lunar) return "";
+      return lunar.day === 1 ? lunar.monthName : lunar.dayName;
+    }
+
+    function festivalText(date){
+      const names = [];
+
+      if (window.SolarFestivals && typeof SolarFestivals.getNames === "function") {
+        names.push(...SolarFestivals.getNames(date));
+      }
+
+      if (window.LunarFestivals && typeof LunarFestivals.getNames === "function") {
+        names.push(...LunarFestivals.getNames(date));
+      }
+
+      return [...new Set(names)].join("、");
+    }
+
+    function solarTermText(term){
+      if (!term) return "";
+      const list = Array.isArray(term) ? term : [term];
+      return list.map(item => item && item.name).filter(Boolean).join("、");
+    }
+
+    function makeDay(day){
+      const cell = document.createElement("div");
+      cell.className = "day";
+
+      const solar = document.createElement("span");
+      solar.className = "solar";
+      solar.textContent = day.day;
+      cell.appendChild(solar);
+
+      if (current.show.lunar) {
+        const text = lunarText(day.lunar);
+        if (text) {
+          const el = document.createElement("span");
+          el.className = "lunar";
+          el.textContent = text;
+          el.title = text;
+          cell.appendChild(el);
+        }
+      }
+
+      if (current.show.festivals) {
+        const text = festivalText(day.date);
+        if (text) {
+          const el = document.createElement("span");
+          el.className = "festival";
+          el.textContent = text;
+          el.title = text;
+          cell.appendChild(el);
+        }
+      }
+
+      if (current.show.solarTerms) {
+        const text = solarTermText(day.solarTerm);
+        if (text) {
+          const el = document.createElement("span");
+          el.className = "term";
+          el.textContent = text;
+          el.title = text;
+          cell.appendChild(el);
+        }
+      }
+
+      return cell;
+    }
+
+    function renderMonth(year, month){
+      const data = Calendar.getMonth(year, month);
+
+      const section = document.createElement("section");
+      section.className = "month";
+
+      const title = document.createElement("div");
+      title.className = "month-title";
+      title.textContent = year + " 年 " + month + " 月";
+
+      const weekdays = document.createElement("div");
+      weekdays.className = "weekdays";
+      WEEKDAYS.forEach(name => {
+        const item = document.createElement("div");
+        item.className = "weekday";
+        item.textContent = name;
+        weekdays.appendChild(item);
+      });
+
+      const days = document.createElement("div");
+      days.className = "days";
+
+      const slots = Array(42).fill(null);
+      data.days.forEach((day, index) => {
+        slots[data.firstWeekday + index] = day;
+      });
+
+      slots.forEach(day => {
+        if (!day) {
+          const blank = document.createElement("div");
+          blank.className = "blank-day";
+          days.appendChild(blank);
+        } else {
+          days.appendChild(makeDay(day));
+        }
+      });
+
+      section.append(title, weekdays, days);
+      return section;
+    }
+
+    function infoCount(){
+      return Number(current.show.lunar) +
+        Number(current.show.festivals) +
+        Number(current.show.solarTerms);
+    }
+
+    function layoutForDensity(density){
+      /* 永遠最多兩欄。資訊少時縮小月曆，不增加第三欄。 */
+      return { capacity:4, cols:2 };
+    }
+
+    function makeA4Page(months, density, cols){
+      const page = document.createElement("section");
+      page.className = "a4-page density-" + density;
+
+      const sheet = document.createElement("div");
+      sheet.className = "calendar-sheet";
+
+      const rowCount = Math.ceil(months.length / cols);
+      sheet.style.setProperty("--row-count", String(rowCount));
+      sheet.style.setProperty("--separator-total", rowCount > 1 ? ((rowCount - 1) * 5) + "mm" : "0mm");
+
+      for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+        const row = document.createElement("div");
+        row.className = "calendar-row";
+        row.style.setProperty("--cols", String(cols));
+
+        for (let col = 0; col < cols; col++) {
+          const monthData = months[rowIndex * cols + col];
+
+          if (monthData) {
+            row.appendChild(renderMonth(monthData.year, monthData.month));
+          } else {
+            const empty = document.createElement("section");
+            empty.className = "month empty";
+            row.appendChild(empty);
+          }
+        }
+
+        sheet.appendChild(row);
+
+        if (rowIndex < rowCount - 1) {
+          const separator = document.createElement("div");
+          separator.className = "row-separator";
+          sheet.appendChild(separator);
+        }
+      }
+
+      page.appendChild(sheet);
+
+      const scale = document.createElement("div");
+      scale.className = "page-scale";
+      scale.appendChild(page);
+      return scale;
+    }
+
+    function render(){
+      statusEl.textContent = "";
+
+      try{
+        if (!window.Calendar) {
+          throw new Error("Calendar 模組尚未載入。請確認網路與慢慢的倉庫連線。");
+        }
+
+        readGenerationInputs();
+        applyStyles();
+
+        const density = infoCount();
+        const layout = layoutForDensity(density);
+
+        const allMonths = [];
+        for (let i = 0; i < current.count; i++) {
+          allMonths.push(monthOffset(current.year, current.month, i));
+        }
+
+        printPages.replaceChildren();
+
+        for (let start = 0; start < allMonths.length; start += layout.capacity) {
+          const chunk = allMonths.slice(start, start + layout.capacity);
+
+          let cols = 2;
+          if (chunk.length === 1) cols = 1;
+
+          printPages.appendChild(makeA4Page(chunk, density, cols));
+        }
+
+        fitPreviewPages();
+        markDirty();
+      }catch(error){
+        statusEl.textContent = error && error.message ? error.message : String(error);
+      }
+    }
+
+    function moveMonth(delta){
+      try{
+        readGenerationInputs();
+        const next = monthOffset(current.year, current.month, delta);
+        current.year = next.year;
+        current.month = next.month;
+        yearInput.value = current.year;
+        monthInput.value = current.month;
+        render();
+      }catch(error){
+        statusEl.textContent = error.message || String(error);
+      }
+    }
+
+    function setVisualValue(key, value){
+      current.styles[key] = Object.assign({}, current.styles[key], value);
+      applyStyles();
+      markDirty();
+    }
+
+    function makeColorEditor({ label, value, onChange }){
+      const row = document.createElement("div");
+      row.className = "sub-panel-row";
+
+      const mode = document.createElement("div");
+      mode.className = "color-mode";
+
+      const hexBtn = document.createElement("button");
+      hexBtn.type = "button";
+      hexBtn.textContent = "色碼";
+      hexBtn.className = "active";
+
+      const colorBtn = document.createElement("button");
+      colorBtn.type = "button";
+      colorBtn.textContent = "顏色";
+
+      mode.append(hexBtn, colorBtn);
+
+      const hexWrap = document.createElement("div");
+      hexWrap.className = "color-input-wrap";
+
+      const hex = document.createElement("input");
+      hex.type = "text";
+      hex.className = "hex";
+      hex.maxLength = 7;
+      hex.value = value.replace("#","");
+      hex.setAttribute("aria-label", label + "色碼");
+      hexWrap.appendChild(hex);
+
+      const colorWrap = document.createElement("div");
+      colorWrap.className = "color-input-wrap";
+      colorWrap.hidden = true;
+
+      const quickColors = document.createElement("div");
+      quickColors.className = "quick-colors";
+
+      const presets = [
+        ["紅", "#FF0000"],
+        ["白", "#FFFFFF"],
+        ["黑", "#000000"],
+        ["灰", "#808080"],
+        ["咖啡", "#795548"],
+        ["藍", "#0000FF"]
+      ];
+
+      const color = document.createElement("input");
+      color.type = "color";
+      color.className = "native-color";
+      color.value = value;
+      color.setAttribute("aria-label", label + "自訂顏色");
+
+      function apply(nextValue){
+        const normalized = normalizeHex(nextValue);
+        if (!normalized) {
+          hex.setCustomValidity("請輸入 6 位色碼，例如 FF0000");
+          hex.reportValidity();
+          return false;
+        }
+
+        hex.setCustomValidity("");
+        hex.value = normalized.slice(1);
+        color.value = normalized;
+        onChange(normalized);
+        return true;
+      }
+
+      presets.forEach(([name, preset]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quick-color";
+        button.style.setProperty("--quick-color", preset);
+        button.dataset.color = preset;
+        button.title = name;
+        button.setAttribute("aria-label", name);
+        button.addEventListener("click", () => apply(preset));
+        quickColors.appendChild(button);
+      });
+
+      const customLabel = document.createElement("label");
+      customLabel.className = "custom-color-label";
+      customLabel.title = "自訂會開啟手機／瀏覽器原生選色器；裡面的預設色由系統控制。";
+      customLabel.append("自訂", color);
+      quickColors.appendChild(customLabel);
+      colorWrap.appendChild(quickColors);
+
+      function setMode(next){
+        const useHex = next === "hex";
+        hexBtn.classList.toggle("active", useHex);
+        colorBtn.classList.toggle("active", !useHex);
+        hexWrap.hidden = !useHex;
+        colorWrap.hidden = useHex;
+      }
+
+      hexBtn.addEventListener("click", () => setMode("hex"));
+      colorBtn.addEventListener("click", () => setMode("color"));
+      hex.addEventListener("change", () => apply(hex.value));
+      color.addEventListener("input", () => apply(color.value));
+
+      row.append(mode, hexWrap, colorWrap);
+      return row;
+    }
+
+    let activeVisualKey = null;
+
+    function updateVisualButtonState(){
+      document.querySelectorAll(".sub-head[data-visual-key]").forEach(button => {
+        const active = button.dataset.visualKey === activeVisualKey;
+        button.classList.toggle("active", active);
+        const plus = button.querySelector(".plus");
+        if (plus) plus.textContent = active ? "－" : "＋";
+      });
+    }
+
+    function openVisualEditor(key, label, buildContent){
+      const editor = document.getElementById("visualEditor");
+
+      if (activeVisualKey === key && editor.classList.contains("open")) {
+        activeVisualKey = null;
+        editor.classList.remove("open");
+        editor.replaceChildren();
+        updateVisualButtonState();
+        return;
+      }
+
+      activeVisualKey = key;
+      editor.replaceChildren();
+
+      const title = document.createElement("div");
+      title.className = "sub-panel-title";
+      title.textContent = label + "設定";
+      editor.appendChild(title);
+
+      buildContent(editor);
+
+      editor.classList.add("open");
+      updateVisualButtonState();
+    }
+
+    function makeTextStyleItem(item){
+      const wrapper = document.createElement("div");
+      wrapper.className = "sub-item";
+
+      const head = document.createElement("button");
+      head.type = "button";
+      head.className = "sub-head";
+      head.dataset.visualKey = item.key;
+      head.innerHTML = '<span>' + item.label + '</span><span class="plus">＋</span>';
+
+      head.addEventListener("click", () => {
+        openVisualEditor(item.key, item.label, editor => {
+          editor.appendChild(makeColorEditor({
+            label:item.label,
+            value:current.styles[item.key].color,
+            onChange:color => setVisualValue(item.key, { color })
+          }));
+
+          const optionRow = document.createElement("div");
+          optionRow.className = "sub-panel-row";
+
+          const boldLabel = document.createElement("label");
+          boldLabel.className = "bold-control";
+
+          const bold = document.createElement("input");
+          bold.type = "checkbox";
+          bold.checked = !!current.styles[item.key].bold;
+          bold.addEventListener("change", () => {
+            setVisualValue(item.key, { bold:bold.checked });
+          });
+
+          boldLabel.append(bold, " 粗體");
+          optionRow.appendChild(boldLabel);
+          editor.appendChild(optionRow);
+        });
+      });
+
+      wrapper.appendChild(head);
+      return wrapper;
+    }
+
+    function makeGridItem(){
+      const wrapper = document.createElement("div");
+      wrapper.className = "sub-item";
+
+      const head = document.createElement("button");
+      head.type = "button";
+      head.className = "sub-head";
+      head.dataset.visualKey = "grid";
+      head.innerHTML = '<span>格線</span><span class="plus">＋</span>';
+
+      head.addEventListener("click", () => {
+        openVisualEditor("grid", "格線", editor => {
+          editor.appendChild(makeColorEditor({
+            label:"格線",
+            value:current.styles.grid.color,
+            onChange:color => setVisualValue("grid", { color })
+          }));
+        });
+      });
+
+      wrapper.appendChild(head);
+      return wrapper;
+    }
+
+    function makeBackgroundItem(){
+      const wrapper = document.createElement("div");
+      wrapper.className = "sub-item";
+
+      const head = document.createElement("button");
+      head.type = "button";
+      head.className = "sub-head";
+      head.dataset.visualKey = "background";
+      head.innerHTML = '<span>格子背景</span><span class="plus">＋</span>';
+
+      head.addEventListener("click", () => {
+        openVisualEditor("background", "格子背景", editor => {
+          editor.appendChild(makeColorEditor({
+            label:"格子背景",
+            value:current.styles.background.color,
+            onChange:color => setVisualValue("background", { color })
+          }));
+
+          const opacityRow = document.createElement("div");
+          opacityRow.className = "sub-panel-row";
+
+          const opacityLine = document.createElement("div");
+          opacityLine.className = "opacity-line";
+
+          const slider = document.createElement("input");
+          slider.type = "range";
+          slider.min = "0";
+          slider.max = "100";
+          slider.step = "1";
+          slider.value = String(current.styles.background.alpha);
+
+          const value = document.createElement("span");
+          value.textContent = slider.value + "%";
+
+          slider.addEventListener("input", () => {
+            value.textContent = slider.value + "%";
+            setVisualValue("background", { alpha:Number(slider.value) });
+          });
+
+          opacityLine.append(slider, value);
+          opacityRow.appendChild(opacityLine);
+          editor.appendChild(opacityRow);
+        });
+      });
+
+      wrapper.appendChild(head);
+      return wrapper;
+    }
+
+    function buildVisualControls(){
+      const tabs = document.getElementById("visualTabs");
+      const editor = document.getElementById("visualEditor");
+
+      activeVisualKey = null;
+      tabs.replaceChildren();
+      editor.replaceChildren();
+      editor.classList.remove("open");
+
+      STYLE_ITEMS.forEach(item => {
+        tabs.appendChild(makeTextStyleItem(item));
+      });
+
+      tabs.appendChild(makeGridItem());
+      tabs.appendChild(makeBackgroundItem());
+    }
+
+
+    function fitPreviewPages(){
+      const wrap = document.getElementById("previewArea");
+      if (!wrap) return;
+
+      const available = Math.max(0, wrap.clientWidth - 16);
+      const pages = document.querySelectorAll(".page-scale");
+
+      pages.forEach(stage => {
+        const page = stage.querySelector(".a4-page");
+        if (!page) return;
+
+        /*
+         * 手機只縮「A4 紙張本體」。
+         * 外層 stage 改成縮放後的實際佔位尺寸，
+         * 避免 transform 把後面的內容／頁面高度一起劫持。
+         */
+        page.style.transform = "none";
+        stage.style.width = "210mm";
+        stage.style.height = "297mm";
+
+        const naturalWidth = page.offsetWidth;
+        const naturalHeight = page.offsetHeight;
+        if (!naturalWidth || !naturalHeight) return;
+
+        const ratio = Math.min(1, available / naturalWidth);
+
+        page.style.transform = "scale(" + ratio + ")";
+        stage.style.width = (naturalWidth * ratio) + "px";
+        stage.style.height = (naturalHeight * ratio) + "px";
+      });
+    }
+
+    function resetVisualToDefault(){
+      const defaults = makeDefaultSettings();
+
+      current.show = deepClone(defaults.show);
+      current.styles = deepClone(defaults.styles);
+
+      showLunar.checked = current.show.lunar;
+      showFestivals.checked = current.show.festivals;
+      showSolarTerms.checked = current.show.solarTerms;
+
+      buildVisualControls();
+      render();
+    }
+
+    function applyCurrent(){
+      try{
+        readGenerationInputs();
+        applied = deepClone(current);
+        saveState();
+        updateApplyState();
+        statusEl.textContent = "已套用目前設定。";
+      }catch(error){
+        statusEl.textContent = error.message || String(error);
+      }
+    }
+
+    function printApplied(){
+      const dirty = !applied || !settingsEqual(current, applied);
+
+      if (dirty) {
+        alert("目前有尚未套用的變更。\n請先按「套用」，再進行列印。");
+        return;
+      }
+
+      window.print();
+    }
+
+    function preview(){
+      const firstScale = document.querySelector(".page-scale");
+      const firstPage = document.querySelector(".a4-page");
+      if (!firstScale || !firstPage) return;
+
+      firstScale.scrollIntoView({ behavior:"smooth", block:"start" });
+      firstPage.classList.remove("preview-flash");
+      void firstPage.offsetWidth;
+      firstPage.classList.add("preview-flash");
+    }
+
+    loadSaved();
+    syncInputsFromCurrent();
+    applyStyles();
+    buildVisualControls();
+
+    document.getElementById("visualToggle").addEventListener("click", () => {
+      const section = document.getElementById("visualSection");
+      const open = section.classList.toggle("open");
+      document.querySelector("#visualToggle .plus").textContent = open ? "－" : "＋";
+    });
+
+    document.getElementById("prevMonth").addEventListener("click", () => moveMonth(-1));
+    document.getElementById("nextMonth").addEventListener("click", () => moveMonth(1));
+
+    [yearInput, monthInput, countInput].forEach(input => {
+      input.addEventListener("change", render);
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") render();
+      });
+    });
+
+    showLunar.addEventListener("change", () => {
+      current.show.lunar = showLunar.checked;
+      render();
+    });
+
+    showFestivals.addEventListener("change", () => {
+      current.show.festivals = showFestivals.checked;
+      render();
+    });
+
+    showSolarTerms.addEventListener("change", () => {
+      current.show.solarTerms = showSolarTerms.checked;
+      render();
+    });
+
+    document.getElementById("defaultBtn").addEventListener("click", resetVisualToDefault);
+    document.getElementById("applyBtn").addEventListener("click", applyCurrent);
+    document.getElementById("printBtn").addEventListener("click", printApplied);
+    document.getElementById("previewBtn").addEventListener("click", preview);
+
+    window.addEventListener("resize", fitPreviewPages);
+    window.addEventListener("load", render);
+  </script>
+</body>
+</html>
