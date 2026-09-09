@@ -1,0 +1,331 @@
+LUNAR CALENDAR REFERENCE
+Version: 1.0
+Updated: 2026-09-06
+
+PURPOSE
+=======
+This file is the source/provenance, verification policy, and implementation contract
+for lunar_data.js and lunar.js.
+
+It is intended to be readable by both humans and AI-assisted development tools.
+
+This file is NOT executable code.
+
+Do not invent, extrapolate, or silently repair lunar-calendar data that is not
+supported by the authoritative sources and project rules documented here.
+
+Before modifying lunar_data.js or lunar.js, read this reference first.
+
+
+SUPPORTED RANGE
+===============
+Supported Gregorian range:
+
+1901-01-01 through 2100-12-31
+
+The range is intentionally finite.
+
+Dates outside this range are unsupported unless this reference, the dataset,
+and the implementation are explicitly extended and re-verified.
+
+Do not extrapolate beyond 1901-2100.
+Do not guess values outside the supported range.
+
+
+BOUNDARY CONTEXT
+================
+lunar_data.js contains limited boundary context outside the public supported range.
+
+This exists only so lunar.js can correctly convert dates at the beginning and end
+of the supported Gregorian range.
+
+Current boundary context includes:
+
+- Necessary late-1900 lunar-month information for Gregorian dates beginning
+  at 1901-01-01.
+- A 2101 Lunar New Year anchor required to close the final supported lunar year.
+
+This boundary context does NOT mean that Gregorian year 1900 or 2101 is generally
+supported.
+
+Public support remains:
+
+1901-01-01 through 2100-12-31.
+
+
+SCOPE
+=====
+Within the supported range, lunar.js provides lunar-calendar conversion and
+structural information based on lunar_data.js.
+
+The supported data model includes:
+
+- Gregorian date -> Lunar date
+- Lunar date -> Gregorian date
+- Lunar year, month, and day
+- Leap-month identification
+- Lunar month length (29 or 30 days)
+- Lunar-year boundaries
+- Lunar-month boundaries
+
+Solar terms are NOT defined by this reference.
+See solar_terms_reference.txt.
+
+Festival rules are NOT part of the lunar conversion dataset.
+They are maintained separately.
+
+
+DATA DESIGN
+===========
+lunar_data.js is a finite, expanded, human-readable dataset.
+
+For each lunar year it records:
+
+- Gregorian date of Lunar New Year
+- Leap-month number, if any
+- Ordered lunar months
+- Whether a month is a leap month
+- Number of days in each month
+- Gregorian start date of each lunar month
+
+The project intentionally prioritizes:
+
+- Readability
+- Verifiability
+- Maintainability
+
+over compact encoding.
+
+Bitmask or hexadecimal calendar tables are not used as the primary source of truth.
+
+lunar.js performs lookup and conversion using this finite dataset.
+It is not intended to independently reconstruct the Chinese calendar through an
+unbounded astronomical algorithm.
+
+
+PRIMARY SOURCE
+==============
+Institution:
+Central Weather Administration (CWA), Taiwan
+
+Dataset:
+日曆資料－國農曆對照
+
+Dataset ID:
+A-A0087-001
+
+Official URL:
+https://opendata.cwa.gov.tw/dataset/all/A-A0087-001
+
+Relevant published fields include:
+
+- Gregorian date
+- ROC calendar year
+- Lunar year
+- Lunar month
+- Lunar day
+- Weekday
+
+Role:
+
+Primary Taiwan-side official reference for Gregorian/Lunar date correspondence.
+
+
+INDEPENDENT VERIFICATION SOURCE
+===============================
+Institution:
+Hong Kong Observatory (HKO)
+
+Dataset/Page:
+公曆與農曆對照表
+
+Official URL:
+https://www.hko.gov.hk/tc/gts/time/conversion.htm
+
+Published coverage:
+1901 through 2100
+
+Role:
+
+Independent official cross-check of Gregorian/Lunar correspondence across the
+project's supported range.
+
+HKO uses Lunar New Year's Day — the first day of the first lunar month — as the
+lunar-year boundary.
+
+
+SOURCE AUTHORITY POLICY
+=======================
+For this project, published authoritative calendar data takes precedence over
+unrelated runtime calendar implementations or third-party algorithms.
+
+Runtime APIs, internationalization libraries, calendar libraries, or astronomical
+calculations may be useful as development aids or secondary checks.
+
+They are NOT automatically authoritative for this dataset.
+
+In particular:
+
+- Do not overwrite an official published value merely because a runtime calendar
+  API returns a different result.
+- Do not treat a third-party algorithm as the final oracle.
+- Record meaningful discrepancies.
+- Resolve discrepancies using the documented authoritative sources and the
+  project's selected convention.
+
+
+2026 SOURCE QUALIFICATION
+=========================
+Status: PASS
+
+The official references were checked using 2026 before accepting them for the
+project.
+
+Confirmed characteristics include:
+
+- 2026-02-17 = lunar month 1, day 1
+- Lunar-month boundaries agree between the official references checked
+- 2026 lunar year has 354 days
+- 2026 has no leap lunar month
+
+This qualification established the source policy used by the project.
+
+
+2027 YEAR-BOUNDARY DISCREPANCY
+==============================
+Status: RESOLVED
+
+During development, a runtime ICU / Intl Chinese Calendar result placed the
+2027 lunar-year boundary one Gregorian day later than the authoritative published
+calendar used by this project.
+
+The incorrect derived interpretation was:
+
+- 2027-02-06 = lunar 2026 month 12, day 30
+- 2027-02-07 = lunar 2027 month 1, day 1
+
+Authoritative published data used by this project establishes:
+
+- 2027-02-05 = lunar 2026 month 12, day 29
+- 2027-02-06 = lunar 2027 month 1, day 1
+- 2027-02-07 = lunar 2027 month 1, day 2
+
+Therefore:
+
+- Lunar year 2026 month 12 has 29 days.
+- Lunar New Year 2027 is 2027-02-06.
+
+The dataset was rebuilt on 2026-09-06 so that lunar_data.js follows the selected
+authoritative convention.
+
+This incident is a permanent project example of why runtime calendar-library output
+must not silently override authoritative published data.
+
+
+VERIFICATION POLICY
+===================
+When creating or modifying lunar_data.js:
+
+1. Use an authoritative source documented in this file.
+2. Cross-check against an independent authoritative source where practical.
+3. Verify lunar-year boundaries.
+4. Verify leap-month years and the position of each leap month.
+5. Verify the first and last day around leap-month transitions.
+6. Verify 29-day / 30-day lunar month lengths.
+7. Verify Gregorian/Lunar conversion around Lunar New Year.
+8. Record meaningful discrepancies instead of silently choosing an answer.
+9. Do not use lunar_data.js itself as its only test oracle.
+10. Do not use a runtime calendar library as the final authority.
+11. Do not extrapolate beyond the supported range.
+
+
+KNOWN LONG-RANGE / MIDNIGHT EDGE CASES
+======================================
+HKO warns that astronomical calculations many decades into the future can carry
+several minutes of uncertainty.
+
+If a new moon occurs very close to midnight, the resulting civil date — and
+therefore a lunar-month boundary — may differ by one day depending on the adopted
+calculation or later revision.
+
+HKO identifies new-moon boundary cases including:
+
+- 2057-09-28
+- 2089-09-04
+- 2097-08-07
+
+These dates require special care when the dataset is independently re-verified.
+
+Do not silently "correct" an authoritative published value using an unrelated
+algorithm.
+
+If authoritative sources disagree, preserve the discrepancy in project
+documentation and explicitly define which published convention the dataset follows.
+
+
+IMPLEMENTATION CONTRACT
+=======================
+lunar_data.js:
+
+- Stores the finite expanded lunar dataset.
+- Stores lunar-year and lunar-month boundaries explicitly.
+- Stores leap-month information explicitly.
+- Provides only the minimum external boundary context needed by the supported range.
+- Must not silently extend itself beyond the documented range.
+
+lunar.js:
+
+- Depends on lunar_data.js.
+- Converts between Gregorian and lunar dates by using the finite dataset.
+- Rejects unsupported dates.
+- Does not extrapolate beyond the verified dataset.
+- Does not infer missing leap-month data.
+- Does not fabricate conversion results.
+- Keeps lunar conversion separate from solar-term and festival rules.
+
+A future AI or developer modifying either file must read this reference first.
+
+
+CURRENT DATA STATUS
+===================
+Source discovery: PASS
+2026 source qualification: PASS
+Target Gregorian range: 1901-01-01 through 2100-12-31
+
+lunar_data.js:
+- Dataset assembled for the supported range
+- Human-readable year/month structure
+- Current data version: 0.1.1
+- 2027 year-boundary discrepancy corrected
+- Boundary context included for range conversion
+
+lunar.js:
+- Implementation completed
+- Current API version: 1.0.0
+- Uses lunar_data.js as its finite lookup dataset
+- Functional tests currently PASS
+
+Long-range astronomical midnight-risk cases remain documented and must continue
+to receive special attention during future independent verification.
+
+"Dataset assembled" does not mean that this reference file contains a manual
+line-by-line transcription of every official source row.
+The authoritative external sources remain part of the verification contract.
+
+
+CHANGE LOG
+==========
+2026-09-06
+- Created the initial source and implementation contract.
+- Selected the Gregorian support range 1901-2100.
+- Recorded CWA as the primary Taiwan-side official source.
+- Recorded HKO as the independent official verification source.
+- Recorded 2026 source qualification.
+- Recorded HKO long-range new-moon boundary warnings.
+- Completed lunar_data.js dataset assembly for the supported range.
+- Completed lunar.js implementation.
+- Rebuilt lunar_data.js after discovering the 2027 runtime ICU / Intl discrepancy.
+- Established 2027-02-06 as Lunar New Year 2027 under the project's authoritative
+  published-data convention.
+- Updated this document from a future implementation draft to the current
+  source/provenance and implementation contract.
