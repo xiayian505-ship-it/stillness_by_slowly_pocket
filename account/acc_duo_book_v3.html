@@ -10,94 +10,125 @@
 <body>
 <div class="app">
   <header class="app-header">
-    <div class="logo">慢 慢 <span> | </span> 共付日常</div>
-    <div class="brand-sub">Stillness by Slowly</div>
-  </header>
-
-  <header class="topbar">
-    <div class="names">
-      <input id="nameA">
-      <input id="nameB">
-    </div>
-  </header>
-
-  <section class="month-bar">
-    <div class="system-buttons">
-      <button id="exportBtn">匯出</button>
-      <button id="importBtn">匯入</button>
-      <input type="file" id="fileInput" accept=".json" hidden>
+    <div>
+      <div class="logo">慢 慢 <span>|</span> 共付日常</div>
+      <div class="brand-sub">Stillness by Slowly</div>
     </div>
 
-    <button class="nav-btn">◀</button>
-    <div class="month-title">2026 年 1 月</div>
-    <button class="nav-btn">▶</button>
-
-    <button class="refresh soft-orange">清空本月</button>
-    <button id="clearAllBtn" class="danger">清空帳本</button>
-  </section>
-
-  <section class="summary">
-    <div class="currency-stats" id="currencyStats"></div>
-
-    <div class="settle-row">
-      <select id="settleCurrency">
-        <option value="TWD">TWD 新台幣</option>
-        <option value="CNY">CNY 人民幣</option>
-        <option value="HKD">HKD 港幣</option>
-        <option value="USD">USD 美金</option>
-        <option value="JPY">JPY 日幣</option>
-        <option value="EUR">EUR 歐元</option>
-      </select>
-      <button id="applyCurrencyBtn">套用</button>
-    </div>
-
-    <div class="summary-a">A 先付：TWD <span id="sumAB">0</span></div>
-    <div class="summary-b">B 先付：TWD <span id="sumBA">0</span></div>
-    <div class="result" id="finalResult">目前平衡</div>
-
-    <div class="adjust">
-      <div class="adjust-title">帳外調整（TWD）</div>
-      <div class="adjust-row">
-        <select id="adjustSide">
-          <option value="A">A 多付</option>
-          <option value="B">B 多付</option>
-        </select>
-        <input type="number" id="adjustAmount" placeholder="0">
+    <details class="system-menu">
+      <summary>資料</summary>
+      <div class="system-buttons">
+        <button id="exportBtn">匯出備份</button>
+        <button id="importBtn">匯入備份</button>
+        <input type="file" id="fileInput" accept=".json" hidden>
+        <button class="refresh">清空本月</button>
+        <button id="clearAllBtn" class="danger">清空帳本</button>
       </div>
-    </div>
-  </section>
+    </details>
+  </header>
 
-  <section class="calendar">
-    <div class="calendar-weekdays" aria-hidden="true">
-      <div>日</div>
-      <div>一</div>
-      <div>二</div>
-      <div>三</div>
-      <div>四</div>
-      <div>五</div>
-      <div>六</div>
-    </div>
-    <div class="calendar-grid" id="calendarGrid"></div>
-  </section>
+  <main>
+    <section class="period" aria-label="月份切換">
+      <button class="nav-btn" aria-label="上一個月">←</button>
+      <div class="month-title">2026 年 1 月</div>
+      <button class="nav-btn" aria-label="下一個月">→</button>
+    </section>
+
+    <section class="balance" aria-label="本月結算">
+      <div class="eyebrow">本月結算</div>
+      <div class="result" id="finalResult">目前平衡</div>
+      <div class="balance-meta">
+        <div class="currency-stats" id="currencyStats"></div>
+        <div class="settle-row">
+          <select id="settleCurrency" aria-label="結算顯示幣別">
+            <option value="TWD">TWD 新台幣</option>
+            <option value="CNY">CNY 人民幣</option>
+            <option value="HKD">HKD 港幣</option>
+            <option value="USD">USD 美金</option>
+            <option value="JPY">JPY 日幣</option>
+            <option value="EUR">EUR 歐元</option>
+          </select>
+          <button id="applyCurrencyBtn">更新匯率</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="calendar-shell" aria-label="月曆帳本">
+      <div class="calendar-head">
+        <div class="calendar-title">每日帳本</div>
+        <div class="calendar-note">點日期查看或新增明細</div>
+      </div>
+      <div class="calendar">
+        <div class="calendar-weekdays" aria-hidden="true">
+          <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+    </section>
+
+    <section class="ledger-panel" aria-label="本月資料">
+      <div class="ledger-block people-block">
+        <div class="ledger-label">雙方</div>
+        <div class="names">
+          <label class="name-field">
+            <span>A</span>
+            <input id="nameA" aria-label="A 的名稱" placeholder="A">
+          </label>
+          <label class="name-field">
+            <span>B</span>
+            <input id="nameB" aria-label="B 的名稱" placeholder="B">
+          </label>
+        </div>
+      </div>
+
+      <div class="ledger-block paid-block">
+        <div class="ledger-label">本月先付</div>
+        <div class="paid-grid">
+          <div class="summary-a">A 先付：TWD <span id="sumAB">0</span></div>
+          <div class="summary-b">B 先付：TWD <span id="sumBA">0</span></div>
+        </div>
+      </div>
+
+      <div class="ledger-block adjust">
+        <div class="adjust-title">帳外調整（TWD）</div>
+        <div class="adjust-row">
+          <select id="adjustSide">
+            <option value="A">A 多付</option>
+            <option value="B">B 多付</option>
+          </select>
+          <input type="number" id="adjustAmount" placeholder="0" inputmode="decimal">
+        </div>
+      </div>
+    </section>
+  </main>
 </div>
 
 <div class="modal hidden" id="detailModal">
   <div class="modal-content">
     <div class="modal-head">
-      <span id="modalDate">明細</span>
-      <button class="close">×</button>
+      <div>
+        <div class="modal-kicker">日期明細</div>
+        <div id="modalDate">明細</div>
+      </div>
+      <button class="close" aria-label="關閉">×</button>
     </div>
 
-    <div class="detail-section">
-      <h3>A 先付</h3>
-      <div class="list" id="listA"></div>
-      <button class="add soft-blue">+新增</button>
-    </div>
+    <div class="detail-grid">
+      <section class="detail-section">
+        <div class="detail-head">
+          <h3>A 先付</h3>
+          <button class="add soft-blue">＋ 新增</button>
+        </div>
+        <div class="list" id="listA"></div>
+      </section>
 
-    <div class="detail-section">
-      <h3>B 先付</h3>
-      <div class="list" id="listB"></div>
-      <button class="add soft-purple">+新增</button>
+      <section class="detail-section">
+        <div class="detail-head">
+          <h3>B 先付</h3>
+          <button class="add soft-purple">＋ 新增</button>
+        </div>
+        <div class="list" id="listB"></div>
+      </section>
     </div>
   </div>
 </div>
@@ -105,19 +136,31 @@
 <div id="editModal" class="danger-modal hidden">
   <div class="danger-card">
     <div class="danger-title">新增紀錄</div>
-    <input id="editItem" placeholder="項目名稱">
+    <label class="field-stack">
+      <span>項目</span>
+      <input id="editItem" placeholder="項目名稱">
+    </label>
 
     <div class="money-row">
-      <input id="editAmount" placeholder="金額" type="number">
-      <select id="editCurrency">
-        <option value="TWD">TWD 新台幣</option>
-        <option value="CNY">CNY 人民幣</option>
-        <option value="HKD">HKD 港幣</option>
-        <option value="USD">USD 美金</option>
-        <option value="JPY">JPY 日幣</option>
-        <option value="EUR">EUR 歐元</option>
-      </select>
-      <input id="editRate" placeholder="匯率(選填)" type="number" step="0.001">
+      <label class="field-stack amount-field">
+        <span>金額</span>
+        <input id="editAmount" placeholder="0" type="number" inputmode="decimal">
+      </label>
+      <label class="field-stack currency-field">
+        <span>幣別</span>
+        <select id="editCurrency">
+          <option value="TWD">TWD 新台幣</option>
+          <option value="CNY">CNY 人民幣</option>
+          <option value="HKD">HKD 港幣</option>
+          <option value="USD">USD 美金</option>
+          <option value="JPY">JPY 日幣</option>
+          <option value="EUR">EUR 歐元</option>
+        </select>
+      </label>
+      <label class="field-stack rate-field">
+        <span>匯率</span>
+        <input id="editRate" placeholder="選填" type="number" step="0.001" inputmode="decimal">
+      </label>
     </div>
 
     <div class="danger-actions">
@@ -131,7 +174,6 @@
   <div class="danger-card">
     <div class="danger-title">清空帳本</div>
     <div class="danger-text"></div>
-
     <div class="danger-actions">
       <button id="dangerCancelBtn" class="btn-cancel">取消</button>
       <button id="dangerOkBtn" class="btn-confirm">確認刪除</button>
