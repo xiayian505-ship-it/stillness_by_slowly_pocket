@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>慢 慢｜共付日常・Color</title>
+
+  <!-- Color 版自己的樣式 -->
+  <link rel="stylesheet" href="./acc_duo_book_v3_color.css">
+</head>
+
+<body>
+  <main class="app">
+
+    <header class="app-header">
+      <div>
+        <div class="logo">慢 慢<span>|</span>共付日常</div>
+        <div class="brand-sub">STILLNESS BY SLOWLY</div>
+      </div>
+
+      <details class="system-menu">
+        <summary>資料</summary>
+        <div class="system-buttons">
+          <button type="button" id="exportBtn">匯出備份</button>
+          <button type="button" id="importBtn">匯入備份</button>
+          <button type="button" class="refresh">清空本月</button>
+          <button type="button" id="clearAllBtn" class="danger">清空帳本</button>
+        </div>
+      </details>
+
+      <input id="fileInput" type="file" accept=".json,application/json" hidden>
+    </header>
+
+    <section class="period" aria-label="月份切換">
+      <button type="button" class="nav-btn" aria-label="上個月">←</button>
+      <div class="month-title">----</div>
+      <button type="button" class="nav-btn" aria-label="下個月">→</button>
+    </section>
+
+    <section class="balance">
+      <div class="eyebrow">本月結算</div>
+      <div id="finalResult" class="result">目前平衡</div>
+
+      <div class="balance-meta">
+        <div>
+          <div class="summary-a">
+            A 先付：TWD <span id="sumAB">0</span>
+          </div>
+          <div class="summary-b">
+            B 先付：TWD <span id="sumBA">0</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="settle-row">
+            <div class="fake-select currency-fake-select" id="settleCurrencyFake">
+              <button type="button" class="fake-select-trigger" id="settleCurrencyTrigger"
+                aria-haspopup="listbox" aria-expanded="false">
+                <span id="settleCurrencyLabel">TWD</span>
+                <span class="fake-select-arrow" aria-hidden="true">▾</span>
+              </button>
+
+              <div class="fake-select-menu" id="settleCurrencyMenu"
+                role="listbox" aria-label="結算幣別" hidden>
+                <button type="button" class="fake-select-option" role="option" data-value="TWD">TWD</button>
+                <button type="button" class="fake-select-option" role="option" data-value="JPY">JPY</button>
+                <button type="button" class="fake-select-option" role="option" data-value="USD">USD</button>
+                <button type="button" class="fake-select-option" role="option" data-value="EUR">EUR</button>
+                <button type="button" class="fake-select-option" role="option" data-value="KRW">KRW</button>
+                <button type="button" class="fake-select-option" role="option" data-value="CNY">CNY</button>
+                <button type="button" class="fake-select-option" role="option" data-value="HKD">HKD</button>
+              </div>
+            </div>
+
+            <select id="settleCurrency" class="native-select-hidden" tabindex="-1" aria-hidden="true">
+              <option value="TWD">TWD</option>
+              <option value="JPY">JPY</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="KRW">KRW</option>
+              <option value="CNY">CNY</option>
+              <option value="HKD">HKD</option>
+            </select>
+            <button type="button" id="applyCurrencyBtn">套用匯率</button>
+          </div>
+          <div id="currencyStats" class="currency-stats">結算基準：TWD</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="calendar-shell">
+      <div class="calendar-head">
+        <div class="calendar-title">每日帳本</div>
+        <div class="calendar-note">點日期查看或新增明細</div>
+      </div>
+
+      <div class="calendar">
+        <div class="calendar-weekdays" aria-hidden="true">
+          <div class="weekend">日</div>
+          <div>一</div>
+          <div>二</div>
+          <div>三</div>
+          <div>四</div>
+          <div>五</div>
+          <div class="weekend">六</div>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+      </div>
+    </section>
+
+    <section class="ledger-panel">
+      <div class="ledger-block">
+        <div class="ledger-label">雙方</div>
+        <div class="names">
+          <label class="name-field">
+            <span>A</span>
+            <input id="nameA" type="text" placeholder="A" autocomplete="off">
+          </label>
+          <label class="name-field">
+            <span>B</span>
+            <input id="nameB" type="text" placeholder="B" autocomplete="off">
+          </label>
+        </div>
+      </div>
+
+      <div class="ledger-block">
+        <div class="ledger-label">本月先付</div>
+        <div class="paid-grid">
+          <div class="summary-a">
+            A 先付：TWD <span id="sumABMirror">—</span>
+          </div>
+          <div class="summary-b">
+            B 先付：TWD <span id="sumBAMirror">—</span>
+          </div>
+          <div class="paid-note">以上方本月結算為準</div>
+        </div>
+      </div>
+
+      <div class="ledger-block">
+        <div class="adjust-title">帳外調整（TWD）</div>
+        <div class="adjust-row">
+          <div class="fake-select" id="adjustSideFake">
+            <button
+              type="button"
+              class="fake-select-trigger"
+              id="adjustSideTrigger"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <span id="adjustSideLabel">A 多付</span>
+              <span class="fake-select-arrow" aria-hidden="true">▾</span>
+            </button>
+
+            <div
+              class="fake-select-menu"
+              id="adjustSideMenu"
+              role="listbox"
+              aria-label="帳外調整對象"
+              hidden
+            >
+              <button type="button" class="fake-select-option" role="option" data-value="A">A 多付</button>
+              <button type="button" class="fake-select-option" role="option" data-value="B">B 多付</button>
+            </div>
+          </div>
+
+          <select id="adjustSide" class="native-select-hidden" tabindex="-1" aria-hidden="true">
+            <option value="A">A 多付</option>
+            <option value="B">B 多付</option>
+          </select>
+          <input id="adjustAmount" type="number" min="0" step="1" inputmode="decimal" value="0">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 日期明細 -->
+  <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-kicker">每日帳本</div>
+      <div class="modal-head">
+        <span id="modalDate">日期明細</span>
+        <button type="button" class="close" aria-label="關閉">×</button>
+      </div>
+
+      <div class="detail-grid">
+        <section class="detail-section">
+          <div class="detail-head">
+            <h3>A 先付</h3>
+            <button type="button" class="add">＋ 新增</button>
+          </div>
+          <div id="listA" class="list"></div>
+        </section>
+
+        <section class="detail-section">
+          <div class="detail-head">
+            <h3>B 先付</h3>
+            <button type="button" class="add">＋ 新增</button>
+          </div>
+          <div id="listB" class="list"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增 / 編輯 -->
+  <div id="editModal" class="danger-modal hidden" role="dialog" aria-modal="true">
+    <div class="danger-card">
+      <div class="danger-title">新增紀錄</div>
+
+      <label class="field-stack">
+        <span>項目</span>
+        <input id="editItem" type="text" autocomplete="off" placeholder="懶得打也可以">
+      </label>
+
+      <div class="money-row">
+        <label class="field-stack amount-field">
+          <span>金額</span>
+          <input id="editAmount" type="number" min="0" step="0.01" inputmode="decimal">
+        </label>
+
+        <div class="field-stack">
+          <span>幣別</span>
+
+          <div class="fake-select currency-fake-select" id="editCurrencyFake">
+            <button type="button" class="fake-select-trigger" id="editCurrencyTrigger"
+              aria-haspopup="listbox" aria-expanded="false">
+              <span id="editCurrencyLabel">TWD</span>
+              <span class="fake-select-arrow" aria-hidden="true">▾</span>
+            </button>
+
+            <div class="fake-select-menu" id="editCurrencyMenu"
+              role="listbox" aria-label="紀錄幣別" hidden>
+              <button type="button" class="fake-select-option" role="option" data-value="TWD">TWD</button>
+              <button type="button" class="fake-select-option" role="option" data-value="JPY">JPY</button>
+              <button type="button" class="fake-select-option" role="option" data-value="USD">USD</button>
+              <button type="button" class="fake-select-option" role="option" data-value="EUR">EUR</button>
+              <button type="button" class="fake-select-option" role="option" data-value="KRW">KRW</button>
+              <button type="button" class="fake-select-option" role="option" data-value="CNY">CNY</button>
+              <button type="button" class="fake-select-option" role="option" data-value="HKD">HKD</button>
+            </div>
+          </div>
+
+          <select id="editCurrency" class="native-select-hidden" tabindex="-1" aria-hidden="true">
+            <option value="TWD">TWD</option>
+            <option value="JPY">JPY</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="KRW">KRW</option>
+            <option value="CNY">CNY</option>
+            <option value="HKD">HKD</option>
+          </select>
+        </div>
+
+        <label class="field-stack">
+          <span>匯率（1 外幣 = TWD）</span>
+          <input id="editRate" type="number" min="0" step="0.001" inputmode="decimal">
+        </label>
+      </div>
+
+      <div class="danger-actions">
+        <button type="button" id="editCancel">取消</button>
+        <button type="button" id="editOk" class="btn-confirm">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 危險操作確認 -->
+  <div id="dangerModal" class="danger-modal hidden" role="dialog" aria-modal="true">
+    <div class="danger-card">
+      <div class="danger-title">確認</div>
+      <div class="danger-text"></div>
+
+      <div class="danger-actions">
+        <button type="button" id="dangerCancelBtn">取消</button>
+        <button type="button" id="dangerOkBtn" class="danger">確定刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 慢慢共用模組：路徑沿用 acc_duo_book_v3.html -->
+  <script src="https://lib.stillnessbyslowly.com/date/datetime.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/Money.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/Currency.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/Data_backup.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_change.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_storage.js"></script>
+
+  <!-- Color 版自己的 app JS；不共用 acc_duo_book_v3.js -->
+  <script src="./acc_duo_book_v3_color.js"></script>
+</body>
+</html>
