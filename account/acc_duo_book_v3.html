@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>慢 慢｜共付日常</title>
+<link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+<link rel="stylesheet" href="./acc_duo_book_v3.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="logo">慢 慢 <span> | </span> 共付日常</div>
+    <div class="brand-sub">Stillness by Slowly</div>
+  </header>
+
+  <header class="topbar">
+    <div class="names">
+      <input id="nameA">
+      <input id="nameB">
+    </div>
+  </header>
+
+  <section class="month-bar">
+    <div class="system-buttons">
+      <button id="exportBtn">匯出</button>
+      <button id="importBtn">匯入</button>
+      <input type="file" id="fileInput" accept=".json" hidden>
+    </div>
+
+    <button class="nav-btn">◀</button>
+    <div class="month-title">2026 年 1 月</div>
+    <button class="nav-btn">▶</button>
+
+    <button class="refresh soft-orange">清空本月</button>
+    <button id="clearAllBtn" class="danger">清空帳本</button>
+  </section>
+
+  <section class="summary">
+    <div class="currency-stats" id="currencyStats"></div>
+
+    <div class="settle-row">
+      <select id="settleCurrency">
+        <option value="TWD">TWD 新台幣</option>
+        <option value="CNY">CNY 人民幣</option>
+        <option value="HKD">HKD 港幣</option>
+        <option value="USD">USD 美金</option>
+        <option value="JPY">JPY 日幣</option>
+        <option value="EUR">EUR 歐元</option>
+      </select>
+      <button id="applyCurrencyBtn">套用</button>
+    </div>
+
+    <div class="summary-a">A 先付：TWD <span id="sumAB">0</span></div>
+    <div class="summary-b">B 先付：TWD <span id="sumBA">0</span></div>
+    <div class="result" id="finalResult">目前平衡</div>
+
+    <div class="adjust">
+      <div class="adjust-title">帳外調整（TWD）</div>
+      <div class="adjust-row">
+        <select id="adjustSide">
+          <option value="A">A 多付</option>
+          <option value="B">B 多付</option>
+        </select>
+        <input type="number" id="adjustAmount" placeholder="0">
+      </div>
+    </div>
+  </section>
+
+  <section class="calendar">
+    <div class="calendar-weekdays" aria-hidden="true">
+      <div>日</div>
+      <div>一</div>
+      <div>二</div>
+      <div>三</div>
+      <div>四</div>
+      <div>五</div>
+      <div>六</div>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </section>
+</div>
+
+<div class="modal hidden" id="detailModal">
+  <div class="modal-content">
+    <div class="modal-head">
+      <span id="modalDate">明細</span>
+      <button class="close">×</button>
+    </div>
+
+    <div class="detail-section">
+      <h3>A 先付</h3>
+      <div class="list" id="listA"></div>
+      <button class="add soft-blue">+新增</button>
+    </div>
+
+    <div class="detail-section">
+      <h3>B 先付</h3>
+      <div class="list" id="listB"></div>
+      <button class="add soft-purple">+新增</button>
+    </div>
+  </div>
+</div>
+
+<div id="editModal" class="danger-modal hidden">
+  <div class="danger-card">
+    <div class="danger-title">新增紀錄</div>
+    <input id="editItem" placeholder="項目名稱">
+
+    <div class="money-row">
+      <input id="editAmount" placeholder="金額" type="number">
+      <select id="editCurrency">
+        <option value="TWD">TWD 新台幣</option>
+        <option value="CNY">CNY 人民幣</option>
+        <option value="HKD">HKD 港幣</option>
+        <option value="USD">USD 美金</option>
+        <option value="JPY">JPY 日幣</option>
+        <option value="EUR">EUR 歐元</option>
+      </select>
+      <input id="editRate" placeholder="匯率(選填)" type="number" step="0.001">
+    </div>
+
+    <div class="danger-actions">
+      <button id="editCancel" class="btn-cancel">取消</button>
+      <button id="editOk" class="btn-confirm">確認</button>
+    </div>
+  </div>
+</div>
+
+<div id="dangerModal" class="danger-modal hidden">
+  <div class="danger-card">
+    <div class="danger-title">清空帳本</div>
+    <div class="danger-text"></div>
+
+    <div class="danger-actions">
+      <button id="dangerCancelBtn" class="btn-cancel">取消</button>
+      <button id="dangerOkBtn" class="btn-confirm">確認刪除</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://lib.stillnessbyslowly.com/date/datetime.js"></script>
+<script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
+<script src="https://lib.stillnessbyslowly.com/data/Money.js"></script>
+<script src="https://lib.stillnessbyslowly.com/data/Currency.js"></script>
+<script src="https://lib.stillnessbyslowly.com/data/Data_backup.js"></script>
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_change.js"></script>
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_storage.js"></script>
+<script src="./acc_duo_book_v3.js"></script>
+</body>
+</html>

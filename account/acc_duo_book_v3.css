@@ -1,0 +1,663 @@
+/* =========================
+🌈 陣營色系統
+========================= */
+:root{
+  --sideA:#e58a4b;   /* 美美 橘 */
+  --sideB:#8a79d6;   /* 英英 紫 */
+  --sideA-deep:#c06a2f;
+  --sideB-deep:#6b5bc9;
+}
+
+/* =========================
+🌫 全局氣氛
+========================= */
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+  background:linear-gradient(180deg,#edf4ff,#f6f0ff);
+  color:#334155;
+}
+
+.app{
+  max-width:680px;
+  margin:auto;
+  padding:22px 18px 60px;
+}
+
+/* =========================
+🌈 表頭
+========================= */
+.app-header{
+  text-align:center;
+  margin-bottom:16px;
+}
+
+.logo{
+  font-size:22px;
+  font-weight:600;
+  letter-spacing:1px;
+}
+
+.logo span{
+  color:#cbd5e1;
+  margin:0 6px;
+}
+
+/* =========================
+👥 名字列（陣營卡）
+========================= */
+.names{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  margin-bottom:16px;
+}
+
+.names input{
+  width:90px;
+  padding:10px 12px;
+  border-radius:14px;
+  text-align:center;
+  font-size:15px;
+  font-weight:600;
+  background:white;
+  border:2px solid transparent;
+  transition:.2s;
+}
+
+/* A */
+#nameA{
+  color:var(--sideA-deep);
+  box-shadow:0 4px 12px rgba(229,138,75,.25);
+  background:linear-gradient(180deg,#fffaf5,#fff3ea);
+  border-color:#f3d2bb;
+}
+#nameA:focus{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(229,138,75,.25);
+}
+
+/* B */
+#nameB{
+  color:var(--sideB-deep);
+  box-shadow:0 4px 12px rgba(138,121,214,.25);
+  background:linear-gradient(180deg,#faf8ff,#f3f0ff);
+  border-color:#ddd6ff;
+}
+#nameB:focus{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(138,121,214,.25);
+}
+
+/* =========================
+🔘 按鈕系統
+========================= */
+button{
+  border:none;
+  background:white;
+  padding:8px 14px;
+  border-radius:12px;
+  font-size:14px;
+  color:#475569;
+  box-shadow:0 3px 10px rgba(0,0,0,.05);
+  transition:.15s;
+}
+button:active{ transform:scale(.97); }
+
+/* 陣營按鈕光暈 */
+button:hover{
+  box-shadow:0 0 0 2px rgba(0,0,0,.05), 0 6px 18px rgba(0,0,0,.08);
+}
+
+/* 匯出匯入 */
+#exportBtn{ color:var(--sideA); }
+#importBtn{ color:var(--sideB); }
+
+/* 清空 */
+.refresh{
+  background:#ffe8d6;
+  color:var(--sideA-deep);
+}
+.danger{
+  background:#ffdede;
+  color:#b03a3a;
+}
+
+/* 月份箭頭 */
+.nav-btn{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  padding:0;
+}
+.nav-btn:first-of-type{ color:var(--sideA); }
+.nav-btn:last-of-type{ color:var(--sideB); }
+
+/* =========================
+📅 月份列
+========================= */
+.month-bar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:14px;
+}
+
+.month-title{
+  width:100%;
+  text-align:center;
+  font-weight:600;
+  font-size:18px;
+  margin-top:4px;
+}
+
+/* =========================
+🧁 結算卡（陣營文字）
+========================= */
+.summary{
+  background:#fffaf5;
+  padding:18px;
+  border-radius:20px;
+  box-shadow:0 8px 25px rgba(0,0,0,.05);
+  margin-bottom:18px;
+  line-height:1.8;
+}
+
+/* A 先付 */
+.summary-a{
+  color:var(--sideA-deep);
+  font-weight:600;
+}
+
+/* B 先付 */
+.summary-b{
+  color:var(--sideB-deep);
+  font-weight:600;
+}
+
+/* 判決文字 */
+.summary .result{
+  color:#1e293b;
+  font-weight:600;
+}
+
+/* =========================
+📅 西曆月曆帳本（v3 結構測試）
+========================= */
+.calendar{
+  background:#fffaf5;
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,.04);
+}
+
+.calendar-weekdays,
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7, minmax(0,1fr));
+}
+
+.calendar-weekdays{
+  background:linear-gradient(180deg,#f5f8ff,#f8f3ff);
+  font-weight:600;
+  font-size:13px;
+  color:#6b7280;
+  text-align:center;
+}
+
+.calendar-weekdays > div{
+  padding:10px 4px;
+  border-bottom:1px solid #f1f5f9;
+}
+
+.calendar-day{
+  min-width:0;
+  min-height:88px;
+  padding:8px;
+  border:0;
+  border-right:1px solid #f1f5f9;
+  border-bottom:1px solid #f1f5f9;
+  border-radius:0;
+  background:#fffaf5;
+  box-shadow:none;
+  text-align:left;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  gap:6px;
+  color:#475569;
+}
+
+.calendar-day:nth-child(7n){
+  border-right:0;
+}
+
+.calendar-day:not(.empty){
+  cursor:pointer;
+}
+
+.calendar-day:not(.empty):hover{
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.04);
+}
+
+.calendar-day.empty{
+  background:#f8fafc;
+  pointer-events:none;
+}
+
+.day-number{
+  font-weight:600;
+  line-height:1;
+}
+
+.day-totals{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  font-size:11px;
+  line-height:1.3;
+  overflow:hidden;
+}
+
+.day-total{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.day-name{
+  font-weight:600;
+}
+
+.colA{ color:var(--sideA); }
+.colB{ color:var(--sideB); }
+
+@media (max-width:520px){
+  .calendar-day{
+    min-height:72px;
+    padding:6px 4px;
+  }
+
+  .day-totals{
+    font-size:10px;
+  }
+
+  .day-name{
+    display:none;
+  }
+}
+
+/* =========================
+⚙️ 帳外調整（陣營區）
+========================= */
+.adjust{
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid #f1f5f9;
+}
+
+.adjust-title{
+  color:var(--sideA);
+  font-weight:600;
+  letter-spacing:.5px;
+}
+
+.adjust-row{
+  display:flex;
+  gap:10px;
+}
+
+.adjust select,
+.adjust input{
+  flex:1;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid #e2e8f0;
+  background:white;
+  font-size:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,.03);
+}
+
+#adjustAmount:focus{
+  border-color:var(--sideA);
+  box-shadow:0 0 0 2px rgba(229,138,75,.15);
+}
+
+/* =========================
+🪟 Modal
+========================= */
+.modal,
+.danger-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  backdrop-filter:blur(6px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.modal:not(.hidden),
+.danger-modal:not(.hidden){
+  display:flex;
+}
+
+.modal-content,
+.danger-card{
+  width:90%;
+  max-width:460px;
+  background:white;
+  border-radius:26px;
+  padding:24px;
+  box-shadow:0 25px 60px rgba(0,0,0,.25);
+  animation:pop .18s ease-out;
+}
+
+.brand-sub{
+  margin-top:6px;
+  font-size:12px;
+  letter-spacing:3px;
+  color:#9db2bf;
+  font-weight:500;
+  opacity:.85;
+}
+
+/* =========================================================
+   ✏️ 明細區：行為語意層級系統
+   （純 UI，無 JS）
+========================================================= */
+.detail-section .list > div{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  margin-bottom:8px;
+  background:#f8fafc;
+  border-radius:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
+}
+
+.detail-section .list span{
+  font-size:14px;
+  color:#334155;
+}
+
+.detail-section .list button{
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:12px;
+  box-shadow:none;
+}
+
+button[data-m="overwrite"]{
+  background:linear-gradient(180deg,#fff7f0,#ffe8d6);
+  color:var(--sideA-deep);
+  border:1px solid #f3d2bb;
+  font-weight:600;
+}
+button[data-m="overwrite"]:hover{ box-shadow:0 0 0 2px rgba(229,138,75,.18); }
+
+button[data-m="preserve"]{
+  background:white;
+  color:#64748b;
+  border:1px solid #e2e8f0;
+  font-weight:500;
+}
+button[data-m="preserve"]:hover{ background:#f1f5f9; }
+
+.detail-section .add{
+  margin-top:10px;
+  background:transparent;
+  color:#94a3b8;
+  border:1px dashed #cbd5e1;
+  box-shadow:none;
+  font-weight:500;
+}
+.detail-section .add:hover{
+  background:#f1f5f9;
+  color:#475569;
+}
+
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+
+.modal-head .close{
+  background:#f1f5f9;
+  color:#64748b;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  font-size:16px;
+  padding:0;
+}
+
+.modal-content{ background:linear-gradient(180deg,#ffffff,#fbfdff); }
+.detail-section h3{
+  margin-bottom:6px;
+  font-size:15px;
+  letter-spacing:.5px;
+}
+
+.modal-content,
+.danger-card{
+  background:linear-gradient(180deg,#ffffff,#f8fbff);
+  border:1px solid #e8eef6;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.18),
+    0 4px 10px rgba(0,0,0,.04);
+}
+
+.danger-title{
+  font-size:18px;
+  font-weight:600;
+  color:#334155;
+  margin-bottom:14px;
+}
+
+.btn-cancel{
+  background:#f1f5f9;
+  color:#64748b;
+  border:1px solid #e2e8f0;
+  box-shadow:none;
+}
+.btn-cancel:hover{ background:#e8eef6; }
+
+#editOk{
+  background:linear-gradient(180deg,#fff7f0,#ffe8d6);
+  color:var(--sideA-deep);
+  border:1px solid #f3d2bb;
+  font-weight:600;
+  box-shadow:none;
+}
+
+#dangerOkBtn{
+  background:linear-gradient(180deg,#ffecec,#ffdede);
+  color:#b03a3a;
+  border:1px solid #f5bcbc;
+  font-weight:600;
+  box-shadow:none;
+}
+
+#editItem,
+#editAmount{
+  width:auto;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid #e2e8f0;
+  background:linear-gradient(180deg,#ffffff,#f8fbff);
+  font-size:14px;
+  margin-bottom:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
+}
+
+#editItem:focus{
+  outline:none;
+  border-color:var(--sideA);
+  box-shadow:0 0 0 3px rgba(229,138,75,.18);
+}
+
+#editAmount:focus{
+  outline:none;
+  border-color:var(--sideB);
+  box-shadow:0 0 0 3px rgba(138,121,214,.18);
+}
+
+#dangerModal .danger-card{
+  background:linear-gradient(180deg,#fff9f9,#fff3f3);
+  border:1px solid #f2dede;
+}
+
+#detailModal .modal-content{
+  background:linear-gradient(180deg,#ffffff,#f6f9ff);
+}
+
+.modal-head .close{
+  background:#f1f5f9;
+  color:#64748b;
+  box-shadow:none;
+}
+.modal-head .close:hover{ background:#e8eef6; }
+
+.money-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+#editAmount{
+  flex:2;
+  min-width:0;
+}
+
+#editCurrency{
+  flex:1.2;
+  min-width:90px;
+}
+
+#editRate{
+  flex:1;
+  min-width:70px;
+}
+
+#editCurrency{
+  border-radius:12px;
+  border:1px solid #e2e8f0;
+  background:white;
+  font-size:14px;
+}
+
+.currency-stats{
+  margin-top:10px;
+  font-size:13px;
+  line-height:1.6;
+  color:#475569;
+}
+
+.settle-row{ margin-top:8px; }
+
+#settleCurrency{
+  padding:6px 10px;
+  border-radius:10px;
+  border:1px solid #e2e8f0;
+  background:white;
+}
+
+.currency-row,
+.settle-row{
+  margin-top:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.currency-row input,
+.currency-row select,
+.settle-row select{
+  flex:1;
+}
+
+@keyframes pop{
+  from{ transform:scale(.96); opacity:.5; }
+  to{ transform:scale(1); opacity:1; }
+}
+
+/* =========================
+   v3 bugfix / mobile cleanup
+========================= */
+.history-tag{
+  flex:0 0 auto;
+  font-size:11px;
+  color:#94a3b8;
+  background:#f1f5f9;
+  border-radius:999px;
+  padding:3px 7px;
+}
+
+.detail-section .list > div.is-history{
+  opacity:.68;
+}
+
+.detail-section .list > div{
+  flex-wrap:wrap;
+}
+
+.detail-section .list > div > span:first-child{
+  flex:1 1 140px;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+
+.danger-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:8px;
+}
+
+#editItem{
+  display:block;
+  width:100%;
+}
+
+#editAmount,
+#editCurrency,
+#editRate{
+  height:40px;
+}
+
+@media (max-width:520px){
+  .app{
+    padding-left:12px;
+    padding-right:12px;
+  }
+
+  .modal-content,
+  .danger-card{
+    width:calc(100% - 24px);
+    padding:18px;
+    border-radius:20px;
+  }
+
+  .money-row{
+    flex-wrap:wrap;
+  }
+
+  #editAmount{
+    flex:1 1 100%;
+  }
+
+  #editCurrency,
+  #editRate{
+    flex:1 1 0;
+    min-width:0;
+  }
+}
