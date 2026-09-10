@@ -8,8 +8,13 @@
 <!-- Slowly Responsive -->
 <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
 
-<!-- Slowly Calendar Component -->
+<!-- Slowly UI -->
+<link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/custom_select.css">
+<link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/custom_file.css">
+
+<!-- Slowly Calendar -->
 <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/component/calendar/calendar_component.css">
+<link rel="stylesheet" href="https://lib.stillnessbyslowly.com/calendar/calendar_interaction.css">
 
 <style>
   :root{
@@ -29,7 +34,11 @@
   }
 
   *{box-sizing:border-box}
-  html,body{height:100%}
+
+  html,body{
+    height:100%;
+  }
+
   body{
     margin:0;
     font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
@@ -41,7 +50,11 @@
     -webkit-tap-highlight-color:transparent;
   }
 
-  .wrap{max-width:1120px;margin:0 auto;padding:18px 18px 44px}
+  .wrap{
+    max-width:1120px;
+    margin:0 auto;
+    padding:18px 18px 44px;
+  }
 
   header{
     display:flex;
@@ -52,9 +65,22 @@
     margin:6px 0 14px;
   }
 
-  .brand{display:flex;flex-direction:column;gap:4px}
-  h1{margin:0;font-size:20px;letter-spacing:.5px}
-  .sub{color:var(--muted);font-size:13px}
+  .brand{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+
+  h1{
+    margin:0;
+    font-size:20px;
+    letter-spacing:.5px;
+  }
+
+  .sub{
+    color:var(--muted);
+    font-size:13px;
+  }
 
   .top-actions{
     display:flex;
@@ -64,7 +90,8 @@
     justify-content:flex-end;
   }
 
-  button,.btn{
+  button,
+  .btn{
     appearance:none;
     border:1px solid var(--line);
     background:linear-gradient(180deg,var(--panel),#fff);
@@ -75,24 +102,34 @@
     cursor:pointer;
     font-weight:700;
     font-size:13px;
-    transition:transform .08s ease,box-shadow .12s ease,border-color .12s ease;
+    transition:
+      transform .08s ease,
+      box-shadow .12s ease,
+      border-color .12s ease;
     user-select:none;
   }
 
-  button:hover,.btn:hover{
+  button:hover,
+  .btn:hover{
     transform:translateY(-1px);
     border-color:rgba(201,143,167,.45);
     box-shadow:0 14px 22px rgba(40,20,30,.12);
   }
 
-  button:active,.btn:active{
+  button:active,
+  .btn:active{
     transform:translateY(0);
-    box-shadow:0 8px 14px rgba(40,20,30,.10)
+    box-shadow:0 8px 14px rgba(40,20,30,.10);
   }
 
   .btn-primary{
     border-color:rgba(201,143,167,.55);
-    background:linear-gradient(180deg,rgba(215,166,183,.35),rgba(255,248,250,.95));
+    background:
+      linear-gradient(
+        180deg,
+        rgba(215,166,183,.35),
+        rgba(255,248,250,.95)
+      );
   }
 
   .panel{
@@ -103,8 +140,14 @@
     padding:14px;
   }
 
-  /* ===== Calendar consumer ===== */
-  .calendar-panel{margin-bottom:12px}
+
+  /* =========================================================
+     Slowly Calendar consumer
+  ========================================================= */
+
+  .calendar-panel{
+    margin-bottom:12px;
+  }
 
   .calendar-panel-head{
     display:flex;
@@ -114,8 +157,15 @@
     margin-bottom:10px;
   }
 
-  .calendar-panel-title{font-weight:900;font-size:14px}
-  .calendar-panel-note{color:var(--muted);font-size:12px}
+  .calendar-panel-title{
+    font-weight:900;
+    font-size:14px;
+  }
+
+  .calendar-panel-note{
+    color:var(--muted);
+    font-size:12px;
+  }
 
   #coupleCalendar .slowly-calendar{
     --sc-bg:var(--panel);
@@ -133,6 +183,98 @@
     --sc-today-ring:var(--rose);
   }
 
+
+  /* =========================================================
+     Slowly Custom Select consumer
+  ========================================================= */
+
+  .slowly-select{
+    --ss-bg:rgba(255,255,255,.9);
+    --ss-text:var(--ink);
+    --ss-border:var(--line);
+    --ss-hover:var(--cream);
+    --ss-selected-bg:rgba(215,166,183,.20);
+    --ss-selected-text:var(--ink);
+    --ss-focus:rgba(201,143,167,.65);
+  }
+
+  .slowly-select-trigger{
+    min-height:41px;
+    border-radius:14px;
+    padding:10px 12px;
+    box-shadow:none;
+    font-size:14px;
+    font-weight:700;
+  }
+
+  .slowly-select-trigger:hover,
+  .slowly-select-trigger:focus-visible,
+  .slowly-select-trigger[aria-expanded="true"]{
+    transform:none;
+    box-shadow:none;
+    color:var(--ink);
+  }
+
+  .slowly-select-menu{
+    border-radius:14px;
+    overflow:auto;
+    box-shadow:0 14px 28px rgba(40,20,30,.12);
+  }
+
+  .slowly-select-option{
+    border-radius:0;
+    box-shadow:none;
+    font-size:13px;
+  }
+
+  .slowly-select-option:hover,
+  .slowly-select-option:focus-visible{
+    transform:none;
+    box-shadow:none;
+    color:var(--ink);
+  }
+
+
+  /* =========================================================
+     Slowly Custom File consumer
+  ========================================================= */
+
+  .import-file{
+    width:auto;
+    flex:0 0 auto;
+  }
+
+  .import-file.slowly-file{
+    --sf-bg:linear-gradient(180deg,var(--panel),#fff);
+    --sf-text:var(--ink);
+    --sf-border:var(--line);
+    --sf-hover:var(--cream);
+    --sf-focus:rgba(201,143,167,.65);
+  }
+
+  .import-file .slowly-file-trigger{
+    width:auto;
+    min-height:39px;
+    border-radius:999px;
+    padding:10px 12px;
+    box-shadow:0 10px 18px rgba(40,20,30,.08);
+    font-size:13px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+
+  .import-file .slowly-file-trigger:hover,
+  .import-file .slowly-file-trigger:focus-visible{
+    transform:translateY(-1px);
+    box-shadow:0 14px 22px rgba(40,20,30,.12);
+    color:var(--ink);
+  }
+
+
+  /* =========================================================
+     Form / Layout
+  ========================================================= */
+
   .grid{
     display:grid;
     grid-template-columns:1.1fr .9fr;
@@ -140,7 +282,9 @@
   }
 
   @media(max-width:900px){
-    .grid{grid-template-columns:1fr}
+    .grid{
+      grid-template-columns:1fr;
+    }
   }
 
   label{
@@ -152,7 +296,9 @@
     font-weight:700;
   }
 
-  input,select,textarea{
+  input,
+  select,
+  textarea{
     width:100%;
     border:1px solid var(--line);
     border-radius:14px;
@@ -175,7 +321,9 @@
   }
 
   @media(max-width:560px){
-    .row{grid-template-columns:1fr}
+    .row{
+      grid-template-columns:1fr;
+    }
   }
 
   .form-actions{
@@ -201,8 +349,15 @@
   }
 
   @media(max-width:900px){
-    .filters{grid-template-columns:1fr}
+    .filters{
+      grid-template-columns:1fr;
+    }
   }
+
+
+  /* =========================================================
+     Stats / Cards
+  ========================================================= */
 
   .stats{
     display:flex;
@@ -221,7 +376,9 @@
     font-weight:800;
   }
 
-  .pill b{color:var(--ink)}
+  .pill b{
+    color:var(--ink);
+  }
 
   .wall{
     margin-top:14px;
@@ -231,11 +388,15 @@
   }
 
   @media(max-width:980px){
-    .wall{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .wall{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
   }
 
   @media(max-width:560px){
-    .wall{grid-template-columns:1fr}
+    .wall{
+      grid-template-columns:1fr;
+    }
   }
 
   .card{
@@ -347,7 +508,12 @@
 
   .danger{
     border-color:rgba(200,60,90,.28);
-    background:linear-gradient(180deg,rgba(200,60,90,.10),rgba(255,248,250,.95));
+    background:
+      linear-gradient(
+        180deg,
+        rgba(200,60,90,.10),
+        rgba(255,248,250,.95)
+      );
   }
 
   .empty{
@@ -359,6 +525,11 @@
     color:var(--muted);
     font-weight:800;
   }
+
+
+  /* =========================================================
+     Modal
+  ========================================================= */
 
   .modal-backdrop{
     position:fixed;
@@ -395,7 +566,9 @@
     letter-spacing:.3px;
   }
 
-  .modal-body{padding:14px}
+  .modal-body{
+    padding:14px;
+  }
 
   .modal-actions{
     display:flex;
@@ -415,125 +588,365 @@
   }
 
   @media print{
-    header,.panel,.footer{display:none!important}
-    body{background:#fff}
-    .wrap{max-width:none;padding:0}
-    .wall{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .card{box-shadow:none}
+    header,
+    .panel,
+    .footer{
+      display:none!important;
+    }
+
+    body{
+      background:#fff;
+    }
+
+    .wrap{
+      max-width:none;
+      padding:0;
+    }
+
+    .wall{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .card{
+      box-shadow:none;
+    }
   }
 </style>
 </head>
 
 <body>
+
 <div class="wrap">
+
   <header>
+
     <div class="brand">
       <h1>情侶交往紀錄｜事件卡牆</h1>
-      <div class="sub">Stillness by Slowly｜把日子留在這裡。</div>
+      <div class="sub">
+        Stillness by Slowly｜把日子留在這裡。
+      </div>
     </div>
 
     <div class="top-actions">
-      <button class="btn-primary" id="btnOpenAdd">新增事件</button>
-      <button id="btnExport">匯出 JSON</button>
-      <label class="btn" for="importFile" style="cursor:pointer;">匯入 JSON</label>
-      <input id="importFile" type="file" accept="application/json" style="display:none;">
-      <button class="danger" id="btnClearAll">清空全部</button>
+
+      <button
+        class="btn-primary"
+        id="btnOpenAdd"
+        type="button"
+      >
+        新增事件
+      </button>
+
+      <button
+        id="btnExport"
+        type="button"
+      >
+        匯出 JSON
+      </button>
+
+      <div
+        class="slowly-file import-file"
+        id="importFileControl"
+        data-default-label="匯入 JSON"
+      >
+        <input
+          id="importFile"
+          class="slowly-file-native"
+          type="file"
+          accept="application/json,.json"
+        >
+
+        <button
+          type="button"
+          class="slowly-file-trigger"
+        >
+          <span class="slowly-file-label">
+            匯入 JSON
+          </span>
+        </button>
+      </div>
+
+      <button
+        class="danger"
+        id="btnClearAll"
+        type="button"
+      >
+        清空全部
+      </button>
+
     </div>
+
   </header>
 
+
+  <!-- =======================================================
+       Calendar
+  ======================================================== -->
+
   <section class="panel calendar-panel">
+
     <div class="calendar-panel-head">
-      <div class="calendar-panel-title">日曆</div>
-      <div class="calendar-panel-note">直接呼叫 Slowly Calendar</div>
+
+      <div class="calendar-panel-title">
+        日曆
+      </div>
+
+      <div class="calendar-panel-note">
+        點日期後新增事件會使用該日期
+      </div>
+
     </div>
 
     <div id="coupleCalendar"></div>
+
   </section>
 
+
+  <!-- =======================================================
+       Cards
+  ======================================================== -->
+
   <section class="panel">
+
     <div class="filters">
-      <label>搜尋（標題 / 內容 / 標籤）
-        <input id="q" type="search" placeholder="搜尋紀錄">
+
+      <label>
+        搜尋（標題 / 內容 / 標籤）
+
+        <input
+          id="q"
+          type="search"
+          placeholder="搜尋紀錄"
+        >
       </label>
 
-      <label>類型
-        <select id="typeFilter">
+
+      <label>
+        類型
+
+        <select
+          id="typeFilter"
+          data-slowly-select
+          aria-label="事件類型篩選"
+        >
           <option value="">全部</option>
         </select>
       </label>
 
-      <label>排序
-        <select id="sortBy">
-          <option value="date_desc">日期：新 → 舊</option>
-          <option value="date_asc">日期：舊 → 新</option>
-          <option value="updated_desc">更新：新 → 舊</option>
-          <option value="title_asc">標題：A → Z</option>
-          <option value="title_desc">標題：Z → A</option>
+
+      <label>
+        排序
+
+        <select
+          id="sortBy"
+          data-slowly-select
+          aria-label="事件排序"
+        >
+          <option value="date_desc">
+            日期：新 → 舊
+          </option>
+
+          <option value="date_asc">
+            日期：舊 → 新
+          </option>
+
+          <option value="updated_desc">
+            更新：新 → 舊
+          </option>
+
+          <option value="title_asc">
+            標題：A → Z
+          </option>
+
+          <option value="title_desc">
+            標題：Z → A
+          </option>
         </select>
       </label>
+
     </div>
 
-    <div class="stats" id="stats"></div>
+    <div
+      class="stats"
+      id="stats"
+    ></div>
+
     <div class="divider"></div>
 
-    <div class="wall" id="wall"></div>
-    <div class="empty" id="empty" style="display:none;">目前沒有事件卡。</div>
+    <div
+      class="wall"
+      id="wall"
+    ></div>
+
+    <div
+      class="empty"
+      id="empty"
+      style="display:none;"
+    >
+      目前沒有事件卡。
+    </div>
+
   </section>
 
-  <div class="footer">Stillness by Slowly｜Couple Log Cards</div>
+
+  <div class="footer">
+    Stillness by Slowly｜Couple Log Cards
+  </div>
+
 </div>
 
-<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
+<!-- =========================================================
+     Modal
+========================================================= -->
+
+<div
+  class="modal-backdrop"
+  id="modalBackdrop"
+  aria-hidden="true"
+>
+
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+  >
+
     <div class="modal-top">
-      <div class="modal-title" id="modalTitle">新增事件</div>
-      <button class="mini" id="btnCloseModal">關閉</button>
+
+      <div
+        class="modal-title"
+        id="modalTitle"
+      >
+        新增事件
+      </div>
+
+      <button
+        class="mini"
+        id="btnCloseModal"
+        type="button"
+      >
+        關閉
+      </button>
+
     </div>
+
 
     <div class="modal-body">
+
       <div class="grid">
+
         <div>
+
           <div class="row">
-            <label>日期
-              <input id="fDate" type="date">
+
+            <label>
+              日期
+
+              <input
+                id="fDate"
+                type="date"
+              >
             </label>
 
-            <label>類型
-              <select id="fType"></select>
+
+            <label>
+              類型
+
+              <select
+                id="fType"
+                data-slowly-select
+                aria-label="事件類型"
+              ></select>
+
             </label>
+
           </div>
 
-          <div class="row" style="margin-top:10px;">
-            <label>標題
-              <input id="fTitle" type="text">
+
+          <div
+            class="row"
+            style="margin-top:10px;"
+          >
+
+            <label>
+              標題
+
+              <input
+                id="fTitle"
+                type="text"
+              >
             </label>
 
-            <label>心情（可空）
-              <input id="fMood" type="text">
+
+            <label>
+              心情（可空）
+
+              <input
+                id="fMood"
+                type="text"
+              >
             </label>
+
           </div>
 
-          <label style="margin-top:10px;">內容
+
+          <label style="margin-top:10px;">
+            內容
+
             <textarea id="fContent"></textarea>
           </label>
+
         </div>
+
 
         <div>
-          <label>標籤（#tag 或逗號分隔）
+
+          <label>
+            標籤（#tag 或逗號分隔）
+
             <textarea id="fTags"></textarea>
           </label>
+
         </div>
+
       </div>
+
     </div>
+
 
     <div class="modal-actions">
-      <button class="danger" id="btnDeleteInModal" style="display:none;">刪除</button>
-      <button id="btnSave" class="btn-primary">儲存</button>
+
+      <button
+        class="danger"
+        id="btnDeleteInModal"
+        type="button"
+        style="display:none;"
+      >
+        刪除
+      </button>
+
+      <button
+        id="btnSave"
+        class="btn-primary"
+        type="button"
+      >
+        儲存
+      </button>
+
     </div>
+
   </div>
+
 </div>
 
-<!-- ===== Slowly Data Core ===== -->
+
+<!-- =========================================================
+     Slowly Data Core
+========================================================= -->
+
 <script src="https://lib.stillnessbyslowly.com/date/datetime.js"></script>
 <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_storage.js"></script>
 <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_search.js"></script>
@@ -541,36 +954,82 @@
 <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_sort.js"></script>
 <script src="https://lib.stillnessbyslowly.com/data/Data_backup.js"></script>
 
-<!-- ===== Calendar Core ===== -->
+
+<!-- =========================================================
+     Slowly UI
+========================================================= -->
+
+<script src="https://lib.stillnessbyslowly.com/ui/custom_select.js"></script>
+<script src="https://lib.stillnessbyslowly.com/ui/custom_file.js"></script>
+
+
+<!-- =========================================================
+     Calendar Core
+========================================================= -->
+
 <script src="https://lib.stillnessbyslowly.com/calendar/lunar_data.js"></script>
 <script src="https://lib.stillnessbyslowly.com/calendar/lunar.js"></script>
+
 <script src="https://lib.stillnessbyslowly.com/calendar/lunar_festivals_data.js"></script>
 <script src="https://lib.stillnessbyslowly.com/calendar/lunar_festivals.js"></script>
+
 <script src="https://lib.stillnessbyslowly.com/calendar/solar_festivals_data.js"></script>
 <script src="https://lib.stillnessbyslowly.com/calendar/solar_festivals.js"></script>
+
 <script src="https://lib.stillnessbyslowly.com/calendar/solar_terms_data.js"></script>
 <script src="https://lib.stillnessbyslowly.com/calendar/solar_terms.js"></script>
+
 <script src="https://lib.stillnessbyslowly.com/calendar/calendar.js"></script>
 
-<!-- ===== Calendar Component ===== -->
+
+<!-- =========================================================
+     Calendar Component + Interaction
+========================================================= -->
+
 <script src="https://lib.stillnessbyslowly.com/component/calendar/calendar_component.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/calendar_interaction.js"></script>
+
 
 <script>
 (async () => {
   "use strict";
 
-  SlowlyCalendar.mount("#coupleCalendar", {
-    view: "month",
-    gridLines: false
-  });
 
-  const SETTINGS_KEY = "sbs_couple_log_settings_v1";
+  /* =========================================================
+     Calendar
+  ========================================================= */
 
-  const recordStore = FictionStorage
-    .create({ namespace: "sbs-couple-log" })
-    .collection("records", {
-      normalize: normalizeRecord
-    });
+  const calendar = SlowlyCalendar.mount(
+    "#coupleCalendar",
+    {
+      view:"month",
+      gridLines:false
+    }
+  );
+
+  const calendarInteraction =
+    CalendarInteraction.create(calendar);
+
+
+  /* =========================================================
+     Data
+  ========================================================= */
+
+  const SETTINGS_KEY =
+    "sbs_couple_log_settings_v1";
+
+  const recordStore =
+    FictionStorage
+      .create({
+        namespace:"sbs-couple-log"
+      })
+      .collection(
+        "records",
+        {
+          normalize:normalizeRecord
+        }
+      );
+
 
   const DEFAULT_TYPES = [
     "日常照顧",
@@ -584,561 +1043,1487 @@
     "其他"
   ];
 
-  const wall = document.getElementById("wall");
-  const empty = document.getElementById("empty");
-  const statsEl = document.getElementById("stats");
 
-  const q = document.getElementById("q");
-  const typeFilter = document.getElementById("typeFilter");
-  const sortBy = document.getElementById("sortBy");
+  /* =========================================================
+     DOM
+  ========================================================= */
 
-  const btnExport = document.getElementById("btnExport");
-  const importFile = document.getElementById("importFile");
-  const btnClearAll = document.getElementById("btnClearAll");
+  const wall =
+    document.getElementById("wall");
 
-  const btnOpenAdd = document.getElementById("btnOpenAdd");
-  const modalBackdrop = document.getElementById("modalBackdrop");
-  const btnCloseModal = document.getElementById("btnCloseModal");
-  const modalTitle = document.getElementById("modalTitle");
-  const btnSave = document.getElementById("btnSave");
-  const btnDeleteInModal = document.getElementById("btnDeleteInModal");
+  const empty =
+    document.getElementById("empty");
 
-  const fDate = document.getElementById("fDate");
-  const fType = document.getElementById("fType");
-  const fTitle = document.getElementById("fTitle");
-  const fMood = document.getElementById("fMood");
-  const fContent = document.getElementById("fContent");
-  const fTags = document.getElementById("fTags");
+  const statsEl =
+    document.getElementById("stats");
 
-  let records = await recordStore.all();
-  let settings = loadSettings();
-  let editingId = null;
+  const q =
+    document.getElementById("q");
+
+  const typeFilter =
+    document.getElementById("typeFilter");
+
+  const sortBy =
+    document.getElementById("sortBy");
+
+
+  const btnExport =
+    document.getElementById("btnExport");
+
+  const importFile =
+    document.getElementById("importFile");
+
+  const importFileControl =
+    document.getElementById("importFileControl");
+
+  const btnClearAll =
+    document.getElementById("btnClearAll");
+
+
+  const btnOpenAdd =
+    document.getElementById("btnOpenAdd");
+
+  const modalBackdrop =
+    document.getElementById("modalBackdrop");
+
+  const btnCloseModal =
+    document.getElementById("btnCloseModal");
+
+  const modalTitle =
+    document.getElementById("modalTitle");
+
+  const btnSave =
+    document.getElementById("btnSave");
+
+  const btnDeleteInModal =
+    document.getElementById("btnDeleteInModal");
+
+
+  const fDate =
+    document.getElementById("fDate");
+
+  const fType =
+    document.getElementById("fType");
+
+  const fTitle =
+    document.getElementById("fTitle");
+
+  const fMood =
+    document.getElementById("fMood");
+
+  const fContent =
+    document.getElementById("fContent");
+
+  const fTags =
+    document.getElementById("fTags");
+
+
+  /* =========================================================
+     State
+  ========================================================= */
+
+  let records =
+    await recordStore.all();
+
+  let settings =
+    loadSettings();
+
+  let editingId =
+    null;
+
+
+  /* =========================================================
+     Slowly UI instances
+  ========================================================= */
+
+  const typeFilterSelect =
+    SlowlySelect.create(typeFilter);
+
+  const sortSelect =
+    SlowlySelect.create(sortBy);
+
+  const formTypeSelect =
+    SlowlySelect.create(fType);
+
+  SlowlyCustomFile.init(importFileControl);
+
+
+  /* =========================================================
+     Init
+  ========================================================= */
 
   init();
 
+
   function init(){
-    q.value = settings.q;
-    sortBy.value = settings.sort;
+
+    q.value =
+      settings.q;
+
+    sortBy.value =
+      settings.sort;
 
     refreshTypes();
 
-    if([...typeFilter.options].some(option => option.value === settings.type)){
-      typeFilter.value = settings.type;
+    if(
+      [...typeFilter.options]
+        .some(
+          option =>
+            option.value === settings.type
+        )
+    ){
+      typeFilter.value =
+        settings.type;
     }
 
-    q.addEventListener("input", () => {
-      settings.q = q.value;
-      saveSettings();
-      render();
-    });
+    syncSelects();
 
-    typeFilter.addEventListener("change", () => {
-      settings.type = typeFilter.value;
-      saveSettings();
-      render();
-    });
 
-    sortBy.addEventListener("change", () => {
-      settings.sort = sortBy.value;
-      saveSettings();
-      render();
-    });
+    /* ===== Calendar Interaction ===== */
 
-    btnOpenAdd.addEventListener("click", openAdd);
-    btnCloseModal.addEventListener("click", closeModal);
+    calendarInteraction.subscribe(
+      ({ dateKey }) => {
 
-    modalBackdrop.addEventListener("click", event => {
-      if(event.target === modalBackdrop){
-        closeModal();
+        if(
+          isModalOpen() &&
+          !editingId
+        ){
+          fDate.value =
+            dateKey;
+        }
+
       }
-    });
+    );
 
-    btnSave.addEventListener("click", onSave);
-    btnDeleteInModal.addEventListener("click", onDeleteFromModal);
 
-    btnExport.addEventListener("click", exportJSON);
-    importFile.addEventListener("change", onImportFile);
+    /* ===== Filters ===== */
 
-    btnClearAll.addEventListener("click", async () => {
-      if(!confirm("確定要清空全部資料？這是不可逆操作。")){
-        return;
+    q.addEventListener(
+      "input",
+      () => {
+
+        settings.q =
+          q.value;
+
+        saveSettings();
+        render();
+
       }
+    );
 
-      await recordStore.clear();
-      records = [];
-      render();
-    });
 
-    window.addEventListener("keydown", event => {
-      if(event.key === "Escape" && isModalOpen()){
-        closeModal();
+    typeFilter.addEventListener(
+      "change",
+      () => {
+
+        settings.type =
+          typeFilter.value;
+
+        saveSettings();
+        render();
+
       }
-    });
+    );
+
+
+    sortBy.addEventListener(
+      "change",
+      () => {
+
+        settings.sort =
+          sortBy.value;
+
+        saveSettings();
+        render();
+
+      }
+    );
+
+
+    /* ===== Modal ===== */
+
+    btnOpenAdd.addEventListener(
+      "click",
+      openAdd
+    );
+
+    btnCloseModal.addEventListener(
+      "click",
+      closeModal
+    );
+
+
+    modalBackdrop.addEventListener(
+      "click",
+      event => {
+
+        if(
+          event.target === modalBackdrop
+        ){
+          closeModal();
+        }
+
+      }
+    );
+
+
+    btnSave.addEventListener(
+      "click",
+      onSave
+    );
+
+    btnDeleteInModal.addEventListener(
+      "click",
+      onDeleteFromModal
+    );
+
+
+    /* ===== Backup ===== */
+
+    btnExport.addEventListener(
+      "click",
+      exportJSON
+    );
+
+    importFile.addEventListener(
+      "change",
+      onImportFile
+    );
+
+
+    /* ===== Clear ===== */
+
+    btnClearAll.addEventListener(
+      "click",
+      async () => {
+
+        if(
+          !confirm(
+            "確定要清空全部資料？這是不可逆操作。"
+          )
+        ){
+          return;
+        }
+
+        await recordStore.clear();
+
+        records = [];
+
+        render();
+
+      }
+    );
+
+
+    /* ===== Keyboard ===== */
+
+    window.addEventListener(
+      "keydown",
+      event => {
+
+        if(
+          event.key === "Escape" &&
+          isModalOpen()
+        ){
+          closeModal();
+        }
+
+      }
+    );
+
 
     render();
+
   }
+
+
+  /* =========================================================
+     Types
+  ========================================================= */
 
   function getTypes(){
-    const types = new Set(DEFAULT_TYPES);
 
-    records.forEach(record => {
-      if(record.type){
-        types.add(record.type);
+    const types =
+      new Set(DEFAULT_TYPES);
+
+    records.forEach(
+      record => {
+
+        if(record.type){
+          types.add(record.type);
+        }
+
       }
-    });
+    );
 
     return [...types];
+
   }
 
+
   function refreshTypes(){
-    const types = getTypes();
-    const currentFilter = typeFilter.value;
+
+    const types =
+      getTypes();
+
+    const currentFilter =
+      typeFilter.value;
+
 
     typeFilter.innerHTML =
       `<option value="">全部</option>` +
       types
-        .map(type =>
-          `<option value="${escapeHtmlAttr(type)}">${escapeHtml(type)}</option>`
+        .map(
+          type =>
+            `<option value="${escapeHtmlAttr(type)}">${escapeHtml(type)}</option>`
         )
         .join("");
 
-    fType.innerHTML = types
-      .map(type =>
-        `<option value="${escapeHtmlAttr(type)}">${escapeHtml(type)}</option>`
-      )
-      .join("");
 
-    if(currentFilter === "" || types.includes(currentFilter)){
-      typeFilter.value = currentFilter;
+    fType.innerHTML =
+      types
+        .map(
+          type =>
+            `<option value="${escapeHtmlAttr(type)}">${escapeHtml(type)}</option>`
+        )
+        .join("");
+
+
+    if(
+      currentFilter === "" ||
+      types.includes(currentFilter)
+    ){
+      typeFilter.value =
+        currentFilter;
     }
+
+
+    typeFilterSelect?.sync();
+    formTypeSelect?.sync();
+
   }
 
+
+  function syncSelects(){
+
+    typeFilterSelect?.sync();
+    sortSelect?.sync();
+    formTypeSelect?.sync();
+
+  }
+
+
+  /* =========================================================
+     Render
+  ========================================================= */
+
   function render(){
+
     refreshTypes();
 
-    const list = getFilteredSortedRecords();
+    const list =
+      getFilteredSortedRecords();
 
     renderStats(list);
     renderWall(list);
+    refreshCalendarMarkers();
+
   }
 
-  function getFilteredSortedRecords(){
-    let list = FictionFilter.filter(records, {
-      equals: {
-        type: typeFilter.value
-      }
-    });
 
-    list = FictionSearch.search(
-      list,
-      q.value,
-      ["title", "content", "mood", "tags", "type", "date"]
+  function refreshCalendarMarkers(){
+
+    const dates =
+      records
+        .map(
+          record =>
+            record.date
+        )
+        .filter(Boolean);
+
+    calendarInteraction.setMarkers(
+      dates
     );
 
+  }
+
+
+  /* =========================================================
+     Filter / Search / Sort
+  ========================================================= */
+
+  function getFilteredSortedRecords(){
+
+    let list =
+      FictionFilter.filter(
+        records,
+        {
+          equals:{
+            type:typeFilter.value
+          }
+        }
+      );
+
+
+    list =
+      FictionSearch.search(
+        list,
+        q.value,
+        [
+          "title",
+          "content",
+          "mood",
+          "tags",
+          "type",
+          "date"
+        ]
+      );
+
+
     const sorts = {
-      date_desc: {
-        field: "date",
-        direction: "desc",
-        type: "string"
+
+      date_desc:{
+        field:"date",
+        direction:"desc",
+        type:"string"
       },
-      date_asc: {
-        field: "date",
-        direction: "asc",
-        type: "string"
+
+      date_asc:{
+        field:"date",
+        direction:"asc",
+        type:"string"
       },
-      updated_desc: {
-        field: "updatedAt",
-        direction: "desc",
-        type: "date"
+
+      updated_desc:{
+        field:"updatedAt",
+        direction:"desc",
+        type:"date"
       },
-      title_asc: {
-        field: "title",
-        direction: "asc",
-        type: "string"
+
+      title_asc:{
+        field:"title",
+        direction:"asc",
+        type:"string"
       },
-      title_desc: {
-        field: "title",
-        direction: "desc",
-        type: "string"
+
+      title_desc:{
+        field:"title",
+        direction:"desc",
+        type:"string"
       }
+
     };
+
 
     return FictionSort.sort(
       list,
-      sorts[sortBy.value] || sorts.date_desc
+      sorts[sortBy.value] ||
+        sorts.date_desc
     );
+
   }
 
-  function renderStats(currentList){
+
+  /* =========================================================
+     Stats
+  ========================================================= */
+
+  function renderStats(
+    currentList
+  ){
+
     const byType = {};
 
-    records.forEach(record => {
-      const type = record.type || "未分類";
-      byType[type] = (byType[type] || 0) + 1;
-    });
 
-    const topTypes = Object.entries(byType)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3);
+    records.forEach(
+      record => {
 
-    const absurdCount = records.filter(
-      record => record.type === "荒謬事件"
-    ).length;
+        const type =
+          record.type ||
+          "未分類";
+
+        byType[type] =
+          (byType[type] || 0) + 1;
+
+      }
+    );
+
+
+    const topTypes =
+      Object.entries(byType)
+        .sort(
+          (a,b) =>
+            b[1] - a[1]
+        )
+        .slice(0,3);
+
+
+    const absurdCount =
+      records.filter(
+        record =>
+          record.type ===
+          "荒謬事件"
+      ).length;
+
 
     statsEl.innerHTML = `
+
       <div class="pill">
-        總事件 <b>${records.length}</b>｜目前顯示 <b>${currentList.length}</b>
+        總事件
+        <b>${records.length}</b>
+        ｜
+        目前顯示
+        <b>${currentList.length}</b>
       </div>
 
       <div class="pill">
-        荒謬事件 <b>${absurdCount}</b>
+        荒謬事件
+        <b>${absurdCount}</b>
       </div>
 
-      ${topTypes.map(([type, count]) =>
-        `<div class="pill"><b>${escapeHtml(type)}</b> × <b>${count}</b></div>`
-      ).join("")}
-    `;
-  }
-
-  function renderWall(list){
-    wall.innerHTML = "";
-    empty.style.display = list.length ? "none" : "block";
-
-    list.forEach(record => {
-      const dateText = record.date
-        ? DateTime.formatDate(record.date)
-        : "（無日期）";
-
-      const tags = record.tags.length
-        ? `
-          <div class="tags">
-            ${record.tags.map(tag =>
-              `<span class="tag">#${escapeHtml(tag)}</span>`
-            ).join("")}
-          </div>
-        `
-        : "";
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <div class="card-head">
-          <div class="meta">
-            <div class="title">${escapeHtml(record.title || "（未命名）")}</div>
-            <div class="tiny"><span>${escapeHtml(dateText)}</span></div>
-          </div>
-
-          <div>
-            <span class="badge">
-              ${escapeHtml(record.type || "未分類")}
-              ${record.mood ? ` · ${escapeHtml(record.mood)}` : ""}
-            </span>
-          </div>
-        </div>
-
-        ${
-          record.content
-            ? `<div class="content">${escapeHtml(record.content)}</div>`
-            : `<div class="content" style="color:var(--muted)">（無內容）</div>`
-        }
-
-        ${tags}
-
-        <div class="card-actions">
-          <button class="mini" data-act="edit" data-id="${escapeHtmlAttr(record.id)}">
-            編輯
-          </button>
-
-          <button class="mini danger" data-act="del" data-id="${escapeHtmlAttr(record.id)}">
-            刪除
-          </button>
-        </div>
-      `;
-
-      card.addEventListener("click", event => {
-        const button = event.target.closest("button");
-
-        if(!button){
-          return;
-        }
-
-        if(button.dataset.act === "edit"){
-          openEdit(button.dataset.id);
-        }
-
-        if(button.dataset.act === "del"){
-          deleteRecord(button.dataset.id);
-        }
-      });
-
-      wall.appendChild(card);
-    });
-  }
-
-  function openAdd(){
-    editingId = null;
-
-    modalTitle.textContent = "新增事件";
-    btnDeleteInModal.style.display = "none";
-
-    fDate.value = DateTime.dateKey();
-    fType.value = "日常照顧";
-    fTitle.value = "";
-    fMood.value = "";
-    fContent.value = "";
-    fTags.value = "";
-
-    openModal();
-  }
-
-  function openEdit(id){
-    const record = records.find(
-      item => String(item.id) === String(id)
-    );
-
-    if(!record){
-      return;
-    }
-
-    editingId = record.id;
-
-    modalTitle.textContent = "編輯事件";
-    btnDeleteInModal.style.display = "inline-flex";
-
-    fDate.value = record.date;
-    fType.value = record.type;
-    fTitle.value = record.title;
-    fMood.value = record.mood;
-    fContent.value = record.content;
-    fTags.value = record.tags.map(tag => `#${tag}`).join(" ");
-
-    openModal();
-  }
-
-  function openModal(){
-    modalBackdrop.style.display = "flex";
-    modalBackdrop.setAttribute("aria-hidden", "false");
-  }
-
-  function closeModal(){
-    modalBackdrop.style.display = "none";
-    modalBackdrop.setAttribute("aria-hidden", "true");
-    editingId = null;
-  }
-
-  function isModalOpen(){
-    return modalBackdrop.style.display === "flex";
-  }
-
-  async function onSave(){
-    const data = {
-      date: fDate.value,
-      type: fType.value || "其他",
-      title: fTitle.value.trim(),
-      mood: fMood.value.trim(),
-      content: fContent.value.trim(),
-      tags: parseTags(fTags.value)
-    };
-
-    if(!data.title){
-      alert("請先填標題。");
-      fTitle.focus();
-      return;
-    }
-
-    try{
-      if(editingId){
-        await recordStore.update(editingId, data);
-      }else{
-        await recordStore.add(data);
+      ${
+        topTypes
+          .map(
+            ([type,count]) =>
+              `<div class="pill"><b>${escapeHtml(type)}</b> × <b>${count}</b></div>`
+          )
+          .join("")
       }
 
-      records = await recordStore.all();
+    `;
 
-      closeModal();
-      render();
-    }catch(error){
-      console.error(error);
-      alert("儲存失敗：" + (error?.message || String(error)));
-    }
   }
 
-  async function onDeleteFromModal(){
-    if(editingId){
-      await deleteRecord(editingId, true);
-    }
-  }
 
-  async function deleteRecord(id, closeAfter = false){
-    const record = records.find(
-      item => String(item.id) === String(id)
+  /* =========================================================
+     Wall
+  ========================================================= */
+
+  function renderWall(list){
+
+    wall.innerHTML = "";
+
+    empty.style.display =
+      list.length
+        ? "none"
+        : "block";
+
+
+    list.forEach(
+      record => {
+
+        const dateText =
+          record.date
+            ? DateTime.formatDate(
+                record.date
+              )
+            : "（無日期）";
+
+
+        const tags =
+          record.tags.length
+            ? `
+              <div class="tags">
+                ${
+                  record.tags
+                    .map(
+                      tag =>
+                        `<span class="tag">#${escapeHtml(tag)}</span>`
+                    )
+                    .join("")
+                }
+              </div>
+            `
+            : "";
+
+
+        const card =
+          document.createElement(
+            "div"
+          );
+
+        card.className =
+          "card";
+
+
+        card.innerHTML = `
+
+          <div class="card-head">
+
+            <div class="meta">
+
+              <div class="title">
+                ${
+                  escapeHtml(
+                    record.title ||
+                    "（未命名）"
+                  )
+                }
+              </div>
+
+              <div class="tiny">
+                <span>
+                  ${escapeHtml(dateText)}
+                </span>
+              </div>
+
+            </div>
+
+            <div>
+
+              <span class="badge">
+
+                ${
+                  escapeHtml(
+                    record.type ||
+                    "未分類"
+                  )
+                }
+
+                ${
+                  record.mood
+                    ? ` · ${escapeHtml(record.mood)}`
+                    : ""
+                }
+
+              </span>
+
+            </div>
+
+          </div>
+
+
+          ${
+            record.content
+              ? `<div class="content">${escapeHtml(record.content)}</div>`
+              : `<div class="content" style="color:var(--muted)">（無內容）</div>`
+          }
+
+
+          ${tags}
+
+
+          <div class="card-actions">
+
+            <button
+              class="mini"
+              type="button"
+              data-act="edit"
+              data-id="${escapeHtmlAttr(record.id)}"
+            >
+              編輯
+            </button>
+
+            <button
+              class="mini danger"
+              type="button"
+              data-act="del"
+              data-id="${escapeHtmlAttr(record.id)}"
+            >
+              刪除
+            </button>
+
+          </div>
+
+        `;
+
+
+        card.addEventListener(
+          "click",
+          event => {
+
+            const button =
+              event.target.closest(
+                "button"
+              );
+
+            if(!button){
+              return;
+            }
+
+
+            if(
+              button.dataset.act ===
+              "edit"
+            ){
+              openEdit(
+                button.dataset.id
+              );
+            }
+
+
+            if(
+              button.dataset.act ===
+              "del"
+            ){
+              deleteRecord(
+                button.dataset.id
+              );
+            }
+
+          }
+        );
+
+
+        wall.appendChild(
+          card
+        );
+
+      }
     );
+
+  }
+
+
+  /* =========================================================
+     Add
+  ========================================================= */
+
+  function openAdd(){
+
+    editingId =
+      null;
+
+    modalTitle.textContent =
+      "新增事件";
+
+    btnDeleteInModal.style.display =
+      "none";
+
+
+    /*
+      日期優先使用 Calendar Interaction
+      目前選取的日期。
+
+      若無法取得才退回今天。
+    */
+
+    fDate.value =
+      calendarInteraction.getDateKey() ||
+      DateTime.dateKey();
+
+
+    fType.value =
+      "日常照顧";
+
+    fTitle.value =
+      "";
+
+    fMood.value =
+      "";
+
+    fContent.value =
+      "";
+
+    fTags.value =
+      "";
+
+
+    formTypeSelect?.sync();
+
+    openModal();
+
+  }
+
+
+  /* =========================================================
+     Edit
+  ========================================================= */
+
+  function openEdit(id){
+
+    const record =
+      records.find(
+        item =>
+          String(item.id) ===
+          String(id)
+      );
+
 
     if(!record){
       return;
     }
 
-    if(!confirm(`確定刪除「${record.title}」？`)){
+
+    editingId =
+      record.id;
+
+
+    modalTitle.textContent =
+      "編輯事件";
+
+    btnDeleteInModal.style.display =
+      "inline-flex";
+
+
+    fDate.value =
+      record.date;
+
+    fType.value =
+      record.type;
+
+    fTitle.value =
+      record.title;
+
+    fMood.value =
+      record.mood;
+
+    fContent.value =
+      record.content;
+
+    fTags.value =
+      record.tags
+        .map(
+          tag =>
+            `#${tag}`
+        )
+        .join(" ");
+
+
+    formTypeSelect?.sync();
+
+    openModal();
+
+  }
+
+
+  /* =========================================================
+     Modal
+  ========================================================= */
+
+  function openModal(){
+
+    modalBackdrop.style.display =
+      "flex";
+
+    modalBackdrop.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+
+  }
+
+
+  function closeModal(){
+
+    modalBackdrop.style.display =
+      "none";
+
+    modalBackdrop.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    editingId =
+      null;
+
+  }
+
+
+  function isModalOpen(){
+
+    return (
+      modalBackdrop.style.display ===
+      "flex"
+    );
+
+  }
+
+
+  /* =========================================================
+     Save
+  ========================================================= */
+
+  async function onSave(){
+
+    const data = {
+
+      date:
+        fDate.value,
+
+      type:
+        fType.value ||
+        "其他",
+
+      title:
+        fTitle.value.trim(),
+
+      mood:
+        fMood.value.trim(),
+
+      content:
+        fContent.value.trim(),
+
+      tags:
+        parseTags(
+          fTags.value
+        )
+
+    };
+
+
+    if(!data.title){
+
+      alert(
+        "請先填標題。"
+      );
+
+      fTitle.focus();
+
+      return;
+
+    }
+
+
+    try{
+
+      if(editingId){
+
+        await recordStore.update(
+          editingId,
+          data
+        );
+
+      }else{
+
+        await recordStore.add(
+          data
+        );
+
+      }
+
+
+      records =
+        await recordStore.all();
+
+
+      closeModal();
+
+      render();
+
+
+    }catch(error){
+
+      console.error(
+        error
+      );
+
+      alert(
+        "儲存失敗：" +
+        (
+          error?.message ||
+          String(error)
+        )
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     Delete
+  ========================================================= */
+
+  async function onDeleteFromModal(){
+
+    if(editingId){
+
+      await deleteRecord(
+        editingId,
+        true
+      );
+
+    }
+
+  }
+
+
+  async function deleteRecord(
+    id,
+    closeAfter = false
+  ){
+
+    const record =
+      records.find(
+        item =>
+          String(item.id) ===
+          String(id)
+      );
+
+
+    if(!record){
       return;
     }
 
+
+    if(
+      !confirm(
+        `確定刪除「${record.title}」？`
+      )
+    ){
+      return;
+    }
+
+
     try{
-      await recordStore.remove(id);
-      records = await recordStore.all();
+
+      await recordStore.remove(
+        id
+      );
+
+      records =
+        await recordStore.all();
+
 
       if(closeAfter){
         closeModal();
       }
 
+
       render();
+
+
     }catch(error){
-      console.error(error);
-      alert("刪除失敗：" + (error?.message || String(error)));
+
+      console.error(
+        error
+      );
+
+      alert(
+        "刪除失敗：" +
+        (
+          error?.message ||
+          String(error)
+        )
+      );
+
     }
+
   }
+
+
+  /* =========================================================
+     Export
+  ========================================================= */
 
   function exportJSON(){
+
     DataBackup.downloadJson(
-      `couple_log_backup_${DataBackup.todayISO().replaceAll("-", "")}.json`,
+
+      `couple_log_backup_${DataBackup.todayISO().replaceAll("-","")}.json`,
+
       DataBackup.createPayload({
-        app: "sbs_couple_log_cards",
-        version: 1,
-        data: records
+        app:"sbs_couple_log_cards",
+        version:1,
+        data:records
       })
+
     );
+
   }
 
+
+  /* =========================================================
+     Import
+  ========================================================= */
+
   async function onImportFile(){
-    const file = importFile.files?.[0];
+
+    const file =
+      importFile.files?.[0];
+
 
     if(!file){
       return;
     }
 
-    try{
-      const json = await DataBackup.readJsonFile(file);
-      const incoming = DataBackup.extractData(json);
 
-      if(!Array.isArray(incoming)){
-        throw new Error("備份資料必須是陣列。");
+    try{
+
+      const json =
+        await DataBackup.readJsonFile(
+          file
+        );
+
+
+      const incoming =
+        DataBackup.extractData(
+          json
+        );
+
+
+      if(
+        !Array.isArray(
+          incoming
+        )
+      ){
+        throw new Error(
+          "備份資料必須是陣列。"
+        );
       }
 
-      const imported = incoming
-        .filter(record =>
-          record &&
-          typeof record === "object" &&
-          String(record.title || "").trim()
-        )
-        .map(normalizeRecord);
 
-      const mode = prompt("匯入模式：1 合併 / 2 覆蓋", "1");
+      const imported =
+        incoming
+          .filter(
+            record =>
+              record &&
+              typeof record ===
+                "object" &&
+              String(
+                record.title ||
+                ""
+              ).trim()
+          )
+          .map(
+            normalizeRecord
+          );
 
-      if(mode !== "1" && mode !== "2"){
+
+      const mode =
+        prompt(
+          "匯入模式：1 合併 / 2 覆蓋",
+          "1"
+        );
+
+
+      if(
+        mode !== "1" &&
+        mode !== "2"
+      ){
         return;
       }
 
-      let nextRecords = imported;
+
+      let nextRecords =
+        imported;
+
 
       if(mode === "1"){
-        const map = new Map(
-          records.map(record => [String(record.id), record])
+
+        const map =
+          new Map(
+            records.map(
+              record => [
+                String(record.id),
+                record
+              ]
+            )
+          );
+
+
+        imported.forEach(
+          record => {
+
+            const old =
+              map.get(
+                String(record.id)
+              );
+
+
+            if(
+              !old ||
+              new Date(
+                record.updatedAt || 0
+              ) >=
+              new Date(
+                old.updatedAt || 0
+              )
+            ){
+              map.set(
+                String(record.id),
+                record
+              );
+            }
+
+          }
         );
 
-        imported.forEach(record => {
-          const old = map.get(String(record.id));
 
-          if(
-            !old ||
-            new Date(record.updatedAt || 0) >= new Date(old.updatedAt || 0)
-          ){
-            map.set(String(record.id), record);
-          }
-        });
+        nextRecords =
+          [...map.values()];
 
-        nextRecords = [...map.values()];
       }
 
-      await recordStore.replace(nextRecords);
-      records = await recordStore.all();
 
-      render();
-    }catch(error){
-      console.error(error);
-      alert("匯入失敗：" + (error?.message || String(error)));
-    }finally{
-      importFile.value = "";
-    }
-  }
-
-  function normalizeRecord(record){
-    return {
-      ...record,
-      date: DateTime.parseDateKey(String(record.date || "").slice(0, 10))
-        ? String(record.date).slice(0, 10)
-        : "",
-      type: String(record.type || "其他").trim() || "其他",
-      title: String(record.title || "").trim(),
-      mood: String(record.mood || "").trim(),
-      content: String(record.content || "").trim(),
-      tags: Array.isArray(record.tags)
-        ? record.tags
-            .map(tag => String(tag).trim())
-            .filter(Boolean)
-        : []
-    };
-  }
-
-  function loadSettings(){
-    try{
-      const saved = JSON.parse(
-        localStorage.getItem(SETTINGS_KEY) || "{}"
+      await recordStore.replace(
+        nextRecords
       );
 
-      return {
-        q: String(saved.q || ""),
-        type: String(saved.type || ""),
-        sort: String(saved.sort || "date_desc")
-      };
-    }catch(_){
-      return {
-        q: "",
-        type: "",
-        sort: "date_desc"
-      };
+
+      records =
+        await recordStore.all();
+
+
+      render();
+
+
+    }catch(error){
+
+      console.error(
+        error
+      );
+
+      alert(
+        "匯入失敗：" +
+        (
+          error?.message ||
+          String(error)
+        )
+      );
+
+
+    }finally{
+
+      SlowlyCustomFile.reset(
+        importFileControl
+      );
+
     }
+
   }
+
+
+  /* =========================================================
+     Normalize
+  ========================================================= */
+
+  function normalizeRecord(
+    record
+  ){
+
+    return {
+
+      ...record,
+
+      date:
+        DateTime.parseDateKey(
+          String(
+            record.date ||
+            ""
+          ).slice(
+            0,
+            10
+          )
+        )
+          ? String(
+              record.date
+            ).slice(
+              0,
+              10
+            )
+          : "",
+
+
+      type:
+        String(
+          record.type ||
+          "其他"
+        ).trim() ||
+        "其他",
+
+
+      title:
+        String(
+          record.title ||
+          ""
+        ).trim(),
+
+
+      mood:
+        String(
+          record.mood ||
+          ""
+        ).trim(),
+
+
+      content:
+        String(
+          record.content ||
+          ""
+        ).trim(),
+
+
+      tags:
+        Array.isArray(
+          record.tags
+        )
+          ? record.tags
+              .map(
+                tag =>
+                  String(tag).trim()
+              )
+              .filter(Boolean)
+          : []
+
+    };
+
+  }
+
+
+  /* =========================================================
+     Settings
+  ========================================================= */
+
+  function loadSettings(){
+
+    try{
+
+      const saved =
+        JSON.parse(
+          localStorage.getItem(
+            SETTINGS_KEY
+          ) ||
+          "{}"
+        );
+
+
+      return {
+
+        q:
+          String(
+            saved.q ||
+            ""
+          ),
+
+        type:
+          String(
+            saved.type ||
+            ""
+          ),
+
+        sort:
+          String(
+            saved.sort ||
+            "date_desc"
+          )
+
+      };
+
+
+    }catch(_){
+
+      return {
+        q:"",
+        type:"",
+        sort:"date_desc"
+      };
+
+    }
+
+  }
+
 
   function saveSettings(){
+
     localStorage.setItem(
       SETTINGS_KEY,
-      JSON.stringify(settings)
+      JSON.stringify(
+        settings
+      )
     );
+
   }
 
-  function parseTags(value){
-    return [...new Set(
-      String(value || "")
-        .replace(/，/g, ",")
-        .split(/[\s,]+/)
-        .map(tag => tag.trim().replace(/^#/, ""))
-        .filter(Boolean)
-    )];
+
+  /* =========================================================
+     Tags
+  ========================================================= */
+
+  function parseTags(
+    value
+  ){
+
+    return [
+
+      ...new Set(
+
+        String(
+          value ||
+          ""
+        )
+
+          .replace(
+            /，/g,
+            ","
+          )
+
+          .split(
+            /[\s,]+/
+          )
+
+          .map(
+            tag =>
+              tag
+                .trim()
+                .replace(
+                  /^#/,
+                  ""
+                )
+          )
+
+          .filter(
+            Boolean
+          )
+
+      )
+
+    ];
+
   }
 
-  function escapeHtml(value){
+
+  /* =========================================================
+     Escape
+  ========================================================= */
+
+  function escapeHtml(
+    value
+  ){
+
     return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+
+      .replaceAll(
+        "&",
+        "&amp;"
+      )
+
+      .replaceAll(
+        "<",
+        "&lt;"
+      )
+
+      .replaceAll(
+        ">",
+        "&gt;"
+      )
+
+      .replaceAll(
+        '"',
+        "&quot;"
+      )
+
+      .replaceAll(
+        "'",
+        "&#39;"
+      );
+
   }
 
-  function escapeHtmlAttr(value){
-    return escapeHtml(value);
+
+  function escapeHtmlAttr(
+    value
+  ){
+
+    return escapeHtml(
+      value
+    );
+
   }
+
 })();
 </script>
+
 </body>
 </html>
