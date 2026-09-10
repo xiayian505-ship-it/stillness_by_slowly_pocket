@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const RETAIN_DAYS=365;
   const STORE_NAMESPACE="sbs-duo-book-v1";
   const STATE_ID="main";
-  if(!window.DateTime||!window.Timestamp||!window.Money||!window.Currency||!window.DataBackup||!window.FictionChange||!window.FictionStorage||!window.AuthPermissionUI){
+  if(!window.DateTime||!window.Timestamp||!window.Money||!window.Currency||!window.DataBackup||!window.RealtimeSync||!window.FictionChange||!window.FictionStorage||!window.AuthPermissionUI){
     alert("共用模組載入失敗，請重新整理後再試。");
     return;
   }
@@ -121,23 +121,39 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       };
     },
 
-    async save(userId,state){
+    async save(userId,state,expectedUpdatedAt=null){
       if(!userId)throw new Error("missing authenticated user id");
 
-      const {data,error}=await supabaseClient
+      let query=supabaseClient
         .from("books")
         .update({state})
-        .eq("owner_id",userId)
+        .eq("owner_id",userId);
+
+      // 樂觀鎖：只有雲端仍是本機已知版本時才允許整包 state 覆蓋。
+      if(expectedUpdatedAt){
+        query=query.eq("updated_at",expectedUpdatedAt);
+      }
+
+      const {data,error}=await query
         .select("updated_at")
-        .single();
+        .maybeSingle();
 
       if(error)throw error;
-      return data?.updated_at||null;
+
+      if(!data){
+        const conflict=new Error("book version conflict");
+        conflict.code="BOOK_VERSION_CONFLICT";
+        throw conflict;
+      }
+
+      return data.updated_at||null;
     }
   };
 
   let session={isAuthenticated:false,email:"",userId:""};
   let bookUpdatedAt=null;
+  let realtimeSync=null;
+  let stateEpoch=0;
   let cloudSaveErrorNotified=false;
   let records={},names={A:"A",B:"B"},adjust={},currencyBook={},saveQueue=Promise.resolve();
   const now=new Date(); let viewYear=now.getFullYear(),viewMonth=now.getMonth();
@@ -178,6 +194,106 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     currencyBook=s.currencyBook;
   }
 
+  /* ===== Realtime / shared-book sync =====
+     RealtimeSync 只負責跨裝置事件與版本判斷。
+     帳本本身負責：
+     - 收到遠端 state 後套用資料並重畫
+     - save 時用 updated_at 做 optimistic locking
+     - 登入開始訂閱、登出解除訂閱
+  ===== */
+  function applyBookState(state,updatedAt,{emitType="remote-sync"}={}){
+    const next=normalize(state);
+    records=next.records;
+    names=next.names;
+    adjust=next.adjust;
+    currencyBook=next.currencyBook;
+    bookUpdatedAt=updatedAt||null;
+    stateEpoch+=1;
+
+    realtimeSync?.setKnownVersion(bookUpdatedAt);
+
+    syncNameInputs();
+    updateLabels();
+    renderCalendar();
+
+    if(modal&&!modal.classList.contains("hidden")&&modal.dataset.date){
+      renderDetail(modal.dataset.date);
+    }
+
+    bookChange.emit({
+      type:emitType,
+      collection:"state",
+      operationId:Timestamp.create()
+    });
+  }
+
+  async function reloadCloudBook(emitType="remote-reload"){
+    if(!session.isAuthenticated||!session.userId)return false;
+
+    const cloud=await SupabaseBookAdapter.loadOrCreate(session.userId);
+    applyBookState(cloud.state,cloud.updatedAt,{emitType});
+    return true;
+  }
+
+  async function stopRealtime(){
+    const sync=realtimeSync;
+    realtimeSync=null;
+
+    if(sync){
+      await sync.destroy();
+    }
+  }
+
+  async function startRealtime(){
+    if(!session.isAuthenticated||!session.userId)return;
+
+    await stopRealtime();
+
+    const targetUserId=session.userId;
+    const sync=RealtimeSync.create({
+      client:supabaseClient,
+      table:"books",
+      event:"UPDATE",
+      filter:`owner_id=eq.${targetUserId}`,
+      versionField:"updated_at",
+      knownVersion:bookUpdatedAt,
+
+      async onRemote(event){
+        // 若登入狀態已切換，不接受舊訂閱殘留事件。
+        if(!session.isAuthenticated||session.userId!==targetUserId)return;
+
+        // 等目前已排入的本機存檔完成，避免自己的 UPDATE 回來時重複套用。
+        await saveQueue.catch(()=>{});
+
+        if(!session.isAuthenticated||session.userId!==targetUserId)return;
+
+        const comparison=RealtimeSync.compareVersion(event.version,bookUpdatedAt);
+        if(comparison!==null&&comparison<=0){
+          sync.setKnownVersion(bookUpdatedAt);
+          return;
+        }
+
+        applyBookState(event.record?.state,event.version,{emitType:"remote-sync"});
+        cloudSaveErrorNotified=false;
+      },
+
+      async onReconnect(){
+        if(!session.isAuthenticated||session.userId!==targetUserId)return;
+        await saveQueue.catch(()=>{});
+        if(!session.isAuthenticated||session.userId!==targetUserId)return;
+        await reloadCloudBook("realtime-reconnect");
+      },
+
+      onStatus({status,error}){
+        if(error)console.error("[共付日常] Realtime 狀態錯誤",status,error);
+      }
+    });
+
+    realtimeSync=sync;
+    sync.setKnownVersion(bookUpdatedAt);
+    await sync.subscribe();
+  }
+
   function saveState(type="save"){
     prune();
     const op=Timestamp.create();
@@ -185,18 +301,44 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const userId=session.userId;
     const localSnap=localSnapshot();
     const cloudSnap=cloudSnapshot();
+    const queuedEpoch=stateEpoch;
 
     saveQueue=saveQueue.catch(()=>{}).then(async()=>{
+      // 遠端資料若已在等待期間套用，這份舊快照不得再回頭覆蓋新版。
+      if(authenticated&&queuedEpoch!==stateEpoch){
+        return;
+      }
+
       if(authenticated){
-        bookUpdatedAt=await SupabaseBookAdapter.save(userId,cloudSnap);
+        const expectedUpdatedAt=bookUpdatedAt;
+        const updatedAt=await SupabaseBookAdapter.save(
+          userId,
+          cloudSnap,
+          expectedUpdatedAt
+        );
+
+        bookUpdatedAt=updatedAt;
+        realtimeSync?.setKnownVersion(bookUpdatedAt);
       }else{
         await localState.upsert(localSnap);
       }
 
       cloudSaveErrorNotified=false;
       bookChange.emit({type,collection:"state",operationId:op});
-    }).catch(e=>{
+    }).catch(async e=>{
       console.error("[共付日常] 儲存失敗",e);
+
+      if(authenticated&&e?.code==="BOOK_VERSION_CONFLICT"){
+        try{
+          await reloadCloudBook("version-conflict-reload");
+          alert("另一個裝置剛剛已更新帳本。\n\n已重新載入雲端最新版；這次修改沒有覆蓋對方資料，請再操作一次。");
+        }catch(reloadError){
+          console.error("[共付日常] 衝突後重新載入失敗",reloadError);
+          alert("偵測到另一個裝置已更新帳本，但重新載入最新版失敗。請重新整理後再繼續操作。");
+        }
+        return;
+      }
+
       if(authenticated&&!cloudSaveErrorNotified){
         cloudSaveErrorNotified=true;
         alert("雲端帳本儲存失敗。畫面上的變更可能尚未寫入雲端，請確認網路後再試。");
@@ -251,8 +393,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   function validTime(value){const t=Date.parse(value);return Number.isFinite(t)?t:null;}
   async function persistImportedState(next){
     if(session.isAuthenticated){
-      const updatedAt=await SupabaseBookAdapter.save(session.userId,clone(next));
+      const updatedAt=await SupabaseBookAdapter.save(
+        session.userId,
+        clone(next),
+        bookUpdatedAt
+      );
       bookUpdatedAt=updatedAt;
+      realtimeSync?.setKnownVersion(bookUpdatedAt);
     }else{
       await localState.upsert(clone({id:STATE_ID,...next}));
     }
@@ -304,6 +451,18 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       renderCalendar();
     }catch(error){
       console.error("[共付日常] 匯入失敗",error);
+
+      if(error?.code==="BOOK_VERSION_CONFLICT"){
+        try{
+          await reloadCloudBook("import-conflict-reload");
+          alert("匯入期間另一個裝置已更新帳本。\n\n為避免覆蓋較新的雲端資料，本次匯入已取消並重新載入最新版。若仍要還原備份，請再匯入一次。");
+        }catch(reloadError){
+          console.error("[共付日常] 匯入衝突後重新載入失敗",reloadError);
+          alert("匯入已取消：偵測到雲端版本變更，但重新載入最新版失敗。請重新整理後再試。");
+        }
+        return;
+      }
+
       alert("匯入失敗：備份格式不正確，或帳本無法寫入儲存空間。原資料沒有變更。");
     }
   }
@@ -384,16 +543,21 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       await loadActive();
       const pruned=prune();
       if(pruned)await saveState("prune-after-login");
+      await startRealtime();
       ui.clearPassword();
       ui.clearMessage();
       afterAuthChange();
       closeManageBook();
     },
     onLogout:async(ui)=>{
+      await saveQueue.catch(()=>{});
+      await stopRealtime();
+
       const {error}=await supabaseClient.auth.signOut();
       if(error)throw error;
 
       setSessionFromSupabase(null);
+      stateEpoch+=1;
       await loadActive();
       ui.clearCredentials();
       ui.clearMessage();
@@ -413,6 +577,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   await loadActive();
   const prunedOnInit=prune();
   if(prunedOnInit)await saveState("prune-on-init");
+  if(session.isAuthenticated)await startRealtime();
   syncNameInputs();
   fakeSets.forEach(syncFake);
   updateLabels();
