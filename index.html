@@ -1,71 +1,183 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>慢慢｜小工具</title>
-
-<link rel="stylesheet" href="./index.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>慢慢的倉庫</title>
+<link href="https://lib.stillnessbyslowly.com/ui/responsive.css" rel="stylesheet"/>
+<link href="./index.css" rel="stylesheet"/>
 </head>
-
 <body>
+<main>
+<h1>慢慢的倉庫</h1>
+<p class="intro">stillness by slowly 的共用模組與工具存放處。</p>
+<nav aria-label="倉庫分類" class="category-nav">
+<button aria-selected="true" data-page="directory" type="button">慢慢看</button>
+<button aria-selected="false" data-page="examples" type="button">完成品使用</button>
+<button aria-selected="false" data-page="data" type="button">Data</button>
+<button aria-selected="false" data-page="date" type="button">Date</button>
+<button aria-selected="false" data-page="calendar" type="button">Calendar</button>
+<button aria-selected="false" data-page="ui" type="button">UI</button>
+<button aria-selected="false" data-page="effects" type="button">Effects</button>
+<button aria-selected="false" data-page="image" type="button">Image</button>
+<button aria-selected="false" data-page="comment" type="button">Comment</button>
+<button aria-selected="false" data-page="mail" type="button">Mail</button>
+</nav>
+<section class="page active" data-page-panel="directory">
+  <h2 class="section-title">使用前，慢慢看一下。</h2>
 
-<h1>慢 慢 | 實用小工具</h1>
-
-<div class="wrap">
-  <div class="card">
-
-    <!-- 🌌 時間中控 -->
-    <div class="section">
-      <div class="section-title">慢 慢 | 銀河系</div>
-      <p class="sub">寸寸光陰</p>
-
-      <!-- 年曆 -->
-      <a class="tool" href="./calendar/calendar.html">
-        <div class="text">
-          <div class="name">年曆產生器</div>
-          <div class="desc">月份版型生成工具</div>
-        </div>
-        <div class="hint">開啟 →</div>
-      </a>
-
-      <!-- 共付日常 -->
-      <div class="section-title">慢 慢 | 記帳</div>
-      <a class="tool" href="./account/acc_duo_book.html">
-        <div class="text">
-          <div class="name">共付日常</div>
-          <div class="desc">雙人記帳本</div>
-        </div>
-        <div class="hint">開啟 →</div>
-      </a>
-    </div>
-
-    <!-- 🎨 色彩中控 -->
-    <div class="section">
-      <div class="section-title">慢 慢 | 稜鏡</div>
-      <p class="sub">色彩光譜控制</p>
-
-      <a class="tool" href="./prism/prism.html">
-        <div class="name">色票控制台</div>
-        <div class="hint">開啟 →</div>
-      </a>
-    </div>
-    
-        <!-- 🎨 地圖中控 -->
-    <div class="section">
-      <div class="section-title">慢 慢 | 地圖</div>
-      <p class="sub">地圖控制</p>
-
-      <a class="tool" href="./hiway/hiway.html">
-        <div class="name">路況控制台</div>
-        <div class="hint">開啟 →</div>
-      </a>
-    </div>
-
-    <div class="footer">慢慢｜Stillness by Slowly</div>
-
+  <div class="directory-note">
+    <ul>
+      <li>這裡的東西，各長各的，路徑、命名、API 與回報方式可能不一樣。</li>
+      <li>看到檔名不要猜，名字像，不一定呼叫方式一樣。</li>
+      <li>錯了會怎麼告訴你，不一定一樣。</li>
+      <li>需要什麼，就拿什麼，模組拆得細，不要把隔壁一起搬回家。</li>
+      <li>有依賴的，請照說明頁的順序。</li>
+      <li><strong>認真看，不要猜，用猜的可能做白工。</strong></li> 
+      <li>說明頁、測試頁、原始碼都放在這裡。</li>
+      <li>就算只要3分鐘，我也不想再寫一次。</li>
+    </ul>
   </div>
-</div>
 
-</body>
+
+</section>
+<section class="page" data-page-panel="examples">
+<h2 class="section-title">完成品使用</h2>
+<div class="list"></div>
+</section>
+<section class="page" data-page-panel="data">
+<h2 class="section-title">Data</h2>
+<div class="list"></div>
+</section>
+<section class="page" data-page-panel="date">
+<h2 class="section-title">Date</h2>
+<div class="list"></div>
+</section>
+<section class="page" data-page-panel="calendar">
+<h2 class="section-title">Calendar</h2>
+<div class="list"></div>
+</section>
+<section class="page" data-page-panel="ui">
+<h2 class="section-title">UI</h2>
+<div class="list"></div>
+</section>
+<section class="page" data-page-panel="effects">
+<h2 class="section-title">Effects</h2>
+<div class="effects-groups"></div>
+</section>
+<section class="page" data-page-panel="image">
+<h2 class="section-title">Image</h2>
+<div class="list"></div>
+</section>
+<section class="page" data-page-panel="comment">
+<h2 class="section-title">Comment</h2>
+<div class="list"></div>
+</section>
+<section class="page" data-page-panel="mail">
+<h2 class="section-title">Mail</h2>
+<div class="list"></div>
+</section>
+</main>
+
+<script src="./index_data.js"></script><script>
+    const libraryData = window.SlowlyLibraryIndex || [];
+    const navButtons = document.querySelectorAll("[data-page]");
+    const pages = document.querySelectorAll("[data-page-panel]");
+
+    function createItem(item) {
+      const card = document.createElement("div");
+      card.className = "item";
+
+      const title = document.createElement("div");
+      title.className = "item-title";
+      title.textContent = item.title;
+
+      const desc = document.createElement("div");
+      desc.className = "item-desc";
+      desc.textContent = item.desc;
+
+      const links = document.createElement("div");
+      links.className = "item-links";
+
+      item.links.forEach((link) => {
+        const a = document.createElement("a");
+        a.href = link.href;
+        a.textContent = link.label;
+        links.appendChild(a);
+      });
+
+      card.append(title, desc, links);
+      return card;
+    }
+
+    function renderLibrary() {
+      libraryData.forEach((group) => {
+        const panel = document.querySelector(
+          `[data-page-panel="${group.page}"]`
+        );
+
+        if (!panel) return;
+
+        if (Array.isArray(group.items)) {
+          const list = panel.querySelector(".list");
+          if (!list) return;
+
+          group.items.forEach((item) => {
+            list.appendChild(createItem(item));
+          });
+          return;
+        }
+
+        if (Array.isArray(group.groups)) {
+          const groupsContainer = panel.querySelector(".effects-groups");
+          if (!groupsContainer) return;
+
+          group.groups.forEach((subgroup) => {
+            const section = document.createElement("section");
+            section.className = "subsection";
+            section.dataset.effectGroup = subgroup.id;
+
+            const title = document.createElement("h3");
+            title.className = "subsection-title";
+            title.textContent = subgroup.title;
+
+            const list = document.createElement("div");
+            list.className = "list";
+
+            subgroup.items.forEach((item) => {
+              list.appendChild(createItem(item));
+            });
+
+            section.append(title, list);
+            groupsContainer.appendChild(section);
+          });
+        }
+      });
+    }
+
+    function showPage(pageName) {
+      navButtons.forEach((button) => {
+        button.setAttribute(
+          "aria-selected",
+          button.dataset.page === pageName ? "true" : "false"
+        );
+      });
+
+      pages.forEach((page) => {
+        page.classList.toggle(
+          "active",
+          page.dataset.pagePanel === pageName
+        );
+      });
+    }
+
+    renderLibrary();
+
+    navButtons.forEach((button) => {
+      button.addEventListener(
+        "click",
+        () => showPage(button.dataset.page)
+      );
+    });
+  </script></body>
 </html>
