@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>慢 慢｜我們都一樣</title>
+<link rel="stylesheet" href="https://lib.stillnessbyslowly.com/component/calendar/calendar_component.css">
+<link rel="stylesheet" href="https://lib.stillnessbyslowly.com/calendar/calendar_interaction.css">
+<link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/custom_select.css">
+<link rel="stylesheet" href="shift_overlap_v1_5.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="header">
+    <h1>慢 慢｜我們都一樣</h1>
+    <div class="appSubtitle">Stillness by Slowly</div>
+  </header>
+
+  <section class="date-card" id="dateCard" tabindex="0" role="button" aria-controls="calendarPanel" aria-expanded="false">
+    <div class="date-card-head">
+      <div class="date-card-title">
+        <div class="month" id="heroMonth">—</div>
+        <div class="year" id="heroYear">—</div>
+      </div>
+      <div class="date-card-day">
+        <div class="bigDate" id="heroDate">—</div>
+        <div class="date-label" id="heroLabel">—</div>
+      </div>
+    </div>
+    <div class="date-card-foot">
+      <div id="heroSummary">本月還沒有一起休假</div>
+      <div class="open-hint">查看月曆</div>
+    </div>
+  </section>
+
+  <section class="calendar-panel" id="calendarPanel" hidden>
+    <div class="calendar-toolbar calendar-toolbar-minimal">
+      <button type="button" class="text-action" id="closeCalendarBtn">收起月曆</button>
+    </div>
+    <div id="calendar"></div>
+  </section>
+
+  <section class="overview">
+    <div class="overview-head">
+      <div class="eyebrow">MONTHLY OFF DAYS</div>
+      <button type="button" class="text-action add-offday" id="openOffdayBtn">＋ 本月休假</button>
+    </div>
+    <div id="personList" class="person-list"></div>
+  </section>
+
+  <footer class="footer">
+    <div>慢 慢 <span>| stillness by slowly</span></div>
+    <button type="button" class="footer-manage" id="openManageBtn">管理</button>
+  </footer>
+</main>
+
+<dialog id="offdayDialog" class="sheet-dialog">
+  <form method="dialog" class="sheet-inner" id="offdayForm">
+    <div class="sheet-head">
+      <div><div class="eyebrow">MONTHLY OFF DAYS</div><h3 id="offdayTitle">本月休假</h3></div>
+      <button type="button" class="icon-close" data-close="offdayDialog">×</button>
+    </div>
+    <div class="field name-field">
+      <label for="nameInput">姓名</label>
+      <input id="nameInput" autocomplete="off" placeholder="搜尋或呼喚名字">
+      <div id="nameResults" class="name-results" hidden></div>
+    </div>
+    <div class="field">
+      <label for="daysInput">休假日</label>
+      <input id="daysInput" inputmode="numeric" placeholder="例如 1, 3, 6, 31">
+    </div>
+    <div id="formMessage" class="message"></div>
+    <button type="button" class="save-btn" id="addPersonBtn">儲存</button>
+  </form>
+</dialog>
+
+<dialog id="monthDialog" class="sheet-dialog month-dialog">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h3>查看月份</h3>
+      <button type="button" class="icon-close" data-close="monthDialog">×</button>
+    </div>
+    <div class="year-picker">
+      <button type="button" class="round-arrow" id="prevYearBtn">‹</button>
+      <strong id="pickerYear">—</strong>
+      <button type="button" class="round-arrow" id="nextYearBtn">›</button>
+    </div>
+    <div class="month-grid" id="monthGrid"></div>
+  </div>
+</dialog>
+
+<dialog id="manageDialog" class="sheet-dialog manage-dialog">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <div><div class="eyebrow">SETTINGS</div><h3>管理</h3></div>
+      <button type="button" class="icon-close" data-close="manageDialog">×</button>
+    </div>
+    <section class="manage-section">
+      <h4>人員管理</h4>
+      <p class="note">刪除只會移除人員名冊，不會連帶刪除歷史休假資料。</p>
+      <div id="registryList" class="person-list"></div>
+    </section>
+    <section class="manage-section danger-zone">
+      <h4>本月資料</h4>
+      <p class="note" id="manageMonthLabel"></p>
+      <button type="button" class="danger-text" id="clearBtn">刪除本月休假資料</button>
+    </section>
+  </div>
+</dialog>
+
+
+<script src="https://lib.stillnessbyslowly.com/calendar/lunar_data.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/lunar.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/lunar_festivals_data.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/lunar_festivals.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/solar_festivals_data.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/solar_festivals.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/solar_terms_data.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/solar_terms.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/calendar.js"></script>
+<script src="https://lib.stillnessbyslowly.com/component/calendar/calendar_component.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/calendar_interaction.js"></script>
+<script src="https://lib.stillnessbyslowly.com/date/datetime.js"></script>
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_SelectOrCreate.js"></script>
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_storage.js"></script>
+<script src="https://lib.stillnessbyslowly.com/fiction/Fiction_change.js"></script>
+<script src="https://lib.stillnessbyslowly.com/date/Date_overlap.js"></script>
+<script src="https://lib.stillnessbyslowly.com/ui/custom_select.js"></script>
+<script src="shift_overlap_v1_5.js"></script>
+</body>
+</html>
