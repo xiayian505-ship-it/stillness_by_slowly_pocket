@@ -125,15 +125,18 @@
   }
 
   function parseDayNumbers(raw, monthValue) {
-    const tokens = String(raw || "").split(/[\s,，、;；]+/).map(v => v.trim()).filter(Boolean);
+    // 不限定分隔符號：直接從輸入中撈出數字。
+    // 手機輸入法不管塞英文逗號、全形逗號、頓號、斜線或空白都能吃。
+    const tokens = String(raw || "").match(/\d+/g) || [];
     const unique = [], seen = new Set(), invalid = [];
+
     for (const token of tokens) {
-      if (!/^\d{1,2}$/.test(token)) { invalid.push(token); continue; }
       const day = Number(token);
       const key = monthValue + "-" + String(day).padStart(2, "0");
       if (!DateTime.parseDateKey(key)) { invalid.push(token); continue; }
       if (!seen.has(day)) { seen.add(day); unique.push(day); }
     }
+
     unique.sort((a,b) => a-b);
     return { days: unique, invalid };
   }
