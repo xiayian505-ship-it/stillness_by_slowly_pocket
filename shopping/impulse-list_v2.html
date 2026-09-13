@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e8dddd">
+  <title>剁手清單</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/custom_select.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/custom_date.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/custom_file.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/favorite.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/toast.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/electric_border.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/underline.css">
+  <link rel="stylesheet" href="impulse-list_v2.css">
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <button class="brand" id="homeBtn" type="button" aria-label="回到剁手清單首頁">
+          <div class="brand-copy">
+            <div class="brand-title">再買就剁手</div>
+
+            <div class="topbar-stats" aria-label="清單統計">
+              <span>想買 <strong id="statWanted">0</strong></span>
+              <span class="topbar-stat-dot">|</span>
+              <span>觀望 <strong id="statWatching">0</strong></span>
+              <span class="topbar-stat-dot">|</span>
+              <span>已買 <strong id="statPurchased">0</strong></span>
+              <span class="topbar-spent">支出 <strong id="statSpent">0</strong></span>
+            </div>
+          </div>
+        </button>
+
+        <div class="topbar-search">
+          <div class="search-box slowly-underline">
+            <span class="search-icon">⌕</span>
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="搜尋商品、品牌、標籤、商店或剁手來源"
+              autocomplete="off"
+            >
+            <button id="searchClear" class="search-clear" type="button" aria-label="清除搜尋">×</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="pocket-layout">
+      <aside class="pocket-sidebar">
+        <div class="sidebar-head">
+          <div class="hero-eyebrow">Before you buy it</div>
+          <h1>剁手清單</h1>
+          <p>在買下去以前，先看看以前的自己想過什麼。</p>
+        </div>
+
+        <div class="sidebar-section category-section">
+          <div class="sidebar-label">分類</div>
+          <div id="sidebarCategories" class="sidebar-categories"></div>
+          <div id="sidebarActiveFilters" class="sidebar-active-filters"></div>
+        </div>
+      </aside>
+
+      <section class="pocket-content">
+        <div class="content-head">
+          <div id="statusFilters" class="top-status-strip"></div>
+
+          <div class="index-toolbar">
+            <div class="index-title">
+              <h2>但我就想買</h2>
+              <p id="resultCount">0 個項目</p>
+            </div>
+
+            <div class="index-actions">
+              <button class="sort-btn active" id="newestSortBtn" type="button">最新</button>
+              <button class="sort-btn" id="oldestSortBtn" type="button">最早</button>
+              <button class="primary-btn" id="addBtn" type="button">+ 新增商品</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="productGrid" class="product-grid"></div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-logo">
+          慢 慢 <span class="en">| stillness by slowly</span>
+        </div>
+
+        <div class="footer-settings">
+          <button
+            class="clear-all"
+            id="settingsBtn"
+            type="button"
+            aria-expanded="false"
+            aria-controls="settingsPanel"
+          >
+            設定
+          </button>
+
+          <div class="settings-panel" id="settingsPanel" hidden>
+            <button class="clear-all settings-action" id="importBtn" type="button">匯入資料</button>
+            <button class="clear-all settings-action" id="exportBtn" type="button">匯出資料</button>
+
+            <label class="settings-toggle" for="effectsToggle">
+              <span>特效</span>
+              <input id="effectsToggle" type="checkbox" checked>
+            </label>
+          </div>
+
+          <input id="importInput" type="file" accept="application/json,.json" hidden>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <dialog id="detailDialog">
+    <div class="sheet detail-sheet">
+      <div class="sheet-grabber"></div>
+
+      <div class="sheet-head">
+        <h3>商品詳情</h3>
+        <div class="spacer"></div>
+        <button class="ghost-btn" id="detailEditBtn" type="button">編輯</button>
+        <button class="icon-btn" id="detailCloseBtn" type="button" aria-label="關閉">×</button>
+      </div>
+
+      <div class="sheet-body" id="detailBody"></div>
+    </div>
+  </dialog>
+
+  <dialog id="formDialog">
+    <form class="sheet form-sheet" id="productForm" method="dialog" novalidate>
+      <div class="sheet-grabber"></div>
+
+      <div class="sheet-head">
+        <h3 id="formTitle">新增商品</h3>
+        <div class="spacer"></div>
+        <button class="icon-btn" id="formCloseBtn" type="button" aria-label="關閉">×</button>
+      </div>
+
+      <div class="sheet-body">
+        <section class="form-section form-primary-section">
+          <div class="form-primary-row">
+            <div class="field full slowly-underline form-name-field">
+              <label for="nameInput">商品名稱 *</label>
+              <input id="nameInput" placeholder="例如：Logitech 鍵盤" required>
+            </div>
+
+            <button
+              class="form-favorite slowly-favorite"
+              id="formFavoriteBtn"
+              type="button"
+              aria-label="最愛"
+              aria-pressed="false"
+            ></button>
+          </div>
+
+          <div class="form-image-block">
+            <div class="form-section-title">商品圖片</div>
+
+            <div class="image-box">
+              <div class="preview" id="imagePreview">
+                <span class="placeholder">◇</span>
+              </div>
+
+              <div class="image-control">
+                <div class="slowly-file" id="productFile">
+                  <input
+                    accept="image/jpeg,image/png,image/webp"
+                    class="slowly-file-native"
+                    id="imageInput"
+                    type="file"
+                  >
+                  <button class="slowly-file-trigger" type="button">
+                    <span class="slowly-file-label">選擇圖片</span>
+                  </button>
+                </div>
+
+                <div class="file-note" id="imageInfo">
+                  圖片會先由 Image Resize 壓縮，再存進 IndexedDB。
+                </div>
+
+                <button class="mini-btn danger" hidden id="removeImageBtn" type="button">
+                  移除圖片
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section form-collapsible-section" data-form-section="price">
+          <button class="form-disclosure-toggle" type="button" data-form-section-toggle="price" aria-expanded="false">
+            <span class="form-disclosure-label">價格資訊</span>
+            <span class="form-disclosure-value" data-form-section-summary="price">未設定</span>
+            <span class="form-disclosure-symbol" data-form-section-symbol="price" aria-hidden="true">+</span>
+          </button>
+          <div class="form-disclosure-panel" data-form-section-panel="price">
+            <div class="form-grid">
+              <div class="field slowly-underline">
+                <label for="priceInput">目前價格</label>
+                <input id="priceInput" min="0" step="0.01" type="number">
+              </div>
+              <div class="field slowly-underline">
+                <label for="currencySelect">幣別</label>
+                <select data-slowly-select id="currencySelect">
+                  <option>TWD</option><option>JPY</option><option>USD</option><option>KRW</option><option>CNY</option><option>HKD</option><option>EUR</option>
+                </select>
+              </div>
+              <div class="field slowly-underline">
+                <label for="budgetInput">預算</label>
+                <input id="budgetInput" min="0" step="0.01" type="number">
+              </div>
+              <div class="field slowly-underline">
+                <label for="budgetCurrencySelect">預算幣別</label>
+                <select data-slowly-select id="budgetCurrencySelect">
+                  <option>TWD</option><option>JPY</option><option>USD</option><option>KRW</option><option>CNY</option><option>HKD</option><option>EUR</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section form-collapsible-section" data-form-section="temptation">
+          <button class="form-disclosure-toggle" type="button" data-form-section-toggle="temptation" aria-expanded="false">
+            <span class="form-disclosure-label">剁手資訊</span>
+            <span class="form-disclosure-value" data-form-section-summary="temptation">未設定</span>
+            <span class="form-disclosure-symbol" data-form-section-symbol="temptation" aria-hidden="true">+</span>
+          </button>
+          <div class="form-disclosure-panel" data-form-section-panel="temptation">
+            <div class="form-grid">
+              <div class="field full slowly-underline">
+                <label for="sourceInput">剁手來源</label>
+                <input id="sourceInput" placeholder="朋友、Threads、逛街看到……">
+              </div>
+              <div class="field slowly-underline">
+                <label for="lastPurchaseDateInput">最後可購買日</label>
+                <input id="lastPurchaseDateInput" type="date" data-slowly-date>
+              </div>
+              <div class="field full slowly-underline">
+                <label for="tagsInput">標籤</label>
+                <input id="tagsInput" placeholder="用逗號分隔，例如：鍵盤, Logitech, 辦公">
+              </div>
+              <div class="field full slowly-underline">
+                <label for="noteInput">備註</label>
+                <textarea id="noteInput" placeholder="為什麼想買、尺寸、顏色、猶豫點……"></textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div id="formStatuses"></div>
+        </section>
+
+        <section class="form-section form-collapsible-section" data-form-section="category">
+          <button class="form-disclosure-toggle" type="button" data-form-section-toggle="category" aria-expanded="false">
+            <span class="form-disclosure-label">分類</span>
+            <span class="form-disclosure-value" data-form-section-summary="category">未設定</span>
+            <span class="form-disclosure-symbol" data-form-section-symbol="category" aria-hidden="true">+</span>
+          </button>
+          <div class="form-disclosure-panel" data-form-section-panel="category">
+            <div class="category-tree" id="categoryTree"></div>
+          </div>
+        </section>
+
+        <section class="form-section form-collapsible-section" data-form-section="purchase">
+          <button class="form-disclosure-toggle" type="button" data-form-section-toggle="purchase" aria-expanded="false">
+            <span class="form-disclosure-label">購買紀錄</span>
+            <span class="form-disclosure-value" data-form-section-summary="purchase">未設定</span>
+            <span class="form-disclosure-symbol" data-form-section-symbol="purchase" aria-hidden="true">+</span>
+          </button>
+          <div class="form-disclosure-panel" data-form-section-panel="purchase">
+            <div class="form-grid">
+              <div class="field slowly-underline">
+                <label for="purchasePriceInput">實際購入價</label>
+                <input id="purchasePriceInput" min="0" step="0.01" type="number">
+              </div>
+              <div class="field slowly-underline">
+                <label for="purchaseCurrencySelect">購入幣別</label>
+                <select data-slowly-select id="purchaseCurrencySelect">
+                  <option>TWD</option><option>JPY</option><option>USD</option><option>KRW</option><option>CNY</option><option>HKD</option><option>EUR</option>
+                </select>
+              </div>
+              <div class="field slowly-underline">
+                <label for="purchaseDateInput">購入日期</label>
+                <input id="purchaseDateInput" type="date" data-slowly-date>
+              </div>
+              <div class="field slowly-underline">
+                <label for="purchaseStoreInput">購入通路</label>
+                <input id="purchaseStoreInput">
+              </div>
+              <div class="field full slowly-underline">
+                <label for="purchaseNoteInput">購買備註</label>
+                <textarea id="purchaseNoteInput"></textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="sheet-foot">
+        <button class="ghost-btn danger-text" hidden id="deleteBtn" type="button">刪除</button>
+        <div class="spacer"></div>
+        <button class="ghost-btn" id="formCancelBtn" type="button">取消</button>
+        <button class="save-btn" type="submit">儲存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast slowly-toast" id="toast" role="status"></div>
+
+  <!-- 慢慢的倉庫：只載入本頁目前實際使用、API 已確認的零件 -->
+  <script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/state/tree_selection.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/state/preference/preference.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_storage.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_search.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_filter.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_sort.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/Money.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/Data_backup.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/import/import_rollback.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/json/json_safe_import.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/blob/blob_data_url.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/Image/image_resize.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/Image/image_storage.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/custom_select.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/custom_date.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/custom_file.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/favorite.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/html_escape.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/toast.js"></script>
+
+  <script src="impulse-list_v2.js"></script>
+</body>
+</html>
