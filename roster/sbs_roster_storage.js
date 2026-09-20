@@ -129,7 +129,7 @@
   function normalizeSpecialDateList(year, values) {
     const targetYear = Number(year);
     if (!Number.isInteger(targetYear) || targetYear < 2000 || targetYear > 2100) return [];
-    const seen = new Set();
+    const seen = window.TreeSelection.create();
     for (const value of Array.isArray(values) ? values : []) {
       const text = String(value || '');
       const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -137,11 +137,11 @@
       const month = Number(match[2]);
       const day = Number(match[3]);
       if (month < 1 || month > 12) continue;
-      const daysInMonth = new Date(targetYear, month, 0).getDate();
+      const daysInMonth = window.Calendar.getDaysInMonth(targetYear, month);
       if (day < 1 || day > daysInMonth) continue;
-      seen.add(`${targetYear}-${pad2(month)}-${pad2(day)}`);
+      seen.select(`${targetYear}-${pad2(month)}-${pad2(day)}`);
     }
-    return [...seen].sort();
+    return seen.getSelected().sort();
   }
 
   function getSpecialDays(year) {
@@ -151,7 +151,7 @@
     }
     const raw = readObject(makeSpecialDaysKey(targetYear), {});
     const holidays = normalizeSpecialDateList(targetYear, raw.holidays);
-    const holidaySet = new Set(holidays);
+    const holidaySet = window.TreeSelection.create({ selected: holidays });
     const workdays = normalizeSpecialDateList(targetYear, raw.workdays).filter((date) => !holidaySet.has(date));
     return {
       year: targetYear,
@@ -167,7 +167,7 @@
       throw new Error('年度特殊日期年份格式不正確');
     }
     const holidays = normalizeSpecialDateList(targetYear, data.holidays);
-    const holidaySet = new Set(holidays);
+    const holidaySet = window.TreeSelection.create({ selected: holidays });
     const workdays = normalizeSpecialDateList(targetYear, data.workdays).filter((date) => !holidaySet.has(date));
     const normalized = {
       year: targetYear,
@@ -194,13 +194,11 @@
 
 
   function getPreviousYearMonth(year, month) {
-    const date = new Date(Number(year), Number(month) - 2, 1);
-    return { year: date.getFullYear(), month: date.getMonth() + 1 };
+    return window.CalendarMonthSequence.shift(Number(year), Number(month), -1);
   }
 
   function getNextYearMonth(year, month) {
-    const date = new Date(Number(year), Number(month), 1);
-    return { year: date.getFullYear(), month: date.getMonth() + 1 };
+    return window.CalendarMonthSequence.shift(Number(year), Number(month), 1);
   }
 
   function emptyMonth(year, month) {
@@ -234,11 +232,11 @@
       const displayName = typeof person.displayName === 'string' ? person.displayName : '';
       const employeeId = typeof person.employeeId === 'string' ? person.employeeId : '';
       const shiftGroups = Array.isArray(person.shiftGroups)
-        ? person.shiftGroups.filter((item) => ['early', 'middle', 'night'].includes(item))
+        ? person.shiftGroups.filter((item) => window.ValueCycle.contains(['early', 'middle', 'night'], item))
         : [];
       const normalizedGroups = letter === 'A'
         ? (displayName || employeeId || shiftGroups.length ? ['early', 'middle', 'night'] : [])
-        : [...new Set(shiftGroups)].slice(0, 1);
+        : window.TreeSelection.create({ selected: shiftGroups }).getSelected().slice(0, 1);
       if (!displayName && !employeeId && !normalizedGroups.length) continue;
       result[letter] = { employeeId, displayName, shiftGroups: normalizedGroups };
     }
@@ -324,10 +322,19 @@
 
   function makeEmployeeId() {
     if (window.crypto?.randomUUID) {
-      return `emp_${window.crypto.randomUUID().replace(/-/g, '')}`;
+      return window.RandomId
+        .create({ prefix: 'emp_', crypto: window.crypto })
+        .replace(/-/g, '');
     }
-    const random = Math.random().toString(36).slice(2, 10);
-    return `emp_${Date.now().toString(36)}_${random}`;
+
+    return window.RandomId
+      .create({
+        prefix: 'emp_',
+        crypto: {},
+        now: Date.now,
+        random: Math.random
+      })
+      .replace(/^emp_([^-]+)-/, 'emp_$1_');
   }
 
   function resolveEmployee(displayName, currentEmployeeId = '') {

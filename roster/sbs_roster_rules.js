@@ -1,10 +1,11 @@
 (() => {
   'use strict';
 
-  const PUBLIC_LEAVE_TYPES = new Set(['public', 'exceptionPublic']);
+  const PUBLIC_LEAVE_TYPES = Object.freeze(['public', 'exceptionPublic']);
+  const SHIFT_GROUP_KEYS = Object.freeze(['early', 'middle', 'night']);
   const FIXED_LEAVE_GROUPS = Object.freeze([
-    { name: '早／中班組', keys: new Set(['early', 'middle']) },
-    { name: '大夜班組', keys: new Set(['night']) }
+    { name: '早／中班組', keys: Object.freeze(['early', 'middle']) },
+    { name: '大夜班組', keys: Object.freeze(['night']) }
   ]);
 
   function pad2(value) {
@@ -71,7 +72,7 @@
   }
 
   function isPublicLeaveType(type) {
-    return PUBLIC_LEAVE_TYPES.has(type || 'public');
+    return window.ValueCycle.contains(PUBLIC_LEAVE_TYPES, type || 'public');
   }
 
 
@@ -80,22 +81,21 @@
   }
 
   function getActiveLetters(model) {
-    const active = new Set(
-      (model.employees || [])
-        .filter((employee) => String(employee.name || '').trim())
-        .map((employee) => employee.letter)
-    );
-    const namedLetters = new Set(active);
+    const initial = (model.employees || [])
+      .filter((employee) => String(employee.name || '').trim())
+      .map((employee) => employee.letter);
+    const active = window.TreeSelection.create({ selected: initial });
+    const namedLetters = window.TreeSelection.create({ selected: initial });
     for (let day = 1; day <= model.days; day += 1) {
       for (let shiftIndex = 0; shiftIndex < model.shifts.length; shiftIndex += 1) {
         const letter = model.getShiftLetter(day, shiftIndex);
-        if (letter && namedLetters.has(letter)) active.add(letter);
+        if (letter && namedLetters.has(letter)) active.select(letter);
       }
       for (const leave of model.getLeaveEntries(day)) {
-        if (leave.letter && namedLetters.has(leave.letter)) active.add(leave.letter);
+        if (leave.letter && namedLetters.has(leave.letter)) active.select(leave.letter);
       }
     }
-    return [...active].sort();
+    return active.getSelected().sort();
   }
 
   function getSchedulingLetters(model) {
@@ -103,11 +103,15 @@
   }
 
   function getShiftGroups(employee) {
-    return new Set(Array.isArray(employee?.shiftGroups) ? employee.shiftGroups : []);
+    return window.TreeSelection.create({
+      selected: Array.isArray(employee?.shiftGroups) ? employee.shiftGroups : []
+    });
   }
 
   function getFixedShiftGroup(employee) {
-    const groups = [...getShiftGroups(employee)].filter((key) => ['early', 'middle', 'night'].includes(key));
+    const groups = getShiftGroups(employee)
+      .getSelected()
+      .filter((key) => window.ValueCycle.contains(SHIFT_GROUP_KEYS, key));
     return groups.length === 1 ? groups[0] : '';
   }
 
@@ -122,8 +126,10 @@
   // ---------- 休假規則 ----------
 
   function collectBlockedLeaveIssues(model, issues) {
-    const blockedTypes = new Set(Array.isArray(model.settings?.blockedLeaveTypes) ? model.settings.blockedLeaveTypes : ['public', 'annual']);
-    if (!blockedTypes.size) return;
+    const blockedTypes = window.TreeSelection.create({
+      selected: Array.isArray(model.settings?.blockedLeaveTypes) ? model.settings.blockedLeaveTypes : ['public', 'annual']
+    });
+    if (!blockedTypes.selectedCount) return;
     for (let day = 1; day <= model.days; day += 1) {
       if (!model.isBlocked(day)) continue;
       for (const leave of model.getLeaveEntries(day)) {
@@ -147,9 +153,9 @@
       const leaves = model.getLeaveEntries(day).filter((entry) => entry.letter && !isSchedulingException(entry.letter));
       for (const group of FIXED_LEAVE_GROUPS) {
         const members = leaves
-          .filter((leave) => group.keys.has(getFixedShiftGroup(employeeMap.get(leave.letter))))
+          .filter((leave) => window.ValueCycle.contains(group.keys, getFixedShiftGroup(employeeMap.get(leave.letter))))
           .map((leave) => leave.letter);
-        const unique = [...new Set(members)];
+        const unique = window.TreeSelection.create({ selected: members }).getSelected();
         if (unique.length > 1) {
           issues.push({
             code: 'same-group-leave',
@@ -185,15 +191,22 @@
 
   function collectWorkLeaveConflictIssues(model, issues) {
     for (let day = 1; day <= model.days; day += 1) {
-      const leaveLetters = new Set(model.getLeaveEntries(day).map((entry) => entry.letter).filter(Boolean));
-      if (!leaveLetters.size) continue;
-      const workLetters = new Set();
+      const leaveLetters = window.TreeSelection.create({
+        selected: model.getLeaveEntries(day).map((entry) => entry.letter).filter(Boolean)
+      }).getSelected();
+      if (!leaveLetters.length) continue;
+      const workSelection = window.TreeSelection.create();
       for (let shiftIndex = 0; shiftIndex < model.shifts.length; shiftIndex += 1) {
         const letter = model.getShiftLetter(day, shiftIndex);
-        if (letter) workLetters.add(letter);
+        if (letter) workSelection.select(letter);
       }
-      for (const letter of leaveLetters) {
-        if (!workLetters.has(letter)) continue;
+      const workLetters = workSelection.getSelected();
+      const overlaps = window.DateOverlap.overlaps([
+        { id: 'leave', dates: leaveLetters },
+        { id: 'work', dates: workLetters }
+      ], { min: 2, sort: false });
+      for (const entry of overlaps) {
+        const letter = entry.date;
         issues.push({
           code: 'work-leave-conflict',
           title: '排班／休假衝突',
@@ -207,7 +220,10 @@
     if (typeof model.isSupervisorLeave !== 'function') return;
     for (let day = 1; day <= model.days; day += 1) {
       if (!model.isSupervisorLeave(day)) continue;
-      const hasAWork = Array.from({ length: model.shifts.length }, (_, shiftIndex) => model.getShiftLetter(day, shiftIndex)).includes('A');
+      const hasAWork = window.ValueCycle.contains(
+        Array.from({ length: model.shifts.length }, (_, shiftIndex) => model.getShiftLetter(day, shiftIndex)),
+        'A'
+      );
       const hasALeave = model.getLeaveEntries(day).some((entry) => entry.letter === 'A');
       const shouldReport = mode === 'work' ? hasAWork : mode === 'leave' ? hasALeave : (hasAWork || hasALeave);
       if (!shouldReport) continue;

@@ -5,6 +5,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, user-scalable=yes" name="viewport"/>
 <title>櫃檯人員排班紀錄表</title>
+<link href="https://lib.stillnessbyslowly.com/ui/confirm/confirm.css" rel="stylesheet"/>
+<link href="https://lib.stillnessbyslowly.com/ui/toast.css" rel="stylesheet"/>
 <link href="sbs_roster.css" rel="stylesheet"/>
 </head>
 <body>
@@ -271,15 +273,6 @@
 </div>
 </div>
 </div>
-<div class="clear-month-dialog" hidden="" id="clearMonthDialog">
-<div aria-labelledby="clearMonthDialogMessage" aria-modal="true" class="clear-month-dialog-panel" role="dialog">
-<p class="clear-month-dialog-message" id="clearMonthDialogMessage"></p>
-<div class="clear-month-dialog-actions">
-<button id="clearMonthCancel" type="button">取消</button>
-<button id="clearMonthConfirm" type="button">清空</button>
-</div>
-</div>
-</div>
 <div class="leave-check-dialog" hidden="" id="leaveCheckDialog">
 <div aria-labelledby="leaveCheckMessage" aria-modal="true" class="leave-check-dialog-panel" role="dialog">
 <p class="leave-check-message" id="leaveCheckMessage"></p>
@@ -295,15 +288,6 @@
 <div class="app-dialog-actions" id="ruleCheckActions">
 <button id="ruleCheckException" type="button">例外安排</button>
 <button id="ruleCheckBack" type="button">回去修改</button>
-</div>
-</div>
-</div>
-<div class="app-dialog" hidden="" id="outputTimeDialog">
-<div aria-labelledby="outputTimeMessage" aria-modal="true" class="app-dialog-panel" role="dialog">
-<p class="app-dialog-message" id="outputTimeMessage">這次輸出要加入右上角時間嗎？</p>
-<div class="app-dialog-actions">
-<button id="outputTimeYes" type="button">加時間</button>
-<button id="outputTimeNo" type="button">不加時間</button>
 </div>
 </div>
 </div>
@@ -567,6 +551,24 @@
 </details>
 </section>
 </section>
+<div aria-live="polite" class="slowly-toast roster-toast" id="appToast" role="status"></div>
+<script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
+<script src="https://lib.stillnessbyslowly.com/date/datetime.js"></script>
+<script src="https://lib.stillnessbyslowly.com/data/file/file_reader.js"></script>
+<script src="https://lib.stillnessbyslowly.com/data/blob/blob_url.js"></script>
+<script src="https://lib.stillnessbyslowly.com/data/blob/blob_url_scope.js"></script>
+<script src="https://lib.stillnessbyslowly.com/Image/png/canvas_png.js"></script>
+<script src="https://lib.stillnessbyslowly.com/Image/png/png_download.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/month_sequence.js"></script>
+<script src="https://lib.stillnessbyslowly.com/calendar/calendar.js"></script>
+<script src="https://lib.stillnessbyslowly.com/data/random/random_id.js"></script>
+<script src="https://lib.stillnessbyslowly.com/data/validation/data_validation.js"></script>
+<script src="https://lib.stillnessbyslowly.com/state/tree_selection.js"></script>
+<script src="https://lib.stillnessbyslowly.com/state/form_draft.js"></script>
+<script src="https://lib.stillnessbyslowly.com/state/value_cycle.js"></script>
+<script src="https://lib.stillnessbyslowly.com/date/Date_overlap.js"></script>
+<script src="https://lib.stillnessbyslowly.com/ui/toast.js"></script>
+<script src="https://lib.stillnessbyslowly.com/ui/confirm/confirm.js"></script>
 <script src="sbs_roster_storage.js"></script>
 <script src="sbs_roster_rules.js"></script>
 <script src="sbs_roster.js"></script>

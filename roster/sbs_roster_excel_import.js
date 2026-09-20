@@ -16,12 +16,17 @@
 
   if (!storage || !app || !importButton || !importInput) return;
 
-  importButton.addEventListener('click', () => {
-    const proceed = window.confirm(
-      '僅支援本程式輸出的 Excel 檔案。\n' +
-      '匯入後只會更新該月份班表，不會修改其他月份或系統設定。\n\n' +
-      '是否繼續？'
-    );
+  importButton.addEventListener('click', async () => {
+    const proceed = await window.SlowlyConfirm.show({
+      title: '匯入 Excel',
+      message:
+        '僅支援本程式輸出的 Excel 檔案。\n' +
+        '匯入後只會更新該月份班表，不會修改其他月份或系統設定。\n\n' +
+        '是否繼續？',
+      confirmText: '繼續',
+      cancelText: '取消',
+      initialFocus: 'cancel'
+    });
     if (!proceed) return;
     importInput.value = '';
     importInput.click();
@@ -36,18 +41,20 @@
     importButton.textContent = '匯入中…';
 
     try {
-      const parsed = parseBook(await loadXlsx(await file.arrayBuffer()));
+      const buffer = await window.SlowlyFileReader.arrayBuffer(file);
+      const parsed = parseBook(await loadXlsx(buffer));
       const imported = buildImportedMonth(parsed);
       const monthData = mergeWithExistingMonth(imported);
 
       storage.saveMonth(monthData);
 
       const current = app.getCurrentYearMonth?.();
+      const toast = window.SlowlyToast.create('#appToast', { duration: 2600 });
       if (current && Number(current.year) === parsed.year && Number(current.month) === parsed.month) {
         app.reloadFromStorage?.();
-        window.alert(`${parsed.year} 年 ${parsed.month} 月班表匯入完成。`);
+        toast.show(`${parsed.year} 年 ${parsed.month} 月班表匯入完成。`);
       } else {
-        window.alert(
+        toast.show(
           `${parsed.year} 年 ${parsed.month} 月班表匯入完成。\n` +
           '請切換到該月份查看。'
         );
@@ -284,6 +291,20 @@
     return text.length >= 6 ? text.slice(-6) : '';
   }
 
+  function getDaysInMonth(year, month) {
+    if (window.Calendar?.isSupportedYear(Number(year))) {
+      return window.Calendar.getDaysInMonth(Number(year), Number(month));
+    }
+    return new Date(Number(year), Number(month), 0).getDate();
+  }
+
+  function getWeekday(year, month, day) {
+    if (window.Calendar?.isSupportedYear(Number(year))) {
+      return window.Calendar.createDay(Number(year), Number(month), Number(day)).weekday;
+    }
+    return new Date(Number(year), Number(month) - 1, Number(day)).getDay();
+  }
+
   function parseBook(book) {
     const sheetNameMatch = book.sheetName.match(/(\d{4})-(0[1-9]|1[0-2])\s*班表/);
     const title = book.sheet.get(1, 1).value;
@@ -293,7 +314,7 @@
     const match = sheetNameMatch || titleMatch;
     const year = Number(match[1]);
     const month = Number(match[2]);
-    const days = new Date(year, month, 0).getDate();
+    const days = getDaysInMonth(year, month);
 
     if (Number(book.sheet.get(2, 5).value) !== 1 || Number(book.sheet.get(2, 4 + days).value) !== days) {
       throw formatError('日期列與本程式 Excel 格式不一致。');
@@ -369,7 +390,7 @@
         const shiftKey = `${day}-shift-${shift}`;
         if (pink) specialShiftCells.push(shiftKey);
 
-        const defaultGray = shift === 3 && new Date(year, month - 1, day).getDay() === 6;
+        const defaultGray = shift === 3 && getWeekday(year, month, day) === 6;
         if (!pink && gray !== defaultGray) nightShiftOverrides[`${day}-night-${shift}`] = gray;
       }
     }
@@ -473,7 +494,7 @@
         Array.isArray(existingPerson.shiftGroups) &&
         existingPerson.shiftGroups.length
       ) {
-        shiftGroups = existingPerson.shiftGroups.filter((group) => ['early', 'middle', 'night'].includes(group)).slice(0, 1);
+        shiftGroups = existingPerson.shiftGroups.filter((group) => window.ValueCycle.contains(A_ALL_SHIFT_GROUPS, group)).slice(0, 1);
       } else {
         shiftGroups = inferShiftGroups(letter, imported.rosterValues);
       }
@@ -501,16 +522,20 @@
 
   function buildBlockedVacationOverrides(imported) {
     const settings = storage.getSettings({ blockedWeekdays: DEFAULT_BLOCKED_WEEKDAYS });
-    const blockedWeekdays = new Set(
-      (Array.isArray(settings.blockedWeekdays) ? settings.blockedWeekdays : DEFAULT_BLOCKED_WEEKDAYS)
+    const blockedWeekdays = window.TreeSelection.create({
+      selected: (Array.isArray(settings.blockedWeekdays) ? settings.blockedWeekdays : DEFAULT_BLOCKED_WEEKDAYS)
         .map(Number)
         .filter((value) => Number.isInteger(value) && value >= 0 && value <= 6)
-    );
+    });
     const specialDays = storage.getSpecialDays(imported.year);
-    const holidays = new Set(Array.isArray(specialDays.holidays) ? specialDays.holidays : []);
-    const workdays = new Set(Array.isArray(specialDays.workdays) ? specialDays.workdays : []);
-    const blockedFromExcel = new Set(imported.blockedDays);
-    const supervisorDays = new Set(imported.supervisorLeaveDays);
+    const holidays = window.TreeSelection.create({
+      selected: Array.isArray(specialDays.holidays) ? specialDays.holidays : []
+    });
+    const workdays = window.TreeSelection.create({
+      selected: Array.isArray(specialDays.workdays) ? specialDays.workdays : []
+    });
+    const blockedFromExcel = window.TreeSelection.create({ selected: imported.blockedDays });
+    const supervisorDays = window.TreeSelection.create({ selected: imported.supervisorLeaveDays });
     const overrides = {};
 
     for (let day = 1; day <= imported.days; day += 1) {
@@ -519,7 +544,7 @@
       let defaultBlocked;
       if (holidays.has(dateKey)) defaultBlocked = true;
       else if (workdays.has(dateKey)) defaultBlocked = false;
-      else defaultBlocked = blockedWeekdays.has(new Date(imported.year, imported.month - 1, day).getDay());
+      else defaultBlocked = blockedWeekdays.has(getWeekday(imported.year, imported.month, day));
 
       const excelBlocked = blockedFromExcel.has(day);
       if (excelBlocked !== defaultBlocked) overrides[String(day)] = excelBlocked;
@@ -531,7 +556,7 @@
   function mergeLeaveMetadata(imported, existing) {
     const leaveTypeValues = {};
     const leaveNoteValues = {};
-    const preserveTypes = new Set(['exceptionPublic', 'personal', 'bereavement', 'other']);
+    const preserveTypes = ['exceptionPublic', 'personal', 'bereavement', 'other'];
 
     for (let day = 1; day <= imported.days; day += 1) {
       for (let slot = 0; slot < 2; slot += 1) {
@@ -547,7 +572,7 @@
 
         const sameLetter = String(existing.rosterValues?.[key] || '') === letter;
         const existingType = String(existing.leaveTypeValues?.[key] || '');
-        if (sameLetter && preserveTypes.has(existingType)) {
+        if (sameLetter && window.ValueCycle.contains(preserveTypes, existingType)) {
           leaveTypeValues[key] = existingType;
           const note = existing.leaveNoteValues?.[key];
           if (typeof note === 'string' && note) leaveNoteValues[key] = note;
@@ -563,6 +588,9 @@
     const leaveNoteValues = {};
     const specialShiftTimes = {};
     const nightShiftTimes = {};
+    const specialShiftCellSelection = window.TreeSelection.create({
+      selected: Array.isArray(specialShiftCells) ? specialShiftCells : []
+    });
 
     for (let day = 1; day <= days; day += 1) {
       const tokens = splitTokens(book.sheet.get(11, 4 + day).value);
@@ -597,7 +625,7 @@
         for (let shift = 0; shift < 5; shift += 1) {
           if (rosterValues[`${day}-shift-${shift}`] === timeNote.letter) candidates.push(shift);
         }
-        const pink = candidates.filter((shift) => specialShiftCells.includes(`${day}-shift-${shift}`));
+        const pink = candidates.filter((shift) => specialShiftCellSelection.has(`${day}-shift-${shift}`));
         const gray = candidates.filter((shift) => styleOf(book, 4 + shift, 4 + day).fill.color === COLOR.gray);
         if (pink.length === 1) specialShiftTimes[`${day}-shift-${pink[0]}`] = timeNote.range;
         else if (gray.length === 1) nightShiftTimes[`${day}-night-${gray[0]}`] = timeNote.range;

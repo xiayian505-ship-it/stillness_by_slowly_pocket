@@ -7,7 +7,7 @@
 
   const SCALE = 2;
   const DEFAULT_LINE = '#1b1b1b';
-  const TRANSPARENT = new Set(['transparent', 'rgba(0, 0, 0, 0)', 'rgba(0,0,0,0)']);
+  const TRANSPARENT = ['transparent', 'rgba(0, 0, 0, 0)', 'rgba(0,0,0,0)'];
 
   function getRect(element, rootRect) {
     const rect = element.getBoundingClientRect();
@@ -32,7 +32,7 @@
   }
 
   function normalizeColor(value, fallback = null) {
-    if (!value || TRANSPARENT.has(value.trim())) return fallback;
+    if (!value || window.ValueCycle.contains(TRANSPARENT, value.trim())) return fallback;
     return value;
   }
 
@@ -382,35 +382,15 @@
     return canvas;
   }
 
-  function canvasToBlob(canvas) {
-    return new Promise((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (blob) resolve(blob);
-        else reject(new Error('PNG 產生失敗'));
-      }, 'image/png');
-    });
-  }
-
   function getFileName(date = new Date()) {
-    const pad2 = (value) => String(value).padStart(2, '0');
-    const stamp = `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}_${pad2(date.getHours())}${pad2(date.getMinutes())}`;
+    const timestamp = window.Timestamp.create(date);
+    const stamp = timestamp ? `${timestamp.slice(0, 8)}_${timestamp.slice(8, 12)}` : '';
     return `EliteHotel_${stamp}.png`;
   }
 
   async function createPngBlob() {
     const canvas = await drawRosterToCanvas();
-    return canvasToBlob(canvas);
-  }
-
-  function downloadBlob(blob) {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = getFileName();
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return window.SlowlyCanvasPNG.toBlob(canvas);
   }
 
   function printPreviewUrl(url) {
@@ -447,6 +427,7 @@
     printWindow.document.close();
   }
 
+  const previewUrlScope = window.BlobUrlScope.create();
   let currentPreviewUrl = '';
   let currentPreviewBlob = null;
 
@@ -454,10 +435,8 @@
     const preview = document.getElementById('pngPreviewOverlay');
     if (preview) preview.remove();
 
-    if (currentPreviewUrl) {
-      URL.revokeObjectURL(currentPreviewUrl);
-      currentPreviewUrl = '';
-    }
+    previewUrlScope.clear();
+    currentPreviewUrl = '';
     currentPreviewBlob = null;
   }
 
@@ -465,7 +444,7 @@
     closePreview();
 
     currentPreviewBlob = blob;
-    currentPreviewUrl = URL.createObjectURL(blob);
+    currentPreviewUrl = previewUrlScope.create(blob);
 
     const overlay = document.createElement('div');
     overlay.id = 'pngPreviewOverlay';
@@ -502,7 +481,7 @@
     });
 
     downloadButton.addEventListener('click', () => {
-      if (currentPreviewBlob) downloadBlob(currentPreviewBlob);
+      if (currentPreviewBlob) window.SlowlyPNGDownload.fromBlob(currentPreviewBlob, getFileName());
     });
 
     printButton.addEventListener('click', () => {
@@ -515,7 +494,7 @@
 
   async function previewPng() {
     const canvas = await drawRosterToCanvas();
-    const blob = await canvasToBlob(canvas);
+    const blob = await window.SlowlyCanvasPNG.toBlob(canvas);
     showPreview(blob);
     return { canvas, blob };
   }

@@ -21,24 +21,41 @@
   }
 
   function makeTimestamp(date = new Date()) {
-    return [
-      date.getFullYear(),
-      pad2(date.getMonth() + 1),
-      pad2(date.getDate())
-    ].join('') + '_' + pad2(date.getHours()) + pad2(date.getMinutes());
+    const stamp = window.Timestamp.create(date);
+    return stamp ? `${stamp.slice(0, 8)}_${stamp.slice(8, 12)}` : '';
   }
 
   function makeExcelFileName() {
-    const timestamp = typeof window.ShiftRosterBackup?.makeTimestamp === 'function'
-      ? window.ShiftRosterBackup.makeTimestamp()
-      : makeTimestamp();
-    return `EliteHotel_${timestamp}_班表.xlsx`;
+    return `EliteHotel_${makeTimestamp()}_班表.xlsx`;
   }
 
   function getCurrentMonthId() {
     const current = window.ShiftRosterApp?.getCurrentYearMonth?.();
     if (!current) throw new Error('無法取得目前班表月份。');
     return `${Number(current.year)}-${pad2(Number(current.month))}`;
+  }
+
+  function getDaysInMonth(year, month) {
+    const targetYear = Number(year);
+    const targetMonth = Number(month);
+    if (window.Calendar?.isSupportedYear?.(targetYear) && Number.isInteger(targetMonth) && targetMonth >= 1 && targetMonth <= 12) {
+      return window.Calendar.getDaysInMonth(targetYear, targetMonth);
+    }
+    return new Date(targetYear, targetMonth, 0).getDate();
+  }
+
+  function getWeekdayIndex(year, month, day) {
+    const targetYear = Number(year);
+    const targetMonth = Number(month);
+    const targetDay = Number(day);
+    if (
+      window.Calendar?.isSupportedYear?.(targetYear) &&
+      Number.isInteger(targetMonth) && targetMonth >= 1 && targetMonth <= 12 &&
+      Number.isInteger(targetDay) && targetDay >= 1 && targetDay <= getDaysInMonth(targetYear, targetMonth)
+    ) {
+      return window.Calendar.createDay(targetYear, targetMonth, targetDay).weekday;
+    }
+    return new Date(targetYear, targetMonth - 1, targetDay).getDay();
   }
 
   async function exportCurrentMonth() {
@@ -90,10 +107,15 @@
 
   function buildMonthSheet(workbook, monthId, data) {
     const [year, month] = monthId.split('-').map(Number);
-    const days = new Date(year, month, 0).getDate();
+    const days = getDaysInMonth(year, month);
     const settings = payload.settings || {};
     const shiftRanges = Array.isArray(settings.shiftRanges) && settings.shiftRanges.length === 5 ? settings.shiftRanges : DEFAULT_SHIFTS;
-    const blockedWeekdays = new Set((settings.blockedWeekdays || [6]).map(Number));
+    const blockedWeekdays = window.TreeSelection.create({
+      selected: (settings.blockedWeekdays || [6]).map(Number)
+    });
+    const specialShiftCells = window.TreeSelection.create({
+      selected: Array.isArray(data.specialShiftCells) ? data.specialShiftCells : []
+    });
     const publicLeaveTarget = Number(settings.publicLeaveCount || 8);
 
     const ws = workbook.addWorksheet(`${monthId} 班表`, {
@@ -153,7 +175,7 @@
     ws.getRow(r).height = 17.25;
     mergeSet(ws,r,1,r,4,'星期',{font:{name:serif,size:10},alignment:{horizontal:'center',vertical:'middle'},border:baseBorder});
     for (let day=1; day<=days; day+=1) {
-      const d = new Date(year,month-1,day).getDay();
+      const d = getWeekdayIndex(year, month, day);
       const cell = ws.getCell(r,4+day);
       cell.value = WEEKDAYS[d];
       const specialType = getAnnualSpecialDayType(year,month,day);
@@ -185,7 +207,7 @@
         cell.font = {name:sans,size:14};
         cell.alignment = {horizontal:'center',vertical:'middle'};
         if (isNightGray(data,year,month,day,shift)) cell.fill = solidFill(GRAY);
-        if (Array.isArray(data.specialShiftCells) && data.specialShiftCells.includes(key)) cell.fill = solidFill(PINK);
+        if (specialShiftCells.has(key)) cell.fill = solidFill(PINK);
         cell.border = baseBorder;
       }
       r += 1;
@@ -204,7 +226,7 @@
     vacLabel.border = baseBorder;
 
     for (let day=1; day<=days; day+=1) {
-      const dow = new Date(year,month-1,day).getDay();
+      const dow = getWeekdayIndex(year, month, day);
       const top = ws.getCell(vacWeekRow,4+day);
       top.value = WEEKDAYS[dow];
       const specialType = getAnnualSpecialDayType(year,month,day);
@@ -286,7 +308,7 @@
     ws.getRow(r).height = 16.5;
     mergeSet(ws,r,1,r,4,'',{border:baseBorder});
     for (let day=1; day<=days; day+=1) {
-      const dow = new Date(year,month-1,day).getDay();
+      const dow = getWeekdayIndex(year, month, day);
       const cell = ws.getCell(r,4+day);
       cell.value = day;
       cell.font = {name:sans,size:9};
@@ -395,40 +417,41 @@
   }
 
   function parseHireDateValue(value) {
-    const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!match) return null;
-    const year = Number(match[1]);
-    const month = Number(match[2]);
-    const day = Number(match[3]);
-    const date = new Date(year,month-1,day);
-    if (Number.isNaN(date.getTime()) || date.getFullYear() !== year || date.getMonth()+1 !== month || date.getDate() !== day) return null;
-    return {year,month,day,date};
+    const text = String(value || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return null;
+    const date = window.DateTime.parseDateKey(text);
+    if (!date) return null;
+    return {
+      year:date.getFullYear(),
+      month:date.getMonth()+1,
+      day:date.getDate(),
+      date
+    };
   }
 
   function getCurrentCalendarDate() {
-    const now = new Date();
+    const date = window.DateTime.parseDateKey(window.DateTime.dateKey(new Date()));
     return {
-      year:now.getFullYear(),
-      month:now.getMonth()+1,
-      day:now.getDate(),
-      date:new Date(now.getFullYear(),now.getMonth(),now.getDate())
+      year:date.getFullYear(),
+      month:date.getMonth()+1,
+      day:date.getDate(),
+      date
     };
   }
 
   function addMonthsClamped(date,months) {
-    const year = date.getFullYear();
-    const month = date.getMonth() + months;
+    const target = window.CalendarMonthSequence.shift(
+      date.getFullYear(),
+      date.getMonth() + 1,
+      months
+    );
     const day = date.getDate();
-    const lastDay = new Date(year,month+1,0).getDate();
-    return new Date(year,month,Math.min(day,lastDay));
+    const lastDay = getDaysInMonth(target.year, target.month);
+    return new Date(target.year, target.month - 1, Math.min(day,lastDay));
   }
 
   function addYearsClamped(date,years) {
-    const year = date.getFullYear() + years;
-    const month = date.getMonth();
-    const day = date.getDate();
-    const lastDay = new Date(year,month+1,0).getDate();
-    return new Date(year,month,Math.min(day,lastDay));
+    return addMonthsClamped(date, Number(years) * 12);
   }
 
   function getAnnualRules(sourcePayload) {
@@ -532,14 +555,23 @@
     const specialDays = payload?.specialDays?.[String(year)];
     if (!specialDays) return '';
     const key = `${Number(year)}-${pad2(Number(month))}-${pad2(Number(day))}`;
-    if (Array.isArray(specialDays.holidays) && specialDays.holidays.includes(key)) return 'holiday';
-    if (Array.isArray(specialDays.workdays) && specialDays.workdays.includes(key)) return 'workday';
+    const holidays = window.TreeSelection.create({
+      selected: Array.isArray(specialDays.holidays) ? specialDays.holidays : []
+    });
+    const workdays = window.TreeSelection.create({
+      selected: Array.isArray(specialDays.workdays) ? specialDays.workdays : []
+    });
+    if (holidays.has(key)) return 'holiday';
+    if (workdays.has(key)) return 'workday';
     return '';
   }
 
   function isSupervisorLeave(data,day) {
-    return Array.isArray(data.supervisorLeaveDays)
-      && data.supervisorLeaveDays.some((value) => Number(value) === Number(day));
+    if (!Array.isArray(data.supervisorLeaveDays)) return false;
+    const supervisorLeaveDays = window.TreeSelection.create({
+      selected: data.supervisorLeaveDays.map(Number)
+    });
+    return supervisorLeaveDays.has(Number(day));
   }
 
   function isBlocked(data,blockedWeekdays,year,month,day) {
@@ -549,7 +581,7 @@
     const specialType = getAnnualSpecialDayType(year,month,day);
     if (specialType === 'holiday') return true;
     if (specialType === 'workday') return false;
-    const dow = new Date(year,month-1,day).getDay();
+    const dow = getWeekdayIndex(year, month, day);
     return blockedWeekdays.has(dow);
   }
 
@@ -557,7 +589,7 @@
     const key = `${day}-night-${shift}`;
     const override = data.nightShiftOverrides?.[key];
     if (typeof override === 'boolean') return override;
-    return shift === 3 && new Date(year,month-1,day).getDay() === 6;
+    return shift === 3 && getWeekdayIndex(year, month, day) === 6;
   }
 
   function getLeaveSummary(data,letter,days) {
@@ -612,7 +644,10 @@
       const letter = Object.keys(people).find(l => people[l].employeeId === employeeId);
       if (letter) groups.push(`${letter}\n${grant.days}`);
     }
-    if ((data.meetingDays || []).map(Number).includes(day)) {
+    const meetingDays = window.TreeSelection.create({
+      selected: (data.meetingDays || []).map(Number)
+    });
+    if (meetingDays.has(day)) {
       const text = String(data.meetingNoteValues?.[String(day)] || payload.settings?.meetingDefaultText || '8點櫃檯開會');
       groups.push(Array.from(text).join('\n'));
     }
@@ -664,14 +699,14 @@
 
 
   function downloadBlob(blob, filename) {
-    const url = URL.createObjectURL(blob);
+    const url = window.SlowlyBlobURL.create(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    window.setTimeout(() => window.SlowlyBlobURL.revoke(url), 1000);
   }
 
   exportButton.addEventListener('click', exportCurrentMonth);

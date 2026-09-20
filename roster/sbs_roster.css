@@ -1719,73 +1719,11 @@ table {
   .row-fill-bar,
   .conflict-dialog,
   .leave-check-dialog,
-  .clear-month-dialog,
   .png-preview-overlay {
     display: none !important;
   }
 }
 
-
-/* ===== 本月清空確認 ===== */
-.clear-month-dialog[hidden] {
-  display: none !important;
-}
-
-.clear-month-dialog {
-  position: fixed;
-  inset: 0;
-  z-index: 1270;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.48);
-}
-
-.clear-month-dialog-panel {
-  width: min(400px, 100%);
-  padding: 18px;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.28);
-}
-
-.clear-month-dialog-message {
-  margin: 0 0 16px;
-  white-space: pre-line;
-  text-align: center;
-  font-size: 16px;
-  line-height: 1.7;
-}
-
-.clear-month-dialog-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.clear-month-dialog-actions button {
-  min-height: 46px;
-  border: 1px solid #aaa;
-  border-radius: 8px;
-  background: #fff;
-  color: #222;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.clear-month-dialog-actions button:first-child {
-  border-color: #222;
-  background: #222;
-  color: #fff;
-}
-
-@media print {
-  .clear-month-dialog {
-    display: none !important;
-  }
-}
 
 /* =========================================================
    操作列 v4｜每一排各自吃滿版寬度
@@ -5279,5 +5217,31 @@ textarea,
   #rosterView .check-menu .menu-panel {
     left: 0;
     right: auto;
+  }
+}
+
+
+/* ===== 慢慢軍火庫 Toast｜宿主外觀 ===== */
+.roster-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 13000;
+  max-width: min(520px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  border: 1px solid #aaa;
+  border-radius: 10px;
+  background: #222;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.55;
+  text-align: center;
+  white-space: pre-line;
+}
+
+@media print {
+  .roster-toast {
+    display: none !important;
   }
 }
