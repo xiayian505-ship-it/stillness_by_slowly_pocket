@@ -1,132 +1,140 @@
 /* sbs_roster_v2_style.js
- * Pure UI state only: page tabs, settings/rules tabs, details menu housekeeping.
- * No roster data, validation, storage, JSON, Excel, leave or scheduling rules.
+ * 純 UI 行為。
+ * 不處理日期、班表資料、匯入匯出、儲存或規則。
  */
 (() => {
-  "use strict";
+  'use strict';
 
-  const byId = (id) => document.getElementById(id);
+  const rosterViewTab = document.getElementById('rosterViewTab');
+  const settingsViewTab = document.getElementById('settingsViewTab');
+  const rulesViewTab = document.getElementById('rulesViewTab');
+  const rosterView = document.getElementById('rosterView');
+  const settingsView = document.getElementById('settingsView');
+  const rulesView = document.getElementById('rulesView');
 
-  const pages = [
-    ["rosterViewTab", "rosterView"],
-    ["settingsViewTab", "settingsView"],
-    ["rulesViewTab", "rulesView"]
-  ];
+  const basicSettingsButton = document.getElementById('basicSettingsButton');
+  const shiftConfigButton = document.getElementById('shiftConfigButton');
+  const supervisorConfigButton = document.getElementById('supervisorConfigButton');
+  const basicSettingsPanel = document.getElementById('basicSettingsPanel');
+  const shiftConfigPanel = document.getElementById('shiftConfigPanel');
+  const supervisorConfigPanel = document.getElementById('supervisorConfigPanel');
 
-  function showPage(viewId) {
-    pages.forEach(([tabId, panelId]) => {
-      const tab = byId(tabId);
-      const panel = byId(panelId);
-      const active = panelId === viewId;
-      if (panel) panel.hidden = !active;
-      if (tab) {
-        tab.classList.toggle("is-active", active);
-        tab.setAttribute("aria-selected", String(active));
-      }
+  const operationGuideButton = document.getElementById('operationGuideButton');
+  const companyRulesButton = document.getElementById('companyRulesButton');
+  const operationGuidePanel = document.getElementById('operationGuidePanel');
+  const companyRulesPanel = document.getElementById('companyRulesPanel');
+
+  const shiftSeniorityButton = document.getElementById('shiftSeniorityButton');
+  const shiftPeopleButton = document.getElementById('shiftPeopleButton');
+  const shiftSeniorityInfo = document.getElementById('shiftSeniorityInfo');
+  const shiftConfigGrid = document.getElementById('shiftConfigGrid');
+
+  const supervisorSeniorityButton = document.getElementById('supervisorSeniorityButton');
+  const supervisorPeopleButton = document.getElementById('supervisorPeopleButton');
+  const supervisorSeniorityInfo = document.getElementById('supervisorSeniorityInfo');
+  const supervisorConfigBody = document.getElementById('supervisorConfigBody');
+
+  function setMainView(view) {
+    const showRoster = view === 'roster';
+    const showSettings = view === 'settings';
+    const showRules = view === 'rules';
+
+    rosterView.hidden = !showRoster;
+    settingsView.hidden = !showSettings;
+    rulesView.hidden = !showRules;
+
+    rosterViewTab.classList.toggle('is-active', showRoster);
+    settingsViewTab.classList.toggle('is-active', showSettings);
+    rulesViewTab.classList.toggle('is-active', showRules);
+    rosterViewTab.setAttribute('aria-selected', String(showRoster));
+    settingsViewTab.setAttribute('aria-selected', String(showSettings));
+    rulesViewTab.setAttribute('aria-selected', String(showRules));
+
+    if (showSettings) resetSettingsSection();
+    if (showRules) resetGuideSection();
+  }
+
+  function setSettingsTopActive(button) {
+    [basicSettingsButton, shiftConfigButton, supervisorConfigButton].forEach((item) => {
+      item?.classList.toggle('is-active', item === button);
     });
   }
 
-  pages.forEach(([tabId, panelId]) => {
-    byId(tabId)?.addEventListener("click", () => showPage(panelId));
-  });
-
-  const settingsTabs = [
-    ["basicSettingsButton", "basicSettingsPanel"],
-    ["shiftConfigButton", "shiftConfigPanel"],
-    ["supervisorConfigButton", "supervisorConfigPanel"]
-  ];
-
-  function showSettingsPanel(panelId) {
-    settingsTabs.forEach(([buttonId, targetId]) => {
-      const button = byId(buttonId);
-      const panel = byId(targetId);
-      const active = targetId === panelId;
-      if (panel) panel.hidden = !active;
-      if (button) {
-        button.classList.toggle("is-active", active);
-        button.setAttribute("aria-expanded", String(active));
-      }
-    });
+  function resetSettingsSection() {
+    if (basicSettingsPanel) basicSettingsPanel.hidden = true;
+    if (shiftConfigPanel) shiftConfigPanel.hidden = true;
+    if (supervisorConfigPanel) supervisorConfigPanel.hidden = true;
+    setSettingsTopActive(null);
   }
 
-  settingsTabs.forEach(([buttonId, panelId]) => {
-    byId(buttonId)?.addEventListener("click", () => showSettingsPanel(panelId));
-  });
-
-  const basicLive = byId("basicSettingsLive");
-  const ruleEditor = byId("ruleSettingsEditor");
-  const basicLiveButton = byId("basicSettingsLiveButton");
-  const editButton = byId("editRuleSettingsButton");
-
-  function showBasicMode(mode) {
-    const editing = mode === "edit";
-    if (basicLive) basicLive.hidden = editing;
-    if (ruleEditor) ruleEditor.hidden = !editing;
-    basicLiveButton?.classList.toggle("is-active", !editing);
-    editButton?.classList.toggle("is-active", editing);
-    basicLiveButton?.setAttribute("aria-pressed", String(!editing));
-    editButton?.setAttribute("aria-pressed", String(editing));
+  function showBasicSettings() {
+    if (shiftConfigPanel) shiftConfigPanel.hidden = true;
+    if (supervisorConfigPanel) supervisorConfigPanel.hidden = true;
+    if (basicSettingsPanel) basicSettingsPanel.hidden = false;
+    setSettingsTopActive(basicSettingsButton);
   }
 
-  basicLiveButton?.addEventListener("click", () => showBasicMode("live"));
-  editButton?.addEventListener("click", () => showBasicMode("edit"));
-  byId("ruleSettingsCancel")?.addEventListener("click", () => showBasicMode("live"));
-
-  function wirePeoplePanel(prefix) {
-    const seniorityButton = byId(`${prefix}SeniorityButton`);
-    const peopleButton = byId(`${prefix}PeopleButton`);
-    const seniority = byId(`${prefix}SeniorityInfo`);
-    const people = prefix === "shift" ? byId("shiftConfigGrid") : byId("supervisorConfigBody");
-
-    const show = (mode) => {
-      const seniorityOn = mode === "seniority";
-      if (seniority) seniority.hidden = !seniorityOn;
-      if (people) people.hidden = seniorityOn;
-      seniorityButton?.classList.toggle("is-active", seniorityOn);
-      peopleButton?.classList.toggle("is-active", !seniorityOn);
-      seniorityButton?.setAttribute("aria-expanded", String(seniorityOn));
-      peopleButton?.setAttribute("aria-pressed", String(!seniorityOn));
-    };
-
-    seniorityButton?.addEventListener("click", () => show("seniority"));
-    peopleButton?.addEventListener("click", () => show("people"));
+  function showShiftSettings() {
+    if (basicSettingsPanel) basicSettingsPanel.hidden = true;
+    if (supervisorConfigPanel) supervisorConfigPanel.hidden = true;
+    if (shiftConfigPanel) shiftConfigPanel.hidden = false;
+    setSettingsTopActive(shiftConfigButton);
   }
 
-  wirePeoplePanel("shift");
-  wirePeoplePanel("supervisor");
-
-  const guideTabs = [
-    ["operationGuideButton", "operationGuidePanel"],
-    ["companyRulesButton", "companyRulesPanel"]
-  ];
-
-  function showGuide(panelId) {
-    guideTabs.forEach(([buttonId, targetId]) => {
-      const active = targetId === panelId;
-      const button = byId(buttonId);
-      const panel = byId(targetId);
-      if (panel) panel.hidden = !active;
-      button?.classList.toggle("is-active", active);
-    });
+  function showSupervisorSettings() {
+    if (basicSettingsPanel) basicSettingsPanel.hidden = true;
+    if (shiftConfigPanel) shiftConfigPanel.hidden = true;
+    if (supervisorConfigPanel) supervisorConfigPanel.hidden = false;
+    setSettingsTopActive(supervisorConfigButton);
   }
 
-  guideTabs.forEach(([buttonId, panelId]) => {
-    byId(buttonId)?.addEventListener("click", () => showGuide(panelId));
-  });
+  function resetGuideSection() {
+    if (operationGuidePanel) operationGuidePanel.hidden = true;
+    if (companyRulesPanel) companyRulesPanel.hidden = true;
+    operationGuideButton?.classList.remove('is-active');
+    companyRulesButton?.classList.remove('is-active');
+  }
 
-  // Pure UI defaults for pages that were previously opened by business JS.
-  showPage("rosterView");
-  showSettingsPanel("basicSettingsPanel");
-  showBasicMode("live");
-  showGuide("operationGuidePanel");
+  function showGuideSection(kind) {
+    const operation = kind === 'operation';
+    operationGuidePanel.hidden = !operation;
+    companyRulesPanel.hidden = operation;
+    operationGuideButton.classList.toggle('is-active', operation);
+    companyRulesButton.classList.toggle('is-active', !operation);
+  }
 
-  // Keep top-level toolbar menus from piling on top of one another.
-  document.querySelectorAll("#rosterView .toolbar-menu").forEach((menu) => {
-    menu.addEventListener("toggle", () => {
-      if (!menu.open) return;
-      document.querySelectorAll("#rosterView .toolbar-menu").forEach((other) => {
-        if (other !== menu) other.open = false;
-      });
-    });
-  });
+  function showShiftSubsection(kind) {
+    const showSeniority = kind === 'seniority';
+    shiftSeniorityInfo.hidden = !showSeniority;
+    shiftConfigGrid.hidden = showSeniority;
+    shiftSeniorityButton.setAttribute('aria-expanded', String(showSeniority));
+    shiftSeniorityButton.classList.toggle('is-active', showSeniority);
+    shiftPeopleButton?.classList.toggle('is-active', !showSeniority);
+    shiftPeopleButton?.setAttribute('aria-pressed', String(!showSeniority));
+  }
+
+  function showSupervisorSubsection(kind) {
+    const showSeniority = kind === 'seniority';
+    supervisorSeniorityInfo.hidden = !showSeniority;
+    supervisorConfigBody.hidden = showSeniority;
+    supervisorSeniorityButton.setAttribute('aria-expanded', String(showSeniority));
+    supervisorSeniorityButton.classList.toggle('is-active', showSeniority);
+    supervisorPeopleButton?.classList.toggle('is-active', !showSeniority);
+    supervisorPeopleButton?.setAttribute('aria-pressed', String(!showSeniority));
+  }
+
+  rosterViewTab?.addEventListener('click', () => setMainView('roster'));
+  settingsViewTab?.addEventListener('click', () => setMainView('settings'));
+  rulesViewTab?.addEventListener('click', () => setMainView('rules'));
+  basicSettingsButton?.addEventListener('click', showBasicSettings);
+  shiftConfigButton?.addEventListener('click', showShiftSettings);
+  supervisorConfigButton?.addEventListener('click', showSupervisorSettings);
+  operationGuideButton?.addEventListener('click', () => showGuideSection('operation'));
+  companyRulesButton?.addEventListener('click', () => showGuideSection('company'));
+  shiftSeniorityButton?.addEventListener('click', () => showShiftSubsection('seniority'));
+  shiftPeopleButton?.addEventListener('click', () => showShiftSubsection('people'));
+  supervisorSeniorityButton?.addEventListener('click', () => showSupervisorSubsection('seniority'));
+  supervisorPeopleButton?.addEventListener('click', () => showSupervisorSubsection('people'));
+
+  setMainView('roster');
 })();
