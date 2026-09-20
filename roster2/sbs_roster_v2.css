@@ -8,53 +8,44 @@ body{padding:18px;overflow-x:hidden;background:#ececec;color:var(--ink);font-fam
 button,input{font:inherit}
 button{color:#222}
 
-.page-tabs{
-  width:min(1120px,calc(100vw - 36px));margin:0 auto 12px;
-  display:flex;gap:0;border-bottom:1px solid #aaa;
-}
-.page-tab{
-  min-width:86px;padding:10px 18px;border:0;border-bottom:3px solid transparent;
-  background:transparent;font-weight:600;cursor:pointer;
-}
-.page-tab.is-active{border-bottom-color:#222;font-weight:800}
-
-.controls{
-  position:relative;z-index:20;width:min(1120px,calc(100vw - 36px));
-  margin:0 auto 14px;display:grid;gap:8px;
-}
-.roster-primary-row,.roster-secondary-row{display:flex;align-items:stretch;gap:8px}
-.roster-primary-row{justify-content:space-between}
-.month-controls{display:grid;grid-template-columns:50px 118px 90px 50px;gap:8px}
-.controls button,.controls summary,.date-control{
-  min-height:44px;border:1px solid #aaa;border-radius:9px;background:#fff;
-}
-.controls button{padding:0 13px;font-weight:600;cursor:pointer}
-.date-control{display:grid;grid-template-columns:1fr auto;align-items:center;overflow:hidden}
-.date-control input{width:100%;min-width:0;height:42px;border:0;padding:0 8px;text-align:right;background:#fff}
-.date-control span{padding-right:9px;font-weight:600}
+.page-tabs{width:min(1120px,calc(100vw - 36px));margin:0 auto 12px;display:flex;gap:18px;border-bottom:1px solid #c8c8c8}
+.page-tab{appearance:none;border:0;border-bottom:3px solid transparent;background:transparent;color:#666;padding:10px 2px 9px;font-size:16px;font-weight:700;cursor:pointer}
+.page-tab.is-active{color:#111;border-bottom-color:#111}
+.controls{position:relative;left:auto;z-index:10;width:min(1120px,calc(100vw - 36px));margin:0 auto 18px;display:grid;gap:0}
+.roster-primary-row{position:relative;z-index:30;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 0 8px;border-bottom:1px solid #bdbdbd}
+.month-controls{min-width:0;display:flex;align-items:center;gap:0;white-space:nowrap}
+#rosterView .month-controls>button,#rosterView .management-menu>summary,#rosterView .roster-secondary-row>.toolbar-menu>summary,#rosterView .secondary-main-button{width:auto;min-width:0;min-height:40px;border:0;border-radius:0;background:transparent;color:#333;padding:0 8px;font:inherit;font-weight:600;box-shadow:none;cursor:pointer}
+#rosterView .month-controls>button{min-width:28px;padding:0;font-weight:700}
+#rosterView .month-controls>button:hover,#rosterView .management-menu>summary:hover,#rosterView .roster-secondary-row>.toolbar-menu>summary:hover,#rosterView .secondary-main-button:hover{background:#f3f3f3}
+#rosterView .month-controls .date-control{width:auto;min-height:40px;display:inline-flex;align-items:center;gap:0;padding:0;border:0;border-radius:0;background:transparent;font-size:16px;font-weight:700}
+#rosterView .month-controls .date-control input{min-width:0;min-height:36px;border:0;border-bottom:1px solid transparent;border-radius:0;background:transparent;padding:0;text-align:right;font:inherit;font-weight:700}
+#rosterView .month-controls .date-control-year input{width:42px}
+#rosterView .month-controls .date-control-month input{width:18px}
+#rosterView .month-controls .date-control input:hover,#rosterView .month-controls .date-control input:focus{border-bottom-color:#888;outline:0}
+#rosterView .management-menu>summary{padding-inline:10px 2px;font-weight:700}
 .toolbar-menu{position:relative}
-.toolbar-menu>summary{
-  min-width:145px;display:flex;align-items:center;justify-content:center;
-  padding:0 14px;font-weight:700;cursor:pointer;list-style:none;
-}
+.toolbar-menu>summary,.menu-branch>summary{list-style:none;user-select:none}
 .toolbar-menu>summary::-webkit-details-marker,.menu-branch>summary::-webkit-details-marker{display:none}
-.management-menu{margin-left:auto}
-.management-menu>summary{min-width:88px}
-.roster-secondary-row>.secondary-main-button{min-width:145px}
-.menu-panel{
-  position:absolute;top:calc(100% + 6px);left:0;z-index:50;width:240px;
-  padding:8px;border:1px solid #aaa;border-radius:10px;background:#fff;
-  box-shadow:0 10px 30px rgba(0,0,0,.16);
-}
-.menu-panel-right{left:auto;right:0}
-.menu-branch{border-bottom:1px solid #e3e3e3}
-.menu-branch:last-child{border-bottom:0}
-.menu-branch>summary{padding:10px 8px;font-weight:700;cursor:pointer;list-style:none}
-.menu-branch-body,.menu-actions{display:grid;gap:6px;padding:0 0 8px}
-.nested-menu{margin-left:6px}
-.nested-menu>summary{font-weight:600}
-.menu-panel button{min-height:40px;border-radius:7px}
-
+.toolbar-menu>summary::after,.menu-branch>summary::after{content:"+";font-weight:400}
+.toolbar-menu[open]>summary::after,.menu-branch[open]>summary::after{content:"-"}
+#rosterView .roster-secondary-row{position:relative;z-index:20;min-height:44px;display:flex;align-items:center;gap:0;padding:2px 0 0;border-bottom:1px solid #e0e0e0}
+#rosterView .roster-secondary-row>.toolbar-menu,#rosterView .roster-secondary-row>.secondary-main-button{position:relative;flex:0 0 auto}
+#rosterView .roster-secondary-row>.toolbar-menu>summary,#rosterView .secondary-main-button{min-height:41px;padding:0 14px;color:#555;font-size:15px;font-weight:600;text-align:left}
+#rosterView .roster-secondary-row>.toolbar-menu:not(:first-child)::before,#rosterView .roster-secondary-row>.secondary-main-button::before{content:"";position:absolute;top:12px;bottom:12px;left:0;width:1px;background:#d8d8d8}
+#rosterView .menu-panel{position:absolute;top:calc(100% + 1px);left:0;z-index:80;display:flex;flex-wrap:nowrap;align-items:flex-start;gap:0;width:max-content;max-width:calc(100vw - 24px);overflow-x:auto;overflow-y:visible;white-space:nowrap;padding:6px 0;border:1px solid #c8c8c8;border-radius:0;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.10)}
+#rosterView .menu-panel-right{right:0;left:auto}
+#rosterView .menu-branch{display:flex;flex:0 0 auto;align-items:flex-start;border:0;border-right:1px solid #ededed}
+#rosterView .menu-branch:last-child{border-right:0}
+#rosterView .menu-branch>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:8px 14px;font-weight:700;cursor:pointer;white-space:nowrap}
+#rosterView .menu-branch>summary:hover{background:#f5f5f5}
+#rosterView .menu-branch-body{display:flex;flex:0 0 auto;align-items:flex-start;gap:0;padding:0;white-space:nowrap}
+#rosterView .menu-actions{--menu-item-width:72px;display:grid;grid-template-columns:repeat(4,var(--menu-item-width));grid-auto-flow:row;gap:0;width:max-content;overflow:visible;white-space:nowrap;padding:0}
+#rosterView .menu-actions button,#rosterView .menu-branch-body>button,#rosterView .menu-panel>button{min-height:39px;border:0;border-radius:0;background:transparent;color:#333;padding:7px 14px;font:inherit;font-weight:500;text-align:center;cursor:pointer;white-space:nowrap}
+#rosterView .menu-actions>button{box-sizing:border-box;width:var(--menu-item-width);min-width:var(--menu-item-width);max-width:var(--menu-item-width)}
+#rosterView .menu-actions button:hover,#rosterView .menu-branch-body>button:hover,#rosterView .menu-panel>button:hover{background:#f3f3f3}
+#rosterView .management-menu>.menu-panel>.menu-branch>summary{width:96px;min-width:96px}
+#rosterView .secondary-main-button.is-active,#rosterView .toolbar-menu button.is-active,#rosterView .toolbar-menu button[aria-pressed="true"]{background:#f1f1f1;color:#111;font-weight:700}
+@media(max-width:760px){#rosterView .roster-primary-row{align-items:center;gap:8px}#rosterView .month-controls>button{min-width:26px;font-size:15px}#rosterView .month-controls .date-control{font-size:15px}#rosterView .month-controls .date-control-year input{width:39px}#rosterView .month-controls .date-control-month input{width:18px}#rosterView .management-menu>summary{padding-inline:8px 0}#rosterView .roster-secondary-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}#rosterView .roster-secondary-row>.toolbar-menu,#rosterView .roster-secondary-row>.secondary-main-button{min-width:0}#rosterView .roster-secondary-row>.toolbar-menu>summary,#rosterView .secondary-main-button{width:100%;min-height:48px;padding:5px 6px;font-size:14px;line-height:1.3;text-align:center;white-space:normal}#rosterView .menu-panel{max-width:calc(100vw - 16px)}}
 .sheet-viewport{width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch}
 .sheet{
   width:1120px;min-width:1120px;margin:0 auto;padding:12px 12px 10px;
@@ -162,19 +153,121 @@ table{width:100%;border-collapse:collapse;table-layout:fixed}
 
 [hidden]{display:none!important}
 
-@media(max-width:700px){
-  body{padding:10px}
-  .page-tabs,.controls{width:calc(100vw - 20px)}
-  .roster-primary-row,.roster-secondary-row{flex-wrap:wrap}
-  .month-controls{width:100%;grid-template-columns:44px minmax(105px,1fr) minmax(80px,.8fr) 44px}
-  .management-menu{margin-left:0}
-  .roster-secondary-row>.toolbar-menu,.roster-secondary-row>.secondary-main-button{flex:1 1 145px}
-  .toolbar-menu>summary,.roster-secondary-row>.secondary-main-button{width:100%}
-}
-
 @media print{
   body{padding:0;background:#fff}
   .page-tabs,.controls{display:none!important}
   .sheet-viewport{overflow:visible}
   .sheet{width:100%;min-width:0;box-shadow:none;margin:0;padding:0}
+}
+
+
+/* =========================================================
+   v2 UI-only page / subpage states
+   ========================================================= */
+.settings-view,.rules-view{
+  width:min(1120px,calc(100vw - 36px));
+  margin:0 auto;
+}
+.sub-tabs{
+  display:flex;
+  gap:0;
+  border-bottom:1px solid #c8c8c8;
+}
+.sub-tabs button{
+  appearance:none;
+  min-height:42px;
+  padding:8px 14px;
+  border:0;
+  border-bottom:3px solid transparent;
+  border-radius:0;
+  background:transparent;
+  color:#666;
+  font-weight:700;
+  cursor:pointer;
+}
+.sub-tabs button.is-active{
+  color:#111;
+  border-bottom-color:#111;
+}
+.subpanel{min-height:1px}
+
+/* ===== v2 menu container: exact behavior reimplemented from v1 final spec ===== */
+#rosterView .menu-panel{
+  display:grid;
+  grid-auto-flow:row;
+  align-items:start;
+  gap:0;
+  box-sizing:border-box;
+  width:max-content;
+  max-width:calc(100vw - 24px);
+  overflow-x:auto;
+  overflow-y:visible;
+  white-space:nowrap;
+  -webkit-overflow-scrolling:touch;
+}
+#rosterView .menu-panel>.menu-branch,
+#rosterView .menu-branch-body>.menu-branch{display:contents}
+#rosterView .toolbar-menu:not(.management-menu):not(.check-menu)>.menu-panel:has(#meetingModeButton){
+  grid-template-columns:repeat(4,minmax(64px,max-content))
+}
+#rosterView .menu-panel:has(#meetingModeButton)>.menu-actions{display:contents}
+#rosterView .management-menu>.menu-panel{
+  grid-template-columns:repeat(2,minmax(96px,max-content))
+}
+#rosterView .check-menu>.menu-panel{
+  grid-template-columns:repeat(2,minmax(120px,max-content))
+}
+#rosterView .menu-branch-body{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(96px,max-content));
+  grid-auto-flow:row;
+  align-items:start;
+  gap:0;
+  width:max-content;
+  max-width:none;
+  overflow:visible;
+  white-space:nowrap;
+  padding:0;
+}
+#rosterView .menu-branch-body:has(#specialDatesButton){
+  grid-template-columns:repeat(2,minmax(112px,max-content))
+}
+#rosterView .menu-branch>.menu-branch-body,
+#rosterView .menu-branch>.menu-actions{grid-column:1/-1}
+#rosterView .menu-panel>button,
+#rosterView .menu-panel>.menu-actions>button,
+#rosterView .menu-branch-body>button,
+#rosterView .menu-branch>summary{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  max-width:none;
+  white-space:nowrap;
+  text-align:center;
+}
+#rosterView .menu-actions{
+  display:grid;
+  grid-auto-flow:row;
+  gap:0;
+  width:max-content;
+  max-width:none;
+  overflow:visible;
+  white-space:nowrap;
+  padding:0;
+}
+#rosterView .menu-actions>button{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  max-width:none;
+}
+#rosterView .menu-actions:has(#nightModeButton){grid-template-columns:repeat(2,64px)}
+#rosterView .menu-actions:has(#printButton){grid-template-columns:repeat(3,72px)}
+#rosterView .menu-actions:has(#importJsonButton){grid-template-columns:repeat(2,96px)}
+#rosterView .menu-actions:has(#clearMonthButton){grid-template-columns:repeat(2,120px)}
+#rosterView .menu-actions:has(#leaveCheckButton){grid-template-columns:repeat(4,64px)}
+#rosterView .menu-actions:has(#checkFixedShiftButton){grid-template-columns:repeat(3,64px)}
+@media(max-width:760px){
+  #rosterView .menu-panel{max-width:calc(100vw - 16px)}
+  #rosterView .check-menu .menu-panel{left:0;right:auto}
 }

@@ -10,18 +10,18 @@
 </head>
 <body>
   <nav class="page-tabs" aria-label="排班工具頁面">
-    <button class="page-tab is-active" type="button">班表</button>
-    <button class="page-tab" type="button">設定</button>
-    <button class="page-tab" type="button">說明</button>
+    <button class="page-tab is-active" type="button" data-view="rosterView" aria-selected="true">班表</button>
+    <button class="page-tab" type="button" data-view="settingsView" aria-selected="false">設定</button>
+    <button class="page-tab" type="button" data-view="rulesView" aria-selected="false">說明</button>
   </nav>
 
-  <main class="page-view">
+  <main class="page-view app-view" id="rosterView">
     <section class="controls roster-controls" aria-label="排班表操作">
       <div class="roster-primary-row">
         <div class="month-controls" aria-label="月份控制">
           <button type="button" aria-label="上個月">&lt;</button>
-          <label class="date-control"><input type="text" value="2026" aria-label="年份"><span>年</span></label>
-          <label class="date-control"><input type="text" value="10" aria-label="月份"><span>月</span></label>
+          <label class="date-control date-control-year"><input type="text" value="2026" aria-label="年份"><span>年</span></label>
+          <label class="date-control date-control-month"><input type="text" value="10" aria-label="月份"><span>月</span></label>
           <button type="button" aria-label="下個月">&gt;</button>
         </div>
         <details class="toolbar-menu management-menu">
@@ -29,12 +29,12 @@
           <div class="menu-panel menu-panel-right">
             <details class="menu-branch"><summary>一般管理</summary><div class="menu-branch-body">
               <button type="button">匯入班表：Excel</button>
-              <details class="menu-branch nested-menu"><summary>輸出班表</summary><div class="menu-actions"><button>列印</button><button>PNG</button><button>EXCEL</button></div></details>
-              <details class="menu-branch nested-menu"><summary>備份班表</summary><div class="menu-actions"><button>匯入 JSON</button><button>匯出 JSON</button></div></details>
+              <details class="menu-branch nested-menu"><summary>輸出班表</summary><div class="menu-actions"><button>列印</button><button id="exportPngButton" type="button">PNG</button><button id="exportExcelButton" type="button">EXCEL</button></div></details>
+              <details class="menu-branch nested-menu"><summary>備份班表</summary><div class="menu-actions"><button id="importJsonButton" type="button">匯入 JSON</button><button id="downloadJsonButton" type="button">匯出 JSON</button></div></details>
             </div></details>
             <details class="menu-branch"><summary>進階管理</summary><div class="menu-branch-body">
-              <button type="button">特殊日期設定</button>
-              <details class="menu-branch nested-menu"><summary>清空班表</summary><div class="menu-actions"><button>清空本月班表</button><button>清空歷史班表</button></div></details>
+              <button id="specialDatesButton" type="button">特殊日期設定</button>
+              <details class="menu-branch nested-menu"><summary>清空班表</summary><div class="menu-actions"><button id="clearMonthButton" type="button">清空本月班表</button><button id="cleanupHistoryButton" type="button">清空歷史班表</button></div></details>
             </div></details>
           </div>
         </details>
@@ -42,14 +42,14 @@
 
       <div class="roster-secondary-row">
         <details class="toolbar-menu"><summary>本月班表設定</summary><div class="menu-panel">
-          <div class="menu-actions"><button>開會</button><button>禁休</button><button>假別</button></div>
-          <details class="menu-branch nested-menu"><summary>特殊</summary><div class="menu-actions"><button>灰底</button><button>粉底</button></div></details>
+          <div class="menu-actions"><button id="meetingModeButton" type="button">開會</button><button id="blockModeButton" type="button">禁休</button><button id="leaveTypeModeButton" type="button">假別</button></div>
+          <details class="menu-branch nested-menu"><summary>特殊</summary><div class="menu-actions"><button id="nightModeButton" type="button">灰底</button><button id="specialModeButton" type="button">粉底</button></div></details>
         </div></details>
         <details class="toolbar-menu check-menu"><summary>本月班表檢查</summary><div class="menu-panel">
-          <button>完整規則檢查</button>
+          <button id="ruleCheckButton" type="button">完整規則檢查</button>
           <details class="menu-branch nested-menu"><summary>細項規則檢查</summary><div class="menu-branch-body">
-            <details class="menu-branch nested-menu"><summary>休假規則</summary><div class="menu-actions"><button>天數</button><button>禁休</button><button>撞休</button><button>排序</button><button>衝突</button><button>特殊</button></div></details>
-            <details class="menu-branch nested-menu"><summary>排班規則</summary><div class="menu-actions"><button>班別</button><button>轉班</button><button>連勤</button></div></details>
+            <details class="menu-branch nested-menu"><summary>休假規則</summary><div class="menu-actions"><button id="leaveCheckButton" type="button">天數</button><button id="checkBlockedLeaveButton" type="button">禁休</button><button id="checkSameGroupLeaveButton" type="button">撞休</button><button id="checkAdjacentLeaveButton" type="button">排序</button><button id="checkWorkLeaveConflictButton" type="button">衝突</button><button id="checkAnnualLeaveButton" type="button">特殊</button></div></details>
+            <details class="menu-branch nested-menu"><summary>排班規則</summary><div class="menu-actions"><button id="checkFixedShiftButton" type="button">班別</button><button id="checkTurnaroundButton" type="button">轉班</button><button id="checkConsecutiveButton" type="button">連勤</button></div></details>
           </div></details>
         </div></details>
         <button class="secondary-main-button" type="button">本月班表備註</button>
@@ -339,11 +339,24 @@
     </div>
   </main>
 
-  <section class="settings-view" hidden aria-label="設定">
-    <div class="settings-top-tabs"><button>基本值設定</button><button>櫃檯人員資料</button><button>主管人員資料</button></div>
+  <section class="settings-view app-view" id="settingsView" hidden aria-label="設定">
+    <div class="settings-top-tabs sub-tabs" data-subtab-group="settings">
+      <button class="is-active" type="button" data-panel="settingsBasic">基本值設定</button>
+      <button type="button" data-panel="settingsStaff">櫃檯人員資料</button>
+      <button type="button" data-panel="settingsManagers">主管人員資料</button>
+    </div>
+    <div class="subpanel" id="settingsBasic"></div>
+    <div class="subpanel" id="settingsStaff" hidden></div>
+    <div class="subpanel" id="settingsManagers" hidden></div>
   </section>
-  <section class="rules-view" hidden aria-label="說明">
-    <div class="guide-top-tabs"><button>操作說明</button><button>公司規定</button></div>
+  <section class="rules-view app-view" id="rulesView" hidden aria-label="說明">
+    <div class="guide-top-tabs sub-tabs" data-subtab-group="guide">
+      <button class="is-active" type="button" data-panel="guideOperation">操作說明</button>
+      <button type="button" data-panel="guideRules">公司規定</button>
+    </div>
+    <div class="subpanel" id="guideOperation"></div>
+    <div class="subpanel" id="guideRules" hidden></div>
   </section>
+  <script src="style.js"></script>
 </body>
 </html>
