@@ -442,6 +442,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       const shareUrl=new URL(location.href); shareUrl.search=""; shareUrl.searchParams.set("book",bookId); shareUrl.searchParams.set("view",data);
       if(readonlyShareLink)readonlyShareLink.textContent=shareUrl.toString();
       if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=false;copyReadonlyLinkBtn.dataset.url=shareUrl.toString();}
+      if(resetReadonlyLinkBtn)resetReadonlyLinkBtn.textContent="重製網址";
     }catch(error){
       console.error("[共付日常 v2] 唯讀網址產生失敗",error);
       if(readonlyShareLink)readonlyShareLink.textContent="只有管理帳號可以產生／重設唯讀網址。";
