@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
      - 本機帳本仍可獨立使用，不依賴雲端初始化
      - 共享帳本以 URL 的 book id 指定帳本，再用共享密碼取得 90 天編輯資格
      - Supabase Auth 使用背景 anonymous session，不要求 Email／帳號登入
-     - 唯讀分享保留需求位置；此階段尚未接唯讀 token
+     - 唯讀分享使用 URL 的 book + view token；後端只授予該帳本 SELECT
      - Email 申請流程目前不實作
      - 帳本核心 records / names / adjust / currencyBook 維持既有格式
   ========================================================= */
@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const settleCurrency=$("#settleCurrency"), applyBtn=$("#applyCurrencyBtn");
   const manageBookBtn=$("#manageBookBtn"), manageBookModal=$("#manageBookModal"), manageBookClose=$("#manageBookClose");
   const bookContext=$("#bookContext"), editorUnlockForm=$("#editorUnlockForm"), editorBookPassword=$("#editorBookPassword"), editorAccessMessage=$("#editorAccessMessage"), useLocalBookBtn=$("#useLocalBookBtn");
+  const resetReadonlyLinkBtn=$("#resetReadonlyLinkBtn"), copyReadonlyLinkBtn=$("#copyReadonlyLinkBtn"), readonlyShareLink=$("#readonlyShareLink");
 
   const fakeSets=[
     {native:settleCurrency,root:$("#settleCurrencyFake"),trigger:$("#settleCurrencyTrigger"),menu:$("#settleCurrencyMenu"),label:$("#settleCurrencyLabel"),opts:$$("#settleCurrencyMenu .fake-select-option")},
@@ -58,7 +59,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const monthPrefix=()=>`${viewYear}-${pad(viewMonth+1)}-`, monthKey=()=>`${viewYear}-${pad(viewMonth+1)}`;
   const isCloud=()=>activeBook.mode==="cloud";
   const canEdit=()=>activeBook.role!=="viewer";
-  const urlBookId=()=>new URLSearchParams(location.search).get("book")?.trim()||"";
+  const urlParams=()=>new URLSearchParams(location.search);
+  const urlBookId=()=>urlParams().get("book")?.trim()||"";
+  const urlViewToken=()=>urlParams().get("view")?.trim()||"";
 
   function localSnapshot(){return clone({id:STATE_ID,records,names,adjust,currencyBook});}
   function prune(){
@@ -271,6 +274,18 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(signError)throw signError;
     return data.session;
   }
+  async function enterReadonlyBook(token){
+    const bookId=urlBookId();
+    if(!bookId||!token)throw new Error("invalid readonly link");
+    await ensureAnonymousSession();
+    const {data,error}=await supabase.rpc("open_readonly_book",{p_book_id:bookId,p_view_token:token});
+    if(error)throw error;
+    const state=normalize(data);
+    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="唯讀帳本"; activeBook.role="viewer";
+    records=state.records; names=state.names; adjust=state.adjust; currencyBook=state.currencyBook;
+    syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+    await startRealtime();
+  }
   async function enterSharedBook(password){
     const bookId=urlBookId();
     if(!bookId)throw new Error("missing book id");
@@ -309,6 +324,27 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       setMessage(error?.message==="missing book id"?"這個網址沒有帳本識別碼（book）。":"帳本不存在、共享密碼不正確，或目前無法連線。","error");
     }finally{if(submit)submit.disabled=false;}
   });
+  resetReadonlyLinkBtn&&(resetReadonlyLinkBtn.onclick=async()=>{
+    const bookId=activeBook.id||urlBookId();
+    if(!bookId){if(readonlyShareLink)readonlyShareLink.textContent="請先進入要分享的雲端帳本。";return;}
+    resetReadonlyLinkBtn.disabled=true;
+    if(readonlyShareLink)readonlyShareLink.textContent="正在產生唯讀網址……";
+    try{
+      const {data,error}=await supabase.rpc("reset_readonly_book_token",{p_book_id:bookId});
+      if(error)throw error;
+      const shareUrl=new URL(location.href); shareUrl.search=""; shareUrl.searchParams.set("book",bookId); shareUrl.searchParams.set("view",data);
+      if(readonlyShareLink)readonlyShareLink.textContent=shareUrl.toString();
+      if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=false;copyReadonlyLinkBtn.dataset.url=shareUrl.toString();}
+    }catch(error){
+      console.error("[共付日常 v2] 唯讀網址產生失敗",error);
+      if(readonlyShareLink)readonlyShareLink.textContent="只有管理帳號可以產生／重設唯讀網址。";
+    }finally{resetReadonlyLinkBtn.disabled=false;}
+  });
+  copyReadonlyLinkBtn&&(copyReadonlyLinkBtn.onclick=async()=>{
+    const value=copyReadonlyLinkBtn.dataset.url||""; if(!value)return;
+    try{await navigator.clipboard.writeText(value);if(readonlyShareLink)readonlyShareLink.textContent=`已複製：${value}`;}catch{if(readonlyShareLink)readonlyShareLink.textContent=value;}
+  });
+
   useLocalBookBtn&&(useLocalBookBtn.onclick=async()=>{
     await stopRealtime();
     activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local";
@@ -316,7 +352,19 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     editorBookPassword.value="";setMessage("");closeManageBook();
   });
 
-  await loadActive();
-  const changed=prune(); if(changed)await saveState("prune-on-load");
-  syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+  if(urlViewToken()){
+    try{
+      await enterReadonlyBook(urlViewToken());
+    }catch(error){
+      console.error("[共付日常 v2] 唯讀帳本開啟失敗",error);
+      await loadActive();
+      syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+      setMessage("唯讀網址無效、已被重設，或目前無法連線。","error");
+      openManageBook();
+    }
+  }else{
+    await loadActive();
+    const changed=prune(); if(changed)await saveState("prune-on-load");
+    syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+  }
 });
