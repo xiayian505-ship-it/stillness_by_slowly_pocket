@@ -276,23 +276,23 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(authReadyPromise) return authReadyPromise;
     authReadyPromise=new Promise((resolve,reject)=>{
       let settled=false;
-      const finish=(session)=>{
+      const finish=()=>{
         if(settled)return;
         settled=true;
         clearTimeout(timer);
         subscription?.unsubscribe?.();
-        resolve(session||null);
+        resolve();
       };
-      const {data}=supabase.auth.onAuthStateChange((event,session)=>{
-        if(event==="INITIAL_SESSION"||event==="SIGNED_IN"||event==="TOKEN_REFRESHED") finish(session);
+      const {data}=supabase.auth.onAuthStateChange((event)=>{
+        if(event==="INITIAL_SESSION"||event==="SIGNED_IN"||event==="TOKEN_REFRESHED"||event==="SIGNED_OUT") finish();
       });
       const subscription=data?.subscription;
       const timer=setTimeout(async()=>{
         if(settled)return;
         try{
-          const {data:{session},error}=await supabase.auth.getSession();
+          const {error}=await supabase.auth.getSession();
           if(error)throw error;
-          finish(session);
+          finish();
         }catch(error){
           settled=true;
           subscription?.unsubscribe?.();
@@ -302,17 +302,30 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     });
     return authReadyPromise;
   }
-  async function ensureAnonymousSession(){
+  async function currentSession(){
     if(!supabase)throw new Error("Supabase SDK unavailable");
-    const readySession=await waitForAuthReady();
-    if(readySession)return readySession;
+    await waitForAuthReady();
     const {data:{session},error}=await supabase.auth.getSession();
     if(error)throw error;
-    if(session)return session;
+    return session||null;
+  }
+  async function ensureAnonymousSession(){
+    if(!supabase)throw new Error("Supabase SDK unavailable");
+    let session=await currentSession();
+    if(session?.user?.is_anonymous===true)return session;
+
+    // 管理者 Email session 與共享帳本 anonymous session 不共用。
+    // 進入共享／唯讀帳本時若仍是管理者身分，先明確登出再建立匿名身分。
+    if(session){
+      const {error:signOutError}=await supabase.auth.signOut();
+      if(signOutError)throw signOutError;
+    }
+
     const {data,error:signError}=await supabase.auth.signInAnonymously();
     if(signError)throw signError;
-    authReadyPromise=Promise.resolve(data.session);
-    return data.session;
+    session=data.session||null;
+    if(!session?.user?.id)throw new Error("anonymous session unavailable");
+    return session;
   }
   async function enterReadonlyBook(token){
     const bookId=urlBookId();
@@ -492,7 +505,12 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     }finally{if(submit)submit.disabled=false;}
   });
   leaveAdminModeBtn&&(leaveAdminModeBtn.onclick=async()=>{
-    try{await supabase?.auth.signOut();}catch(error){console.warn("[共付日常 v2] 管理模式登出失敗",error);}
+    try{
+      await supabase?.auth.signOut();
+      await ensureAnonymousSession();
+    }catch(error){
+      console.warn("[共付日常 v2] 管理模式離開後恢復匿名身分失敗",error);
+    }
     if(adminEmail)adminEmail.value="";if(adminPassword)adminPassword.value="";if(adminStatus)adminStatus.textContent="";
     showManagePanel("menu");
   });
