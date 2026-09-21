@@ -414,6 +414,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       if(adminBookMessage)adminBookMessage.textContent="目前無法載入可管理的雲端帳本。";
     }
   }
+  window.AccAdminV2={...(window.AccAdminV2||{}),loadAdminBooks};
+
   function buildReadonlyShareUrl(bookId,token){
     const shareUrl=new URL(location.href);
     shareUrl.search="";
