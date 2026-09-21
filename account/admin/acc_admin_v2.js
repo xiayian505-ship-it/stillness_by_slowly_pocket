@@ -28,7 +28,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const dangerModal=$("#dangerModal"), dangerTitle=dangerModal?.querySelector(".danger-title"), dangerText=dangerModal?.querySelector(".danger-text"), dangerCancel=$("#dangerCancelBtn"), dangerConfirm=$("#dangerOkBtn");
   const settleCurrency=$("#settleCurrency"), applyBtn=$("#applyCurrencyBtn");
   const manageBookBtn=$("#manageBookBtn"), manageBookModal=$("#manageBookModal"), manageBookClose=$("#manageBookClose");
-  const bookContext=$("#bookContext"), editorUnlockForm=$("#editorUnlockForm"), editorBookPassword=$("#editorBookPassword"), editorAccessMessage=$("#editorAccessMessage"), useLocalBookBtn=$("#useLocalBookBtn");
+  const bookContext=$("#bookContext"), editorUnlockForm=$("#editorUnlockForm"), editorBookPassword=$("#editorBookPassword"), editorAccessMessage=$("#editorAccessMessage");
+  const bookEntryMenu=$("#bookEntryMenu"), enterLocalBookBtn=$("#enterLocalBookBtn"), enterCloudBookBtn=$("#enterCloudBookBtn"), enterAdminModeBtn=$("#enterAdminModeBtn"), cloudBookPanel=$("#cloudBookPanel"), adminLoginPanel=$("#adminLoginPanel"), adminToolsPanel=$("#adminToolsPanel");
+  const adminLoginForm=$("#adminLoginForm"), adminEmail=$("#adminEmail"), adminPassword=$("#adminPassword"), adminLoginMessage=$("#adminLoginMessage"), adminStatus=$("#adminStatus"), leaveAdminModeBtn=$("#leaveAdminModeBtn");
   const resetReadonlyLinkBtn=$("#resetReadonlyLinkBtn"), copyReadonlyLinkBtn=$("#copyReadonlyLinkBtn"), readonlyShareLink=$("#readonlyShareLink");
 
   const fakeSets=[
@@ -297,16 +299,72 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
     await startRealtime();
   }
+  const ADMIN_UIDS=new Set([
+    "372c6a7f-4e6b-49fa-8228-183b46cbdede",
+    "bd126b9b-aa23-42e0-85f5-4560cab8fc57",
+    "7348ca2f-147d-4a3b-b9d2-a854c4a12430"
+  ]);
+  function showManagePanel(panel="menu"){
+    if(bookEntryMenu)bookEntryMenu.hidden=panel!=="menu";
+    if(cloudBookPanel)cloudBookPanel.hidden=panel!=="cloud";
+    if(adminLoginPanel)adminLoginPanel.hidden=panel!=="admin-login";
+    if(adminToolsPanel)adminToolsPanel.hidden=panel!=="admin-tools";
+    if(panel==="cloud")setTimeout(()=>editorBookPassword?.focus(),0);
+    if(panel==="admin-login")setTimeout(()=>adminEmail?.focus(),0);
+  }
   function openManageBook(){
     manageBookModal?.classList.remove("hidden");
     const menu=manageBookBtn?.closest("details"); if(menu)menu.open=false;
-    setTimeout(()=>editorBookPassword?.focus(),0);
+    showManagePanel("menu");
   }
-  function closeManageBook(){manageBookModal?.classList.add("hidden");}
+  function closeManageBook(){manageBookModal?.classList.add("hidden");showManagePanel("menu");}
   manageBookBtn&&(manageBookBtn.onclick=openManageBook);
   manageBookClose&&(manageBookClose.onclick=closeManageBook);
   manageBookModal?.addEventListener("click",e=>{if(e.target===manageBookModal)closeManageBook();});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!manageBookModal?.classList.contains("hidden"))closeManageBook();});
+  $$('[data-manage-back]').forEach(btn=>btn.onclick=()=>showManagePanel("menu"));
+  enterCloudBookBtn&&(enterCloudBookBtn.onclick=()=>showManagePanel("cloud"));
+  enterAdminModeBtn&&(enterAdminModeBtn.onclick=async()=>{
+    if(!supabase){if(adminLoginMessage)adminLoginMessage.textContent="目前無法連線到管理服務。";showManagePanel("admin-login");return;}
+    const {data:{session}}=await supabase.auth.getSession();
+    if(session?.user?.id&&ADMIN_UIDS.has(session.user.id)){
+      if(adminStatus)adminStatus.textContent=`已登入：${session.user.email||"管理者"}`;
+      showManagePanel("admin-tools");
+    }else showManagePanel("admin-login");
+  });
+  enterLocalBookBtn&&(enterLocalBookBtn.onclick=async()=>{
+    await stopRealtime();
+    activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local";
+    await loadActive(); syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+    editorBookPassword.value="";setMessage("");closeManageBook();
+  });
+  adminLoginForm?.addEventListener("submit",async e=>{
+    e.preventDefault();
+    if(!supabase)return;
+    const submit=adminLoginForm.querySelector('button[type="submit"]');
+    if(submit)submit.disabled=true;
+    if(adminLoginMessage)adminLoginMessage.textContent="正在登入管理模式……";
+    try{
+      const {data,error}=await supabase.auth.signInWithPassword({email:adminEmail.value.trim(),password:adminPassword.value});
+      if(error)throw error;
+      if(!data.user?.id||!ADMIN_UIDS.has(data.user.id)){
+        await supabase.auth.signOut();
+        throw new Error("not admin");
+      }
+      adminPassword.value="";
+      if(adminLoginMessage)adminLoginMessage.textContent="";
+      if(adminStatus)adminStatus.textContent=`已登入：${data.user.email||"管理者"}`;
+      showManagePanel("admin-tools");
+    }catch(error){
+      console.error("[共付日常 v2] 管理者登入失敗",error);
+      if(adminLoginMessage)adminLoginMessage.textContent="管理者帳號或密碼不正確。";
+    }finally{if(submit)submit.disabled=false;}
+  });
+  leaveAdminModeBtn&&(leaveAdminModeBtn.onclick=async()=>{
+    try{await supabase?.auth.signOut();}catch(error){console.warn("[共付日常 v2] 管理模式登出失敗",error);}
+    if(adminEmail)adminEmail.value="";if(adminPassword)adminPassword.value="";if(adminStatus)adminStatus.textContent="";
+    showManagePanel("menu");
+  });
 
   editorUnlockForm?.addEventListener("submit",async e=>{
     e.preventDefault();
@@ -343,13 +401,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   copyReadonlyLinkBtn&&(copyReadonlyLinkBtn.onclick=async()=>{
     const value=copyReadonlyLinkBtn.dataset.url||""; if(!value)return;
     try{await navigator.clipboard.writeText(value);if(readonlyShareLink)readonlyShareLink.textContent=`已複製：${value}`;}catch{if(readonlyShareLink)readonlyShareLink.textContent=value;}
-  });
-
-  useLocalBookBtn&&(useLocalBookBtn.onclick=async()=>{
-    await stopRealtime();
-    activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local";
-    await loadActive(); syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
-    editorBookPassword.value="";setMessage("");closeManageBook();
   });
 
   if(urlViewToken()){

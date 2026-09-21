@@ -1079,6 +1079,10 @@ select:focus,
 .access-panel label{ display:grid; gap:5px; font-size:11px; font-weight:800; color:var(--muted); }
 .access-panel input{ width:100%; padding:10px; border:1px solid var(--line-strong); background:var(--paper); }
 .access-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.manage-entry-menu{ margin-top:16px; }
+.manage-entry-actions{ display:grid; grid-template-columns:1fr; }
+.manage-entry-actions button{ width:100%; text-align:left; padding:12px; }
+#cloudBookPanel,#adminLoginPanel,#adminToolsPanel{ margin-top:16px; }
 .access-message{ min-height:1.4em; font-size:12px; color:var(--danger); }
 .root-books{ display:grid; gap:8px; margin-top:14px; }
 .root-book-row{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }

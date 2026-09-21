@@ -12,8 +12,6 @@
 
 <body>
   <main class="app">
-    <div class="book-context" id="bookContext"><strong>本機帳本</strong>｜尚未進入共享帳本</div>
-
     <header class="app-header">
       <div>
         <div class="logo">慢 慢<span>|</span>共付日常</div>
@@ -260,7 +258,7 @@
 
   </main>
 
-  <!-- 管理帳本：v2 共享帳本入口 -->
+  <!-- 管理帳本：第一層選擇本機／雲端／管理模式 -->
   <div id="manageBookModal" class="danger-modal hidden" role="dialog" aria-modal="true" aria-labelledby="manageBookTitle">
     <div class="danger-card manage-book-card">
       <div class="modal-head">
@@ -268,8 +266,16 @@
         <button type="button" id="manageBookClose" class="close" aria-label="關閉">×</button>
       </div>
 
-      <section class="access-panel">
-        <div class="ledger-label">雲端帳本｜網址指定帳本，輸入共享密碼進入</div>
+      <section id="bookEntryMenu" class="access-panel manage-entry-menu">
+        <div class="access-actions manage-entry-actions">
+          <button type="button" id="enterLocalBookBtn">進入本機帳本</button>
+          <button type="button" id="enterCloudBookBtn">進入雲端帳本</button>
+          <button type="button" id="enterAdminModeBtn">進入管理模式</button>
+        </div>
+      </section>
+
+      <section id="cloudBookPanel" class="access-panel" hidden>
+        <div class="ledger-label">雲端帳本｜網址指定帳本</div>
         <form id="editorUnlockForm" autocomplete="off">
           <label>
             <span>帳本共享密碼</span>
@@ -277,20 +283,47 @@
           </label>
           <div class="access-actions">
             <button type="submit">進入帳本</button>
-            <button type="button" id="useLocalBookBtn">使用本機帳本</button>
+            <button type="button" data-manage-back>返回</button>
           </div>
           <div id="editorAccessMessage" class="access-message" role="status" aria-live="polite"></div>
         </form>
       </section>
 
-      <section class="share-box access-placeholder">
-        <div class="ledger-label">唯讀分享</div>
-        <p id="readonlyShareStatus">唯讀網址會直接開啟目前帳本，不需要輸入共享密碼。</p>
-        <div class="access-actions" data-edit-only>
-          <button type="button" id="resetReadonlyLinkBtn">產生／重設唯讀網址</button>
-          <button type="button" id="copyReadonlyLinkBtn" hidden>複製唯讀網址</button>
+      <section id="adminLoginPanel" class="access-panel" hidden>
+        <div class="ledger-label">管理者登入</div>
+        <form id="adminLoginForm" autocomplete="on">
+          <label>
+            <span>Email</span>
+            <input id="adminEmail" type="email" autocomplete="username" required>
+          </label>
+          <label>
+            <span>密碼</span>
+            <input id="adminPassword" type="password" autocomplete="current-password" required>
+          </label>
+          <div class="access-actions">
+            <button type="submit">登入管理模式</button>
+            <button type="button" data-manage-back>返回</button>
+          </div>
+          <div id="adminLoginMessage" class="access-message" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section id="adminToolsPanel" class="access-panel" hidden>
+        <div class="ledger-label">管理模式</div>
+        <div id="adminStatus" class="auth-status"></div>
+        <div class="share-box">
+          <div class="ledger-label">唯讀分享</div>
+          <p id="readonlyShareStatus">唯讀網址會直接開啟目前帳本，不需要輸入共享密碼。</p>
+          <div class="access-actions">
+            <button type="button" id="resetReadonlyLinkBtn">產生／重設唯讀網址</button>
+            <button type="button" id="copyReadonlyLinkBtn" hidden>複製唯讀網址</button>
+          </div>
+          <div id="readonlyShareLink" class="access-message" role="status" aria-live="polite"></div>
         </div>
-        <div id="readonlyShareLink" class="access-message" role="status" aria-live="polite"></div>
+        <div class="access-actions">
+          <button type="button" id="leaveAdminModeBtn">離開管理模式</button>
+          <button type="button" data-manage-back>返回</button>
+        </div>
       </section>
     </div>
   </div>
