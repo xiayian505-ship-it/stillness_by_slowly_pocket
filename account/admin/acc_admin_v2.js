@@ -328,7 +328,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       adminBookSelect.innerHTML='<option value="">請選擇帳本</option>'+books.map(book=>{
         const names=book.state?.names||{};
         const title=[names.a||names.A,names.b||names.B].filter(Boolean).join("／")||"未命名帳本";
-        return `<option value="${esc(book.id)}">${esc(title)}｜${esc(book.id)}</option>`;
+        return `<option value="${esc(book.book_id)}">${esc(title)}｜${esc(book.book_id)}</option>`;
       }).join("");
       adminBookSelect.disabled=false;
       if(adminBookMessage)adminBookMessage.textContent=books.length?"請先選擇要管理的帳本。":"目前沒有可管理的雲端帳本。";
