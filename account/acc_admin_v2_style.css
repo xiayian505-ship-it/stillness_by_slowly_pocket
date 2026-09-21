@@ -1181,3 +1181,24 @@ select:focus,
   border:1px solid var(--line-strong);
   background:var(--paper);
 }
+
+/* ===== 雲端帳本管理入口 ===== */
+.cloud-manage-switch{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:14px;
+}
+.cloud-manage-switch-btn{
+  width:100%;
+}
+.cloud-manage-switch-btn.is-active{
+  font-weight:700;
+}
+.cloud-create-result{
+  margin-top:14px;
+}
+#createCloudBookUrl{
+  overflow-wrap:anywhere;
+  user-select:text;
+}

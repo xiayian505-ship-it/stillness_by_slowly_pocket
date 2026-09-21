@@ -311,10 +311,42 @@
       <section id="adminToolsPanel" class="access-panel" hidden>
         <div class="ledger-label">管理模式</div>
         <div id="adminStatus" class="auth-status"></div>
-        <div class="share-box">
-          <div class="ledger-label">選擇要管理的雲端帳本</div>
-          <select id="adminBookSelect" aria-label="選擇要管理的雲端帳本"></select>
-          <div id="adminBookMessage" class="access-message" role="status" aria-live="polite"></div>
+        <div class="cloud-manage-switch" role="group" aria-label="雲端帳本管理功能">
+          <button type="button" id="manageCloudBooksBtn" class="cloud-manage-switch-btn is-active">管理雲端帳本</button>
+          <button type="button" id="createCloudBookBtn" class="cloud-manage-switch-btn">建立雲端帳本</button>
+        </div>
+
+        <div id="manageCloudBooksPanel">
+          <div class="share-box">
+            <div class="ledger-label">選擇要管理的雲端帳本</div>
+            <select id="adminBookSelect" aria-label="選擇要管理的雲端帳本"></select>
+            <div id="adminBookMessage" class="access-message" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div id="createCloudBookPanel" class="share-box" hidden>
+          <div class="ledger-label">建立雲端帳本</div>
+          <p>建立新帳本時，同時設定這本帳本的初始共享密碼。</p>
+          <label>
+            <span>共享密碼</span>
+            <input id="createCloudBookPassword" type="password" autocomplete="new-password">
+          </label>
+          <label>
+            <span>再輸入一次</span>
+            <input id="createCloudBookPasswordConfirm" type="password" autocomplete="new-password">
+          </label>
+          <div class="access-actions">
+            <button type="button" id="createCloudBookCancelBtn">取消</button>
+            <button type="button" id="createCloudBookConfirmBtn" class="btn-confirm">建立</button>
+          </div>
+          <div id="createCloudBookStatus" class="access-message" role="status" aria-live="polite"></div>
+          <div id="createCloudBookResult" class="cloud-create-result" hidden>
+            <div class="ledger-label">共享帳本網址</div>
+            <div id="createCloudBookUrl" class="access-message"></div>
+            <div class="access-actions">
+              <button type="button" id="copyCreatedCloudBookUrlBtn">複製網址</button>
+            </div>
+          </div>
         </div>
         <div id="adminAccessTools" class="share-box" hidden>
           <div class="ledger-label">帳本存取</div>
@@ -385,5 +417,6 @@
   <script src="./acc_admin_v2_style.js"></script>
   <script src="./acc_admin_v2.js"></script>
   <script src="./acc_admin_v2_access.js"></script>
+  <script src="./acc_admin_v2_cloud_manage.js"></script>
 </body>
 </html>
