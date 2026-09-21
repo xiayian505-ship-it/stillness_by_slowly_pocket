@@ -312,6 +312,11 @@
         <div class="ledger-label">管理模式</div>
         <div id="adminStatus" class="auth-status"></div>
         <div class="share-box">
+          <div class="ledger-label">選擇要管理的雲端帳本</div>
+          <select id="adminBookSelect" aria-label="選擇要管理的雲端帳本"></select>
+          <div id="adminBookMessage" class="access-message" role="status" aria-live="polite"></div>
+        </div>
+        <div id="adminReadonlyTools" class="share-box" hidden>
           <div class="ledger-label">唯讀分享</div>
           <p id="readonlyShareStatus">唯讀網址會直接開啟目前帳本，不需要輸入共享密碼。</p>
           <div class="access-actions">

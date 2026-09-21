@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const bookContext=$("#bookContext"), editorUnlockForm=$("#editorUnlockForm"), editorBookPassword=$("#editorBookPassword"), editorAccessMessage=$("#editorAccessMessage");
   const bookEntryMenu=$("#bookEntryMenu"), enterLocalBookBtn=$("#enterLocalBookBtn"), enterCloudBookBtn=$("#enterCloudBookBtn"), enterAdminModeBtn=$("#enterAdminModeBtn"), cloudBookPanel=$("#cloudBookPanel"), adminLoginPanel=$("#adminLoginPanel"), adminToolsPanel=$("#adminToolsPanel");
   const adminLoginForm=$("#adminLoginForm"), adminEmail=$("#adminEmail"), adminPassword=$("#adminPassword"), adminLoginMessage=$("#adminLoginMessage"), adminStatus=$("#adminStatus"), leaveAdminModeBtn=$("#leaveAdminModeBtn");
+  const adminBookSelect=$("#adminBookSelect"), adminBookMessage=$("#adminBookMessage"), adminReadonlyTools=$("#adminReadonlyTools");
   const resetReadonlyLinkBtn=$("#resetReadonlyLinkBtn"), copyReadonlyLinkBtn=$("#copyReadonlyLinkBtn"), readonlyShareLink=$("#readonlyShareLink");
 
   const fakeSets=[
@@ -312,6 +313,38 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(panel==="cloud")setTimeout(()=>editorBookPassword?.focus(),0);
     if(panel==="admin-login")setTimeout(()=>adminEmail?.focus(),0);
   }
+  async function loadAdminBooks(){
+    if(!supabase||!adminBookSelect)return;
+    adminBookSelect.innerHTML='<option value="">載入帳本中……</option>';
+    adminBookSelect.disabled=true;
+    if(adminReadonlyTools)adminReadonlyTools.hidden=true;
+    if(adminBookMessage)adminBookMessage.textContent="";
+    if(readonlyShareLink)readonlyShareLink.textContent="";
+    if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=true;copyReadonlyLinkBtn.dataset.url="";}
+    try{
+      const {data,error}=await supabase.rpc("list_admin_books");
+      if(error)throw error;
+      const books=data||[];
+      adminBookSelect.innerHTML='<option value="">請選擇帳本</option>'+books.map(book=>{
+        const names=book.state?.names||{};
+        const title=[names.a||names.A,names.b||names.B].filter(Boolean).join("／")||"未命名帳本";
+        return `<option value="${esc(book.id)}">${esc(title)}｜${esc(book.id)}</option>`;
+      }).join("");
+      adminBookSelect.disabled=false;
+      if(adminBookMessage)adminBookMessage.textContent=books.length?"請先選擇要管理的帳本。":"目前沒有可管理的雲端帳本。";
+    }catch(error){
+      console.error("[共付日常 v2] 管理帳本清單載入失敗",error);
+      adminBookSelect.innerHTML='<option value="">無法載入帳本</option>';
+      if(adminBookMessage)adminBookMessage.textContent="目前無法載入可管理的雲端帳本。";
+    }
+  }
+  adminBookSelect?.addEventListener("change",()=>{
+    const bookId=adminBookSelect.value;
+    if(adminReadonlyTools)adminReadonlyTools.hidden=!bookId;
+    if(adminBookMessage)adminBookMessage.textContent=bookId?"已選擇管理帳本。":"請先選擇要管理的帳本。";
+    if(readonlyShareLink)readonlyShareLink.textContent="";
+    if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=true;copyReadonlyLinkBtn.dataset.url="";}
+  });
   function openManageBook(){
     manageBookModal?.classList.remove("hidden");
     const menu=manageBookBtn?.closest("details"); if(menu)menu.open=false;
@@ -330,6 +363,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(session?.user?.id&&ADMIN_UIDS.has(session.user.id)){
       if(adminStatus)adminStatus.textContent=`已登入：${session.user.email||"管理者"}`;
       showManagePanel("admin-tools");
+      await loadAdminBooks();
     }else showManagePanel("admin-login");
   });
   enterLocalBookBtn&&(enterLocalBookBtn.onclick=async()=>{
@@ -355,6 +389,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       if(adminLoginMessage)adminLoginMessage.textContent="";
       if(adminStatus)adminStatus.textContent=`已登入：${data.user.email||"管理者"}`;
       showManagePanel("admin-tools");
+      await loadAdminBooks();
     }catch(error){
       console.error("[共付日常 v2] 管理者登入失敗",error);
       if(adminLoginMessage)adminLoginMessage.textContent="管理者帳號或密碼不正確。";
@@ -383,8 +418,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     }finally{if(submit)submit.disabled=false;}
   });
   resetReadonlyLinkBtn&&(resetReadonlyLinkBtn.onclick=async()=>{
-    const bookId=activeBook.id||urlBookId();
-    if(!bookId){if(readonlyShareLink)readonlyShareLink.textContent="請先進入要分享的雲端帳本。";return;}
+    const bookId=adminBookSelect?.value||"";
+    if(!bookId){if(readonlyShareLink)readonlyShareLink.textContent="請先選擇要分享的雲端帳本。";return;}
     resetReadonlyLinkBtn.disabled=true;
     if(readonlyShareLink)readonlyShareLink.textContent="正在產生唯讀網址……";
     try{
