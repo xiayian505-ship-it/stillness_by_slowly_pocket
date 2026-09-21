@@ -1,14 +1,14 @@
 shift_roster_v1｜櫃檯人員排班紀錄表（規則重整壓測版）
 
 檔案：
-- sbs_roster.html：頁面骨架
-- sbs_roster.css：畫面 / 手機自適應 / A4 橫式列印
-- sbs_roster.js：排班輸入、人員資料、規則壓測入口、月份狀態
-- sbs_roster_storage.js：localStorage、月份、人員 ID、JSON 資料格式
-- sbs_roster_rules.js：獨立規則檢查
-- sbs_roster_backup.js：JSON 備份 / 匯入
-- sbs_roster_export.js：Canvas PNG / 列印
-- sbs_roster_excel_export.js：目前月份 JSON snapshot → 同版 Excel 匯出
+- sbs_roseter_v2.html：頁面骨架
+- sbs_roseter_v2.css：畫面 / 手機自適應 / A4 橫式列印
+- sbs_roseter_v2.js：排班輸入、人員資料、規則壓測入口、月份狀態
+- sbs_roseter_v2_storage.js：localStorage、月份、人員 ID、JSON 資料格式
+- sbs_roseter_v2_rules.js：獨立規則檢查
+- sbs_roseter_v2_backup.js：JSON 備份 / 匯入
+- sbs_roseter_v2_export.js：Canvas PNG / 列印
+- sbs_roseter_v2_excel_export.js：目前月份 JSON snapshot → 同版 Excel 匯出
 
 本版規則重點：
 1. B～F 每人只能有一個固定班別：早班 / 中班 / 大夜。
@@ -57,7 +57,7 @@ shift_roster_v1｜櫃檯人員排班紀錄表（規則重整壓測版）
 Excel 匯出：
 - 「匯出 Excel」會先保存目前畫面，再直接在記憶體取得與「下載 JSON」相同結構的 snapshot，交給 Excel renderer 產生目前月份的 .xlsx。
 - 中間 JSON 不會下載、不需重新上傳；使用者只會收到 Excel。
-- Excel renderer 獨立放在 sbs_roster_excel_export.js；主程式與 JSON 備份邏輯不重複實作。
+- Excel renderer 獨立放在 sbs_roseter_v2_excel_export.js；主程式與 JSON 備份邏輯不重複實作。
 - 使用 ExcelJS 4.4.0 CDN；開啟頁面時需能載入該元件。
 
 資料版本（本輪清理）：
@@ -89,7 +89,7 @@ Excel 匯出：
 - 年度特殊日期會跟 JSON 備份一起匯出／匯入。
 
 Excel 匯出暫緩同步：
-- sbs_roster_excel_export.js 本輪刻意不修改。
+- sbs_roseter_v2_excel_export.js 本輪刻意不修改。
 - 現有 Excel 匯出仍可使用目前既有欄位，但主管紅斜線、主管取得日等 v3 新視覺暫不補入 Excel，等班表需求穩定後再一次更新。
 
 本次介面補正：
