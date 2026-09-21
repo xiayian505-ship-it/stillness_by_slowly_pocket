@@ -423,11 +423,6 @@ button:disabled{ cursor:wait; opacity:.45; }
   color:var(--main) !important;
 }
 
-.adjust-row{
-  display:grid;
-  gap:7px;
-}
-
 /* ===== Controls ===== */
 
 button,
@@ -738,23 +733,6 @@ select:focus,
   color:var(--danger);
 }
 
-/* Loader 訊息：只在 file:// 預覽或原版 v3 不在同目錄時出現 */
-.load-tip{
-  width:min(calc(100% - 24px),860px);
-  margin:12px auto;
-  padding:12px 14px;
-  border:1px solid var(--weekend);
-  background:var(--weekend-soft);
-  color:var(--ink);
-  font-size:13px;
-  line-height:1.6;
-}
-
-.load-tip strong,
-.load-tip span{
-  display:block;
-}
-
 /* ===== Responsive ===== */
 
 @media (max-width:700px){
@@ -1056,11 +1034,6 @@ select:focus,
 }
 
 /* ===== 管理帳本 / Auth：宿主外觀 ===== */
-.auth-panel{
-  margin:0;
-  padding:18px 0 0;
-}
-
 .auth-panel-head{
   display:flex;
   align-items:center;
@@ -1073,28 +1046,6 @@ select:focus,
   font-weight:800;
   color:var(--main-deep);
 }
-
-.auth-mode{
-  margin-top:4px;
-  font-size:12px;
-  color:var(--muted);
-}
-
-.auth-login-form{ margin-top:14px; }
-.auth-login-form label{ font-size:11px; font-weight:800; color:var(--muted); }
-.auth-login-form input{
-  padding:9px 10px;
-  border:1px solid var(--line-strong);
-  background:var(--paper);
-  color:var(--ink);
-  font:inherit;
-  outline:0;
-}
-.auth-login-form input:focus{
-  border-color:var(--main);
-  box-shadow:inset 0 0 0 1px var(--main);
-}
-.auth-login-message{ font-size:12px; color:var(--danger); }
 
 @media (max-width:700px){
   .auth-panel-head{ align-items:stretch; flex-direction:column; }
