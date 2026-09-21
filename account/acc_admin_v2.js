@@ -290,6 +290,20 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
     await startRealtime();
   }
+  async function enterExistingSharedBook(){
+    const bookId=urlBookId();
+    if(!bookId)throw new Error("missing book id");
+    await ensureAnonymousSession();
+    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="共享帳本"; activeBook.role="editor";
+    try{
+      await loadActive();
+    }catch(error){
+      activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local";
+      throw error;
+    }
+    syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+    await startRealtime();
+  }
   async function enterSharedBook(password){
     const bookId=urlBookId();
     if(!bookId)throw new Error("missing book id");
@@ -391,7 +405,18 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   manageBookModal?.addEventListener("click",e=>{if(e.target===manageBookModal)closeManageBook();});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!manageBookModal?.classList.contains("hidden"))closeManageBook();});
   $$('[data-manage-back]').forEach(btn=>btn.onclick=()=>showManagePanel("menu"));
-  enterCloudBookBtn&&(enterCloudBookBtn.onclick=()=>showManagePanel("cloud"));
+  enterCloudBookBtn&&(enterCloudBookBtn.onclick=async()=>{
+    if(!urlBookId()){showManagePanel("cloud");return;}
+    setMessage("正在確認這台裝置的帳本資格……","info");
+    try{
+      await enterExistingSharedBook();
+      setMessage("");
+      closeManageBook();
+    }catch(error){
+      setMessage("請輸入帳本共享密碼。","info");
+      showManagePanel("cloud");
+    }
+  });
   enterAdminModeBtn&&(enterAdminModeBtn.onclick=async()=>{
     if(!supabase){if(adminLoginMessage)adminLoginMessage.textContent="目前無法連線到管理服務。";showManagePanel("admin-login");return;}
     const {data:{session}}=await supabase.auth.getSession();
@@ -474,15 +499,22 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     });
     DataBackup.downloadJson(`sbs_duo_book_backup_${Timestamp.create()}.json`,payload);
   });
-  adminEnterBookBtn&&(adminEnterBookBtn.onclick=()=>{
+  adminEnterBookBtn&&(adminEnterBookBtn.onclick=async()=>{
     const bookId=adminBookSelect?.value||"";
     if(!bookId){if(adminDataToolsStatus)adminDataToolsStatus.textContent="請先選擇要進入的帳本。";return;}
     const nextUrl=new URL(location.href);
     nextUrl.searchParams.set("book",bookId);
     nextUrl.searchParams.delete("view");
     history.replaceState(null,"",nextUrl);
-    setMessage("請輸入這本帳本的共享密碼。","info");
-    showManagePanel("cloud");
+    setMessage("正在確認這台裝置的帳本資格……","info");
+    try{
+      await enterExistingSharedBook();
+      setMessage("");
+      closeManageBook();
+    }catch(error){
+      setMessage("請輸入這本帳本的共享密碼。","info");
+      showManagePanel("cloud");
+    }
   });
   resetReadonlyLinkBtn&&(resetReadonlyLinkBtn.onclick=async()=>{
     const bookId=adminBookSelect?.value||"";
