@@ -1092,3 +1092,16 @@ select:focus,
   .root-book-row{ grid-template-columns:1fr; }
   .root-book-actions{ justify-content:flex-start; }
 }
+
+/* v2：尚未接後端時的產品入口提示 */
+.access-placeholder{
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid var(--line);
+}
+.access-placeholder p{
+  margin:0;
+  font-size:12px;
+  line-height:1.7;
+  color:var(--muted);
+}

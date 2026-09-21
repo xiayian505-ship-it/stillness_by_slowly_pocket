@@ -259,7 +259,7 @@
     </div>
   </div>
 
-  <!-- 管理帳本：v2 Root / Editor / Viewer -->
+  <!-- 管理帳本：v2 入口。此階段不接資料庫 -->
   <div id="manageBookModal" class="danger-modal hidden" role="dialog" aria-modal="true" aria-labelledby="manageBookTitle">
     <div class="danger-card manage-book-card">
       <div class="modal-head">
@@ -267,57 +267,25 @@
         <button type="button" id="manageBookClose" class="close" aria-label="關閉">×</button>
       </div>
 
-      <div class="access-tabs" role="tablist" aria-label="帳本進入方式">
-        <button type="button" data-access-tab="editor" aria-selected="true">共用密碼</button>
-        <button type="button" data-access-tab="root" aria-selected="false">Root</button>
-      </div>
-
-      <section class="access-panel" data-access-panel="editor">
-        <div class="ledger-label">Editor｜輸入哪把鑰匙，就進哪一本帳</div>
+      <section class="access-panel">
+        <div class="ledger-label">雲端帳本｜輸入共享密碼，進入對應帳本</div>
         <form id="editorUnlockForm" autocomplete="off">
           <label>
-            <span>帳本共用密碼</span>
+            <span>帳本共享密碼</span>
             <input id="editorBookPassword" type="password" autocomplete="off" required>
           </label>
           <div class="access-actions">
             <button type="submit">進入帳本</button>
             <button type="button" id="useLocalBookBtn">使用本機帳本</button>
           </div>
-          <div id="editorAccessMessage" class="access-message" role="status"></div>
+          <div id="editorAccessMessage" class="access-message" role="status" aria-live="polite"></div>
         </form>
       </section>
 
-      <section class="access-panel" data-access-panel="root" hidden>
-        <div id="rootLoggedOut">
-          <div class="ledger-label">Root｜帳本擁有者</div>
-          <form id="rootLoginForm" autocomplete="off">
-            <label><span>Email</span><input id="rootEmail" type="email" autocomplete="username" required></label>
-            <label><span>密碼</span><input id="rootPassword" type="password" autocomplete="current-password" required></label>
-            <div class="access-actions"><button type="submit">Root 登入</button></div>
-            <div id="rootLoginMessage" class="access-message" role="status"></div>
-          </form>
-        </div>
-
-        <div id="rootLoggedIn" hidden>
-          <div class="auth-panel-head">
-            <div>
-              <div class="ledger-label">Root 管理</div>
-              <div id="rootStatus" class="auth-status"></div>
-            </div>
-            <button type="button" id="rootLogoutBtn">登出 Root</button>
-          </div>
-          <div id="rootBooks" class="root-books"></div>
-          <div class="create-book-box">
-            <div class="ledger-label">建立新帳本</div>
-            <input id="newBookTitle" type="text" placeholder="帳本名稱" maxlength="80">
-            <input id="newBookPassword" type="password" placeholder="Editor 共用密碼（至少 4 碼）" autocomplete="new-password">
-            <div class="access-actions"><button type="button" id="createBookBtn">建立帳本</button></div>
-            <div id="rootActionMessage" class="access-message" role="status"></div>
-          </div>
-        </div>
+      <section class="share-box access-placeholder">
+        <div class="ledger-label">唯讀分享</div>
+        <p>分享網址會直接開啟指定帳本的唯讀模式，不需要登入。此階段尚未接後端，因此不建立假分享網址。</p>
       </section>
-
-      <div id="activeBookShare" class="share-box" hidden></div>
     </div>
   </div>
 
@@ -343,10 +311,6 @@
   <script src="https://lib.stillnessbyslowly.com/data/Realtime_sync.js"></script>
   <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_change.js"></script>
   <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_storage.js"></script>
-
-  <!-- Supabase：瀏覽器 SDK + SBS 主站公開設定 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://stillnessbyslowly.com/setting/supabase_config.js"></script>
 
   <script src="./acc_admin_v2_style.js"></script>
   <script src="./acc_admin_v2.js"></script>
