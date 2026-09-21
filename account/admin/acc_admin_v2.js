@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   function finishAdjustEdit(){adjustEditBaseline=null;}
   adjustSide&&(adjustSide.onchange=()=>{if(!canEdit())return;beginAdjustEdit();const a=getAdj();setAdj(adjustSide.value,a.amount);saveState("adjust-change");syncAdjust();updateSummary();});
   adjustAmount&&(adjustAmount.oninput=()=>{if(!canEdit())return;beginAdjustEdit();const a=getAdj();setAdj(a.side,Money.toNumber(adjustAmount.value,0));saveState("adjust-change");updateSummary();});
-  adjustConfirmBtn&&(adjustConfirmBtn.onclick=()=>{if(!canEdit())return;finishAdjustEdit();syncAdjust();updateSummary();});
+  adjustConfirmBtn&&(adjustConfirmBtn.onclick=()=>{if(!canEdit())return;finishAdjustEdit();syncAdjust();if(adjustAmount)adjustAmount.value="0";updateSummary();});
   adjustCancelBtn&&(adjustCancelBtn.onclick=()=>{if(!canEdit())return;if(adjustEditBaseline!==null){setAdj(adjustEditBaseline.side,adjustEditBaseline.amount);finishAdjustEdit();saveState("adjust-cancel");}syncAdjust();updateSummary();});
   settleCurrency&&(settleCurrency.onchange=()=>{syncFake(fakeSets[0]);updateSummary();});applyBtn&&(applyBtn.onclick=async()=>{applyBtn.disabled=true;try{await refreshRate(settleCurrency.value||"TWD");}finally{applyBtn.disabled=false;updateSummary();}});
 

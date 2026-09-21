@@ -109,67 +109,9 @@
         </div>
         <div id="calendarGrid" class="calendar-grid"></div>
       </div>
-    </section>
-
-    <section class="ledger-panel">
-      <div class="ledger-block">
-        <div class="ledger-label">雙方</div>
-        <div class="names">
-          <label class="name-field">
-            <span>A</span>
-            <input id="nameA" data-book-edit type="text" placeholder="A" autocomplete="off">
-          </label>
-          <label class="name-field">
-            <span>B</span>
-            <input id="nameB" data-book-edit type="text" placeholder="B" autocomplete="off">
-          </label>
-        </div>
-      </div>
-
-      <div class="ledger-block">
-        <div class="adjust-title">帳外調整（TWD）</div>
-        <div class="adjust-row" data-edit-only>
-          <div class="fake-select" id="adjustSideFake">
-            <button
-              type="button"
-              class="fake-select-trigger"
-              id="adjustSideTrigger"
-              aria-haspopup="listbox"
-              aria-expanded="false"
-            >
-              <span id="adjustSideLabel">A 多付</span>
-              <span class="fake-select-arrow" aria-hidden="true">▾</span>
-            </button>
-
-            <div
-              class="fake-select-menu"
-              id="adjustSideMenu"
-              role="listbox"
-              aria-label="帳外調整對象"
-              hidden
-            >
-              <button type="button" class="fake-select-option" role="option" data-value="A">A 多付</button>
-              <button type="button" class="fake-select-option" role="option" data-value="B">B 多付</button>
-            </div>
-          </div>
-
-          <select id="adjustSide" class="native-select-hidden" tabindex="-1" aria-hidden="true">
-            <option value="A">A 多付</option>
-            <option value="B">B 多付</option>
-          </select>
-          <input id="adjustAmount" type="number" min="0" step="1" inputmode="decimal" value="0">
-          <div class="adjust-actions">
-            <button type="button" id="adjustCancelBtn">取消</button>
-            <button type="button" id="adjustConfirmBtn" class="btn-confirm">確定</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </main>
 
   <!-- 日期明細 -->
-  <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-content">
       <div class="modal-kicker">每日帳本</div>
       <div class="modal-head">
@@ -197,8 +139,8 @@
     </div>
   </div>
 
-  <!-- 新增 / 編輯 -->
-  <div id="editModal" class="danger-modal hidden" role="dialog" aria-modal="true">
+      <!-- 新增 / 編輯 -->
+      <div id="editModal" class="danger-modal hidden" role="dialog" aria-modal="true">
     <div class="danger-card">
       <div class="danger-title">新增紀錄</div>
 
@@ -258,6 +200,65 @@
       </div>
     </div>
   </div>
+
+    </section>
+
+    <section class="ledger-panel">
+      <div class="ledger-block">
+        <div class="ledger-label">雙方</div>
+        <div class="names">
+          <label class="name-field">
+            <span>A</span>
+            <input id="nameA" data-book-edit type="text" placeholder="A" autocomplete="off">
+          </label>
+          <label class="name-field">
+            <span>B</span>
+            <input id="nameB" data-book-edit type="text" placeholder="B" autocomplete="off">
+          </label>
+        </div>
+      </div>
+
+      <div class="ledger-block">
+        <div class="adjust-title">帳外調整（TWD）</div>
+        <div class="adjust-row" data-edit-only>
+          <div class="fake-select" id="adjustSideFake">
+            <button
+              type="button"
+              class="fake-select-trigger"
+              id="adjustSideTrigger"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <span id="adjustSideLabel">A 多付</span>
+              <span class="fake-select-arrow" aria-hidden="true">▾</span>
+            </button>
+
+            <div
+              class="fake-select-menu"
+              id="adjustSideMenu"
+              role="listbox"
+              aria-label="帳外調整對象"
+              hidden
+            >
+              <button type="button" class="fake-select-option" role="option" data-value="A">A 多付</button>
+              <button type="button" class="fake-select-option" role="option" data-value="B">B 多付</button>
+            </div>
+          </div>
+
+          <select id="adjustSide" class="native-select-hidden" tabindex="-1" aria-hidden="true">
+            <option value="A">A 多付</option>
+            <option value="B">B 多付</option>
+          </select>
+          <input id="adjustAmount" type="number" min="0" step="1" inputmode="decimal" value="0">
+          <div class="adjust-actions">
+            <button type="button" id="adjustCancelBtn">取消</button>
+            <button type="button" id="adjustConfirmBtn" class="btn-confirm">確定</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
 
   <!-- 管理帳本：v2 入口。此階段不接資料庫 -->
   <div id="manageBookModal" class="danger-modal hidden" role="dialog" aria-modal="true" aria-labelledby="manageBookTitle">

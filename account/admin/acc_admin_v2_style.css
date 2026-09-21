@@ -1105,3 +1105,59 @@ select:focus,
   line-height:1.7;
   color:var(--muted);
 }
+
+
+/* ===== Calendar workspace overlay =====
+   日期明細與新增/編輯只接管月曆區，不覆蓋頁面上下區塊。 */
+.calendar-shell{
+  position:relative;
+}
+
+.calendar-shell > #detailModal,
+.calendar-shell > #editModal{
+  position:absolute;
+  inset:0;
+  z-index:40;
+  padding:0;
+  align-items:stretch;
+  justify-content:stretch;
+  background:var(--paper);
+  backdrop-filter:none;
+}
+
+.calendar-shell > #detailModal:not(.hidden),
+.calendar-shell > #editModal:not(.hidden){
+  display:flex;
+}
+
+.calendar-shell > #detailModal .modal-content,
+.calendar-shell > #editModal .danger-card{
+  width:100%;
+  max-width:none;
+  max-height:none;
+  min-height:100%;
+  margin:0;
+  overflow:auto;
+  border:1px solid var(--line-strong);
+  background:var(--paper);
+  box-shadow:none;
+}
+
+@media (max-width:700px){
+  .calendar-shell > #detailModal,
+  .calendar-shell > #editModal{
+    position:absolute;
+    inset:0;
+    padding:0;
+    align-items:stretch;
+  }
+
+  .calendar-shell > #detailModal .modal-content,
+  .calendar-shell > #editModal .danger-card{
+    width:100%;
+    min-height:100%;
+    max-height:none;
+    border:1px solid var(--line-strong);
+    padding:18px 14px;
+  }
+}
