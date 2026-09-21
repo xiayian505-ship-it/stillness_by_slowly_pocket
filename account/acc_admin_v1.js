@@ -74,15 +74,20 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     async loadOrCreate(userId){
       if(!userId)throw new Error("missing authenticated user id");
 
+      // v1 永遠使用這個帳號最早建立的帳本。
+      // 即使未來同一 owner_id 在 v2 擁有多本，v1 仍固定回到原本那一本。
       const {data,error}=await supabaseClient
         .from("books")
         .select("id,state,created_at,updated_at")
         .eq("owner_id",userId)
+        .order("created_at",{ascending:true})
+        .limit(1)
         .maybeSingle();
 
       if(error)throw error;
       if(data){
         return {
+          id:data.id,
           state:normalize(data.state),
           updatedAt:data.updated_at||null
         };
@@ -105,9 +110,12 @@ document.addEventListener("DOMContentLoaded", async ()=>{
             .from("books")
             .select("id,state,created_at,updated_at")
             .eq("owner_id",userId)
+            .order("created_at",{ascending:true})
+            .limit(1)
             .single();
           if(retryError)throw retryError;
           return {
+            id:retry.id,
             state:normalize(retry.state),
             updatedAt:retry.updated_at||null
           };
@@ -116,18 +124,19 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       }
 
       return {
+        id:created.id,
         state:normalize(created.state),
         updatedAt:created.updated_at||null
       };
     },
 
-    async save(userId,state,expectedUpdatedAt=null){
-      if(!userId)throw new Error("missing authenticated user id");
+    async save(bookId,state,expectedUpdatedAt=null){
+      if(!bookId)throw new Error("missing cloud book id");
 
       let query=supabaseClient
         .from("books")
         .update({state})
-        .eq("owner_id",userId);
+        .eq("id",bookId);
 
       // 樂觀鎖：只有雲端仍是本機已知版本時才允許整包 state 覆蓋。
       if(expectedUpdatedAt){
@@ -151,6 +160,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   };
 
   let session={isAuthenticated:false,email:"",userId:""};
+  let cloudBookId=null;
   let bookUpdatedAt=null;
   let realtimeSync=null;
   let stateEpoch=0;
@@ -182,9 +192,11 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(session.isAuthenticated){
       const cloud=await SupabaseBookAdapter.loadOrCreate(session.userId);
       s=cloud.state;
+      cloudBookId=cloud.id;
       bookUpdatedAt=cloud.updatedAt;
     }else{
       s=normalize(await localState.get(STATE_ID));
+      cloudBookId=null;
       bookUpdatedAt=null;
     }
 
@@ -250,11 +262,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     await stopRealtime();
 
     const targetUserId=session.userId;
+    const targetBookId=cloudBookId;
+    if(!targetBookId)return;
     const sync=RealtimeSync.create({
       client:supabaseClient,
       table:"books",
       event:"UPDATE",
-      filter:`owner_id=eq.${targetUserId}`,
+      filter:`id=eq.${targetBookId}`,
       versionField:"updated_at",
       knownVersion:bookUpdatedAt,
 
@@ -312,7 +326,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       if(authenticated){
         const expectedUpdatedAt=bookUpdatedAt;
         const updatedAt=await SupabaseBookAdapter.save(
-          userId,
+          cloudBookId,
           cloudSnap,
           expectedUpdatedAt
         );
@@ -394,7 +408,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   async function persistImportedState(next){
     if(session.isAuthenticated){
       const updatedAt=await SupabaseBookAdapter.save(
-        session.userId,
+        cloudBookId,
         clone(next),
         bookUpdatedAt
       );
