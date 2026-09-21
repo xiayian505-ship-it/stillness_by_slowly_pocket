@@ -292,7 +292,12 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   async function enterSharedBook(password){
     const bookId=urlBookId();
     if(!bookId)throw new Error("missing book id");
-    await ensureAnonymousSession();
+    const session=await ensureAnonymousSession();
+    console.info("[共付日常 v2] 共享帳本驗證身分",{
+      userId:session?.user?.id||null,
+      isAnonymous:session?.user?.is_anonymous===true,
+      email:session?.user?.email||null
+    });
     const {error}=await supabase.rpc("open_shared_book",{p_book_id:bookId,p_password:password});
     if(error)throw error;
     activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="共享帳本"; activeBook.role="editor";
@@ -413,8 +418,17 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       await enterSharedBook(password);
       editorBookPassword.value=""; setMessage(""); closeManageBook();
     }catch(error){
-      console.error("[共付日常 v2] 共享帳本進入失敗",error);
-      setMessage(error?.message==="missing book id"?"這個網址沒有帳本識別碼（book）。":"帳本不存在、共享密碼不正確，或目前無法連線。","error");
+      console.error("[共付日常 v2] 共享帳本進入失敗",{
+        message:error?.message||String(error),
+        code:error?.code||null,
+        details:error?.details||null,
+        hint:error?.hint||null,
+        raw:error
+      });
+      const detail=[error?.code,error?.message].filter(Boolean).join("｜");
+      setMessage(error?.message==="missing book id"
+        ?"這個網址沒有帳本識別碼（book）。"
+        :`共享帳本驗證失敗${detail?`：${detail}`:"。"}`,"error");
     }finally{if(submit)submit.disabled=false;}
   });
   resetReadonlyLinkBtn&&(resetReadonlyLinkBtn.onclick=async()=>{
