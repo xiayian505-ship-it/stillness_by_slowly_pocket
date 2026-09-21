@@ -260,7 +260,7 @@
 
   </main>
 
-  <!-- 管理帳本：v2 入口。此階段不接資料庫 -->
+  <!-- 管理帳本：v2 共享帳本入口 -->
   <div id="manageBookModal" class="danger-modal hidden" role="dialog" aria-modal="true" aria-labelledby="manageBookTitle">
     <div class="danger-card manage-book-card">
       <div class="modal-head">
@@ -269,7 +269,7 @@
       </div>
 
       <section class="access-panel">
-        <div class="ledger-label">雲端帳本｜輸入共享密碼，進入對應帳本</div>
+        <div class="ledger-label">雲端帳本｜網址指定帳本，輸入共享密碼進入</div>
         <form id="editorUnlockForm" autocomplete="off">
           <label>
             <span>帳本共享密碼</span>
@@ -313,6 +313,7 @@
   <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_change.js"></script>
   <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_storage.js"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./acc_admin_v2_style.js"></script>
   <script src="./acc_admin_v2.js"></script>
 </body>

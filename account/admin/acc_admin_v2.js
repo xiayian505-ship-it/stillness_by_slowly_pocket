@@ -1,16 +1,18 @@
 document.addEventListener("DOMContentLoaded", async ()=>{
   /* =========================================================
      慢慢｜共付日常 acc_admin_v2.js
-     - 目前階段：純前端／本機帳本，不連 Supabase
-     - 本機帳本不依賴任何雲端初始化
-     - 雲端帳本入口保留「共享密碼 → 指定帳本」產品流程，但不建立假雲端資料
-     - 唯讀分享保留需求位置；真正讀寫限制待後端階段實作
+     - 本機帳本仍可獨立使用，不依賴雲端初始化
+     - 共享帳本以 URL 的 book id 指定帳本，再用共享密碼取得 90 天編輯資格
+     - Supabase Auth 使用背景 anonymous session，不要求 Email／帳號登入
+     - 唯讀分享保留需求位置；此階段尚未接唯讀 token
      - Email 申請流程目前不實作
      - 帳本核心 records / names / adjust / currencyBook 維持既有格式
   ========================================================= */
   const RETAIN_DAYS=365;
   const STORE_NAMESPACE="sbs-duo-book-v2";
   const STATE_ID="main";
+  const SUPABASE_URL="https://bkjqaetxwvcdciieevvs.supabase.co";
+  const SUPABASE_KEY="sb_publishable_dAHoIimWgbGAF2wtIVSZfg_V8rzc200";
   if(!window.DateTime||!window.Timestamp||!window.Money||!window.Currency||!window.DataBackup||!window.RealtimeSync||!window.FictionChange||!window.FictionStorage){
     alert("共用模組載入失敗，請重新整理後再試。");
     return;
@@ -43,17 +45,19 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   function validCurrency(o){return plain(o)&&Object.entries(o).every(([d,rows])=>validDate(d)&&Array.isArray(rows)&&rows.every(c=>c==null||(plain(c)&&typeof c.currency==="string"&&Number(c.rate)>0&&Number(c.baseTWD)>=0)));}
   function normalize(raw){const s=plain(raw)?raw:{};return {records:validRecords(s.records)?s.records:{},names:plain(s.names)?{A:String(s.names.A||"A"),B:String(s.names.B||"B")}:{A:"A",B:"B"},adjust:plain(s.adjust)?s.adjust:{},currencyBook:validCurrency(s.currencyBook)?s.currencyBook:{}};}
 
-  /* ===== v2 Storage boundary：本階段只實作 Local ===== */
+  /* ===== v2 Storage boundary：Local + shared cloud book ===== */
   const localStore=FictionStorage.create({namespace:STORE_NAMESPACE});
   const localState=localStore.collection("state");
   const bookChange=FictionChange.create({name:"sbs-duo-book-v2"});
+  const supabase=window.supabase?.createClient?.(SUPABASE_URL,SUPABASE_KEY) || null;
 
   const activeBook={mode:"local",id:"",title:"本機帳本",role:"local"};
   let records={},names={A:"A",B:"B"},adjust={},currencyBook={},saveQueue=Promise.resolve();
   const now=new Date(); let viewYear=now.getFullYear(),viewMonth=now.getMonth();
   const monthPrefix=()=>`${viewYear}-${pad(viewMonth+1)}-`, monthKey=()=>`${viewYear}-${pad(viewMonth+1)}`;
-  const isCloud=()=>false;
-  const canEdit=()=>true;
+  const isCloud=()=>activeBook.mode==="cloud";
+  const canEdit=()=>activeBook.role!=="viewer";
+  const urlBookId=()=>new URLSearchParams(location.search).get("book")?.trim()||"";
 
   function localSnapshot(){return clone({id:STATE_ID,records,names,adjust,currencyBook});}
   function prune(){
@@ -63,6 +67,14 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
 
   async function loadActive(){
+    if(isCloud()){
+      if(!supabase||!activeBook.id)throw new Error("cloud unavailable");
+      const {data,error}=await supabase.from("books").select("state").eq("id",activeBook.id).single();
+      if(error)throw error;
+      const s=normalize(data?.state);
+      records=s.records; names=s.names; adjust=s.adjust; currencyBook=s.currencyBook;
+      return;
+    }
     const s=normalize(await localState.get(STATE_ID));
     records=s.records; names=s.names; adjust=s.adjust; currencyBook=s.currencyBook;
   }
@@ -70,13 +82,18 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   function saveState(type="save"){
     prune();
     const op=Timestamp.create();
-    const snap=localSnapshot();
+    const state=clone({records,names,adjust,currencyBook});
     saveQueue=saveQueue.catch(()=>{}).then(async()=>{
-      await localState.upsert(snap);
-      bookChange.emit({type,collection:"state",operationId:op});
+      if(isCloud()){
+        const {error}=await supabase.from("books").update({state}).eq("id",activeBook.id);
+        if(error)throw error;
+      }else{
+        await localState.upsert({id:STATE_ID,...state});
+        bookChange.emit({type,collection:"state",operationId:op});
+      }
     }).catch(error=>{
-      console.error("[共付日常 v2] 本機儲存失敗",error);
-      alert("本機帳本儲存失敗，請確認瀏覽器儲存空間後再試。");
+      console.error("[共付日常 v2] 儲存失敗",error);
+      alert(isCloud()?"共享帳本儲存失敗，請確認連線或重新輸入共享密碼。":"本機帳本儲存失敗，請確認瀏覽器儲存空間後再試。");
     });
     return saveQueue;
   }
@@ -128,15 +145,20 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       app:"sbs_duo_book",
       version:"1.1",
       data:{records,names,adjust,currencyBook},
-      extraMeta:{bookTitle:"本機帳本",mode:"local"}
+      extraMeta:{bookTitle:activeBook.title,mode:activeBook.mode,bookId:activeBook.id||undefined}
     });
     DataBackup.downloadJson(`sbs_duo_book_backup_${Timestamp.create()}.json`,payload);
   }
   function normAdj(v){if(!plain(v))return{};const out={};Object.entries(v).forEach(([m,a])=>{if(/^\d{4}-\d{2}$/.test(m)&&plain(a))out[m]={side:a.side==="B"?"B":"A",amount:Money.toNumber(a.amount,0)};});return out;}
   function validTime(value){const t=Date.parse(value);return Number.isFinite(t)?t:null;}
   async function persistImportedState(next){
-    await localState.upsert(clone({id:STATE_ID,...next}));
-    bookChange.emit({type:"import",collection:"state",operationId:Timestamp.create()});
+    if(isCloud()){
+      const {error}=await supabase.from("books").update({state:clone(next)}).eq("id",activeBook.id);
+      if(error)throw error;
+    }else{
+      await localState.upsert(clone({id:STATE_ID,...next}));
+      bookChange.emit({type:"import",collection:"state",operationId:Timestamp.create()});
+    }
   }
   async function importFile(file){
     try{
@@ -151,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         adjust:normAdj(data.adjust)
       };
 
-      if(!confirm("確定要用這份備份覆蓋目前本機帳本嗎？"))return;
+      if(!confirm(`確定要用這份備份覆蓋目前${isCloud()?"共享":"本機"}帳本嗎？`))return;
 
       // 先寫入儲存層，成功後才替換畫面中的帳本；失敗時原畫面資料不變。
       await persistImportedState(next);
@@ -189,15 +211,35 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   adjustCancelBtn&&(adjustCancelBtn.onclick=()=>{if(!canEdit())return;if(adjustEditBaseline!==null){setAdj(adjustEditBaseline.side,adjustEditBaseline.amount);finishAdjustEdit();saveState("adjust-cancel");}syncAdjust();updateSummary();});
   settleCurrency&&(settleCurrency.onchange=()=>{syncFake(fakeSets[0]);updateSummary();});applyBtn&&(applyBtn.onclick=async()=>{applyBtn.disabled=true;try{await refreshRate(settleCurrency.value||"TWD");}finally{applyBtn.disabled=false;updateSummary();}});
 
-  /* ===== v2 入口：先定產品流程，不偽造雲端 ===== */
+  /* ===== v2 shared-book entry ===== */
   function setMessage(text="",kind="info"){
     if(!editorAccessMessage)return;
     editorAccessMessage.textContent=text;
     editorAccessMessage.dataset.kind=kind;
   }
   function renderAccessState(){
-    document.body.dataset.bookRole="local";
-    if(bookContext)bookContext.innerHTML="<strong>本機帳本</strong>｜資料只存在這台裝置";
+    document.body.dataset.bookRole=activeBook.role;
+    if(!bookContext)return;
+    bookContext.innerHTML=isCloud()?`<strong>共享帳本</strong>｜${esc(activeBook.id)}`:"<strong>本機帳本</strong>｜資料只存在這台裝置";
+  }
+  async function ensureAnonymousSession(){
+    if(!supabase)throw new Error("Supabase SDK unavailable");
+    const {data:{session},error}=await supabase.auth.getSession();
+    if(error)throw error;
+    if(session)return session;
+    const {data,error:signError}=await supabase.auth.signInAnonymously();
+    if(signError)throw signError;
+    return data.session;
+  }
+  async function enterSharedBook(password){
+    const bookId=urlBookId();
+    if(!bookId)throw new Error("missing book id");
+    await ensureAnonymousSession();
+    const {error}=await supabase.rpc("open_shared_book",{p_book_id:bookId,p_password:password});
+    if(error)throw error;
+    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="共享帳本"; activeBook.role="editor";
+    await loadActive();
+    syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
   }
   function openManageBook(){
     manageBookModal?.classList.remove("hidden");
@@ -210,12 +252,27 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   manageBookModal?.addEventListener("click",e=>{if(e.target===manageBookModal)closeManageBook();});
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!manageBookModal?.classList.contains("hidden"))closeManageBook();});
 
-  editorUnlockForm?.addEventListener("submit",e=>{
+  editorUnlockForm?.addEventListener("submit",async e=>{
     e.preventDefault();
-    if(!editorBookPassword.value){setMessage("請輸入帳本共享密碼。","error");return;}
-    setMessage("雲端帳本尚未接後端；目前不會用假資料模擬密碼或帳本。","info");
+    const password=editorBookPassword.value;
+    if(!urlBookId()){setMessage("這個網址沒有帳本識別碼（book）。請使用該帳本的共享網址。","error");return;}
+    if(!password){setMessage("請輸入帳本共享密碼。","error");return;}
+    const submit=editorUnlockForm.querySelector('button[type="submit"]');
+    if(submit)submit.disabled=true;
+    setMessage("正在驗證共享帳本……","info");
+    try{
+      await enterSharedBook(password);
+      editorBookPassword.value=""; setMessage(""); closeManageBook();
+    }catch(error){
+      console.error("[共付日常 v2] 共享帳本進入失敗",error);
+      setMessage(error?.message==="missing book id"?"這個網址沒有帳本識別碼（book）。":"帳本不存在、共享密碼不正確，或目前無法連線。","error");
+    }finally{if(submit)submit.disabled=false;}
   });
-  useLocalBookBtn&&(useLocalBookBtn.onclick=()=>{editorBookPassword.value="";setMessage("");closeManageBook();});
+  useLocalBookBtn&&(useLocalBookBtn.onclick=async()=>{
+    activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local";
+    await loadActive(); syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+    editorBookPassword.value="";setMessage("");closeManageBook();
+  });
 
   await loadActive();
   const changed=prune(); if(changed)await saveState("prune-on-load");
