@@ -55,7 +55,12 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const localState=localStore.collection("state");
   const bookChange=FictionChange.create({name:"sbs-duo-book-v2"});
   const supabase=window.supabase?.createClient?.(SUPABASE_URL,SUPABASE_KEY) || null;
-  window.AccAdminV2={...(window.AccAdminV2||{}),supabase};
+  // 帳本 anonymous session 與管理者 Email session 必須分開保存。
+  // 否則切換管理模式會覆蓋 anonymous uid，連帶破壞 90 天帳本資格。
+  const adminSupabase=window.supabase?.createClient?.(SUPABASE_URL,SUPABASE_KEY,{
+    auth:{storageKey:"sbs-duo-book-v2-admin-auth"}
+  }) || null;
+  window.AccAdminV2={...(window.AccAdminV2||{}),supabase,adminSupabase};
 
   const activeBook={mode:"local",id:"",title:"本機帳本",role:"local"};
   let records={},names={A:"A",B:"B"},adjust={},currencyBook={},saveQueue=Promise.resolve();
@@ -384,7 +389,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
   let adminBooksCache=new Map();
   async function loadAdminBooks(){
-    if(!supabase||!adminBookSelect)return;
+    if(!adminSupabase||!adminBookSelect)return;
     adminBookSelect.innerHTML='<option value="">載入帳本中……</option>';
     adminBookSelect.disabled=true;
     if(adminReadonlyTools)adminReadonlyTools.hidden=true;
@@ -392,7 +397,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(readonlyShareLink)readonlyShareLink.textContent="";
     if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=true;copyReadonlyLinkBtn.dataset.url="";}
     try{
-      const {data,error}=await supabase.rpc("list_admin_books");
+      const {data,error}=await adminSupabase.rpc("list_admin_books");
       if(error)throw error;
       const books=data||[];
       adminBooksCache=new Map(books.map(book=>[book.book_id,book]));
@@ -425,10 +430,10 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(readonlyShareLink)readonlyShareLink.textContent="";
     if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=true;copyReadonlyLinkBtn.dataset.url="";}
     if(resetReadonlyLinkBtn)resetReadonlyLinkBtn.textContent="產生網址";
-    if(!bookId||!supabase)return;
+    if(!bookId||!adminSupabase)return;
     if(readonlyShareLink)readonlyShareLink.textContent="正在讀取既有唯讀網址……";
     try{
-      const {data,error}=await supabase.rpc("get_admin_readonly_token",{p_book_id:bookId});
+      const {data,error}=await adminSupabase.rpc("get_admin_readonly_token",{p_book_id:bookId});
       if(error)throw error;
       if(data){
         const shareUrl=buildReadonlyShareUrl(bookId,data);
@@ -467,8 +472,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     }
   });
   enterAdminModeBtn&&(enterAdminModeBtn.onclick=async()=>{
-    if(!supabase){if(adminLoginMessage)adminLoginMessage.textContent="目前無法連線到管理服務。";showManagePanel("admin-login");return;}
-    const {data:{session}}=await supabase.auth.getSession();
+    if(!adminSupabase){if(adminLoginMessage)adminLoginMessage.textContent="目前無法連線到管理服務。";showManagePanel("admin-login");return;}
+    const {data:{session}}=await adminSupabase.auth.getSession();
     if(session?.user?.id&&ADMIN_UIDS.has(session.user.id)){
       if(adminStatus)adminStatus.textContent=`已登入：${session.user.email||"管理者"}`;
       showManagePanel("admin-tools");
@@ -483,15 +488,15 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   });
   adminLoginForm?.addEventListener("submit",async e=>{
     e.preventDefault();
-    if(!supabase)return;
+    if(!adminSupabase)return;
     const submit=adminLoginForm.querySelector('button[type="submit"]');
     if(submit)submit.disabled=true;
     if(adminLoginMessage)adminLoginMessage.textContent="正在登入管理模式……";
     try{
-      const {data,error}=await supabase.auth.signInWithPassword({email:adminEmail.value.trim(),password:adminPassword.value});
+      const {data,error}=await adminSupabase.auth.signInWithPassword({email:adminEmail.value.trim(),password:adminPassword.value});
       if(error)throw error;
       if(!data.user?.id||!ADMIN_UIDS.has(data.user.id)){
-        await supabase.auth.signOut();
+        await adminSupabase.auth.signOut();
         throw new Error("not admin");
       }
       adminPassword.value="";
@@ -506,10 +511,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   });
   leaveAdminModeBtn&&(leaveAdminModeBtn.onclick=async()=>{
     try{
-      await supabase?.auth.signOut();
-      await ensureAnonymousSession();
+      await adminSupabase?.auth.signOut();
     }catch(error){
-      console.warn("[共付日常 v2] 管理模式離開後恢復匿名身分失敗",error);
+      console.warn("[共付日常 v2] 管理模式登出失敗",error);
     }
     if(adminEmail)adminEmail.value="";if(adminPassword)adminPassword.value="";if(adminStatus)adminStatus.textContent="";
     showManagePanel("menu");
@@ -576,7 +580,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     resetReadonlyLinkBtn.disabled=true;
     if(readonlyShareLink)readonlyShareLink.textContent="正在產生唯讀網址……";
     try{
-      const {data,error}=await supabase.rpc("reset_readonly_book_token",{p_book_id:bookId});
+      const {data,error}=await adminSupabase.rpc("reset_readonly_book_token",{p_book_id:bookId});
       if(error)throw error;
       const shareUrl=buildReadonlyShareUrl(bookId,data);
       if(readonlyShareLink)readonlyShareLink.textContent=shareUrl;

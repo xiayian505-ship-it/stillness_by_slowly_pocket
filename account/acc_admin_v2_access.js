@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     const bookId=bookSelect.value;
     const nextPassword=password.value;
     const nextPasswordConfirm=confirm.value;
-    const supabase=window.AccAdminV2?.supabase;
+    const supabase=window.AccAdminV2?.adminSupabase;
 
     status.textContent="";
     if(!bookId){status.textContent="請先選擇要管理的帳本。";return;}
