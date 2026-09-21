@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
   const activeBook={mode:"local",id:"",title:"本機帳本",role:"local"};
   let records={},names={A:"A",B:"B"},adjust={},currencyBook={},saveQueue=Promise.resolve();
+  let realtimeChannel=null;
   const now=new Date(); let viewYear=now.getFullYear(),viewMonth=now.getMonth();
   const monthPrefix=()=>`${viewYear}-${pad(viewMonth+1)}-`, monthKey=()=>`${viewYear}-${pad(viewMonth+1)}`;
   const isCloud=()=>activeBook.mode==="cloud";
@@ -96,6 +97,45 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       alert(isCloud()?"共享帳本儲存失敗，請確認連線或重新輸入共享密碼。":"本機帳本儲存失敗，請確認瀏覽器儲存空間後再試。");
     });
     return saveQueue;
+  }
+
+  async function stopRealtime(){
+    if(!realtimeChannel||!supabase)return;
+    const channel=realtimeChannel;
+    realtimeChannel=null;
+    try{await supabase.removeChannel(channel);}catch(error){console.warn("[共付日常 v2] Realtime 關閉失敗",error);}
+  }
+
+  async function startRealtime(){
+    await stopRealtime();
+    if(!isCloud()||!supabase||!activeBook.id)return;
+
+    const bookId=activeBook.id;
+    realtimeChannel=supabase
+      .channel(`book:${bookId}`)
+      .on("postgres_changes",{
+        event:"UPDATE",
+        schema:"public",
+        table:"books",
+        filter:`id=eq.${bookId}`
+      },payload=>{
+        if(!isCloud()||activeBook.id!==bookId)return;
+        const s=normalize(payload?.new?.state);
+        records=s.records;
+        names=s.names;
+        adjust=s.adjust;
+        currencyBook=s.currencyBook;
+        syncNameInputs();
+        updateLabels();
+        renderCalendar();
+        const openDate=modal?.dataset.date;
+        if(openDate&&!modal?.classList.contains("hidden"))renderDetail(openDate);
+      })
+      .subscribe(status=>{
+        if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
+          console.warn("[共付日常 v2] Realtime 訂閱異常",status);
+        }
+      });
   }
 
   function getAdj(){const a=adjust[monthKey()];return {side:a?.side==="B"?"B":"A",amount:Money.toNumber(a?.amount,0)};}
@@ -240,6 +280,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="共享帳本"; activeBook.role="editor";
     await loadActive();
     syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+    await startRealtime();
   }
   function openManageBook(){
     manageBookModal?.classList.remove("hidden");
@@ -269,6 +310,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     }finally{if(submit)submit.disabled=false;}
   });
   useLocalBookBtn&&(useLocalBookBtn.onclick=async()=>{
+    await stopRealtime();
     activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local";
     await loadActive(); syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
     editorBookPassword.value="";setMessage("");closeManageBook();
