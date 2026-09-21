@@ -548,6 +548,18 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       setMessage("唯讀網址無效、已被重設，或目前無法連線。","error");
       openManageBook();
     }
+  }else if(urlBookId()){
+    try{
+      await enterExistingSharedBook();
+    }catch(error){
+      console.info("[共付日常 v2] 既有雲端帳本資格不可用，改為要求共享密碼",error);
+      await loadActive();
+      const changed=prune(); if(changed)await saveState("prune-on-load");
+      syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+      setMessage("請輸入帳本共享密碼。","info");
+      openManageBook();
+      showManagePanel("cloud");
+    }
   }else{
     await loadActive();
     const changed=prune(); if(changed)await saveState("prune-on-load");
