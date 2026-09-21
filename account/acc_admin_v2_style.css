@@ -1165,3 +1165,19 @@ select:focus,
     padding:18px 14px;
   }
 }
+
+/* ===== Admin book access ===== */
+#adminAccessTools label{
+  display:grid;
+  gap:5px;
+  margin-top:8px;
+  font-size:11px;
+  font-weight:800;
+  color:var(--muted);
+}
+#adminAccessTools input{
+  width:100%;
+  padding:10px;
+  border:1px solid var(--line-strong);
+  background:var(--paper);
+}

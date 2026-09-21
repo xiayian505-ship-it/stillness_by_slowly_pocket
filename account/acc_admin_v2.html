@@ -316,6 +316,23 @@
           <select id="adminBookSelect" aria-label="選擇要管理的雲端帳本"></select>
           <div id="adminBookMessage" class="access-message" role="status" aria-live="polite"></div>
         </div>
+        <div id="adminAccessTools" class="share-box" hidden>
+          <div class="ledger-label">帳本存取</div>
+          <p>設定或重設目前選中帳本的共享密碼。確認後，既有 90 天編輯資格會立即失效。</p>
+          <label>
+            <span>新共享密碼</span>
+            <input id="adminSharedPassword" type="password" autocomplete="new-password">
+          </label>
+          <label>
+            <span>再輸入一次</span>
+            <input id="adminSharedPasswordConfirm" type="password" autocomplete="new-password">
+          </label>
+          <div class="access-actions">
+            <button type="button" id="adminSharedPasswordCancelBtn">取消</button>
+            <button type="button" id="adminSharedPasswordConfirmBtn" class="btn-confirm">確定</button>
+          </div>
+          <div id="adminAccessStatus" class="access-message" role="status" aria-live="polite"></div>
+        </div>
         <div id="adminDataTools" class="share-box" hidden>
           <div class="ledger-label">帳本資料</div>
           <p id="adminDataToolsStatus">先用共享密碼進入這本帳本，才能匯入或清空；匯出可直接下載目前管理模式選中的帳本。</p>
@@ -367,5 +384,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./acc_admin_v2_style.js"></script>
   <script src="./acc_admin_v2.js"></script>
+  <script src="./acc_admin_v2_access.js"></script>
 </body>
 </html>

@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const localState=localStore.collection("state");
   const bookChange=FictionChange.create({name:"sbs-duo-book-v2"});
   const supabase=window.supabase?.createClient?.(SUPABASE_URL,SUPABASE_KEY) || null;
+  window.AccAdminV2={...(window.AccAdminV2||{}),supabase};
 
   const activeBook={mode:"local",id:"",title:"本機帳本",role:"local"};
   let records={},names={A:"A",B:"B"},adjust={},currencyBook={},saveQueue=Promise.resolve();
