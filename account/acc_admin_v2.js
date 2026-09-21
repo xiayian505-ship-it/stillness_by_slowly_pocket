@@ -269,13 +269,48 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(!bookContext)return;
     bookContext.innerHTML=isCloud()?`<strong>共享帳本</strong>｜${esc(activeBook.id)}`:"<strong>本機帳本</strong>｜資料只存在這台裝置";
   }
+  let authReadyPromise=null;
+  function waitForAuthReady(){
+    if(!supabase) return Promise.reject(new Error("Supabase SDK unavailable"));
+    if(authReadyPromise) return authReadyPromise;
+    authReadyPromise=new Promise((resolve,reject)=>{
+      let settled=false;
+      const finish=(session)=>{
+        if(settled)return;
+        settled=true;
+        clearTimeout(timer);
+        subscription?.unsubscribe?.();
+        resolve(session||null);
+      };
+      const {data}=supabase.auth.onAuthStateChange((event,session)=>{
+        if(event==="INITIAL_SESSION"||event==="SIGNED_IN"||event==="TOKEN_REFRESHED") finish(session);
+      });
+      const subscription=data?.subscription;
+      const timer=setTimeout(async()=>{
+        if(settled)return;
+        try{
+          const {data:{session},error}=await supabase.auth.getSession();
+          if(error)throw error;
+          finish(session);
+        }catch(error){
+          settled=true;
+          subscription?.unsubscribe?.();
+          reject(error);
+        }
+      },1500);
+    });
+    return authReadyPromise;
+  }
   async function ensureAnonymousSession(){
     if(!supabase)throw new Error("Supabase SDK unavailable");
+    const readySession=await waitForAuthReady();
+    if(readySession)return readySession;
     const {data:{session},error}=await supabase.auth.getSession();
     if(error)throw error;
     if(session)return session;
     const {data,error:signError}=await supabase.auth.signInAnonymously();
     if(signError)throw signError;
+    authReadyPromise=Promise.resolve(data.session);
     return data.session;
   }
   async function enterReadonlyBook(token){
