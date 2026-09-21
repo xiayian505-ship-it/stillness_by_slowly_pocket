@@ -343,12 +343,37 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       if(adminBookMessage)adminBookMessage.textContent="目前無法載入可管理的雲端帳本。";
     }
   }
-  adminBookSelect?.addEventListener("change",()=>{
+  function buildReadonlyShareUrl(bookId,token){
+    const shareUrl=new URL(location.href);
+    shareUrl.search="";
+    shareUrl.searchParams.set("book",bookId);
+    shareUrl.searchParams.set("view",token);
+    return shareUrl.toString();
+  }
+  adminBookSelect?.addEventListener("change",async()=>{
     const bookId=adminBookSelect.value;
     if(adminReadonlyTools)adminReadonlyTools.hidden=!bookId;
     if(adminBookMessage)adminBookMessage.textContent=bookId?"已選擇管理帳本。":"請先選擇要管理的帳本。";
     if(readonlyShareLink)readonlyShareLink.textContent="";
     if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=true;copyReadonlyLinkBtn.dataset.url="";}
+    if(resetReadonlyLinkBtn)resetReadonlyLinkBtn.textContent="產生網址";
+    if(!bookId||!supabase)return;
+    if(readonlyShareLink)readonlyShareLink.textContent="正在讀取既有唯讀網址……";
+    try{
+      const {data,error}=await supabase.rpc("get_admin_readonly_token",{p_book_id:bookId});
+      if(error)throw error;
+      if(data){
+        const shareUrl=buildReadonlyShareUrl(bookId,data);
+        if(readonlyShareLink)readonlyShareLink.textContent=shareUrl;
+        if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=false;copyReadonlyLinkBtn.dataset.url=shareUrl;}
+        if(resetReadonlyLinkBtn)resetReadonlyLinkBtn.textContent="重製網址";
+      }else{
+        if(readonlyShareLink)readonlyShareLink.textContent="這本帳本尚未產生唯讀網址。";
+      }
+    }catch(error){
+      console.error("[共付日常 v2] 既有唯讀網址讀取失敗",error);
+      if(readonlyShareLink)readonlyShareLink.textContent="目前無法讀取既有唯讀網址。";
+    }
   });
   function openManageBook(){
     manageBookModal?.classList.remove("hidden");
@@ -439,9 +464,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     try{
       const {data,error}=await supabase.rpc("reset_readonly_book_token",{p_book_id:bookId});
       if(error)throw error;
-      const shareUrl=new URL(location.href); shareUrl.search=""; shareUrl.searchParams.set("book",bookId); shareUrl.searchParams.set("view",data);
-      if(readonlyShareLink)readonlyShareLink.textContent=shareUrl.toString();
-      if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=false;copyReadonlyLinkBtn.dataset.url=shareUrl.toString();}
+      const shareUrl=buildReadonlyShareUrl(bookId,data);
+      if(readonlyShareLink)readonlyShareLink.textContent=shareUrl;
+      if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=false;copyReadonlyLinkBtn.dataset.url=shareUrl;}
       if(resetReadonlyLinkBtn)resetReadonlyLinkBtn.textContent="重製網址";
     }catch(error){
       console.error("[共付日常 v2] 唯讀網址產生失敗",error);
