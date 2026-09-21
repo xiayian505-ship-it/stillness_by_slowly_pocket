@@ -1,5 +1,0 @@
-/* 共付日常 v2：功能狀態樣式。外觀集中在 acc_admin_v2_style.css。 */
-[hidden], .hidden { display:none !important; }
-body[data-book-role="viewer"] [data-edit-only] { display:none !important; }
-body[data-book-role="viewer"] input[data-book-edit] { pointer-events:none; }
-body[data-book-role="viewer"] .calendar-note::after { content:"｜唯讀"; }
