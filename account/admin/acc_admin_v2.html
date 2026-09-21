@@ -127,19 +127,6 @@
       </div>
 
       <div class="ledger-block">
-        <div class="ledger-label">本月先付</div>
-        <div class="paid-grid">
-          <div class="summary-a">
-            A 先付：TWD <span id="sumABMirror">—</span>
-          </div>
-          <div class="summary-b">
-            B 先付：TWD <span id="sumBAMirror">—</span>
-          </div>
-          <div class="paid-note">以上方本月結算為準</div>
-        </div>
-      </div>
-
-      <div class="ledger-block">
         <div class="adjust-title">帳外調整（TWD）</div>
         <div class="adjust-row" data-edit-only>
           <div class="fake-select" id="adjustSideFake">
@@ -171,6 +158,10 @@
             <option value="B">B 多付</option>
           </select>
           <input id="adjustAmount" type="number" min="0" step="1" inputmode="decimal" value="0">
+          <div class="adjust-actions">
+            <button type="button" id="adjustCancelBtn">取消</button>
+            <button type="button" id="adjustConfirmBtn" class="btn-confirm">確定</button>
+          </div>
         </div>
       </div>
     </section>

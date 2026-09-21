@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const prevBtn=navBtns[0], nextBtn=navBtns[1], refreshBtn=$(".refresh"), clearAllBtn=$("#clearAllBtn");
   const exportBtn=$("#exportBtn"), importBtn=$("#importBtn"), fileInput=$("#fileInput");
   const inputA=$("#nameA"), inputB=$("#nameB"), sumAB=$("#sumAB"), sumBA=$("#sumBA"), finalResult=$("#finalResult"), currencyStats=$("#currencyStats");
-  const adjustSide=$("#adjustSide"), adjustAmount=$("#adjustAmount");
+  const adjustSide=$("#adjustSide"), adjustAmount=$("#adjustAmount"), adjustCancelBtn=$("#adjustCancelBtn"), adjustConfirmBtn=$("#adjustConfirmBtn");
   const modal=$("#detailModal"), modalDate=$("#modalDate"), closeBtn=$("#detailModal .close"), listA=$("#listA"), listB=$("#listB"), addBtns=$$(".add");
   const editModal=$("#editModal"), editTitleEl=editModal?.querySelector(".danger-title"), editItem=$("#editItem"), editAmount=$("#editAmount"), editCancel=$("#editCancel"), editOk=$("#editOk"), editCurrency=$("#editCurrency"), editRate=$("#editRate");
   const dangerModal=$("#dangerModal"), dangerTitle=dangerModal?.querySelector(".danger-title"), dangerText=dangerModal?.querySelector(".danger-text"), dangerCancel=$("#dangerCancelBtn"), dangerConfirm=$("#dangerOkBtn");
@@ -302,7 +302,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   function closeAdjust(){if(adjustFake.menu)adjustFake.menu.hidden=true;adjustFake.trigger?.setAttribute("aria-expanded","false");}
   if(adjustFake.trigger)adjustFake.trigger.onclick=e=>{e.stopPropagation();const open=adjustFake.trigger.getAttribute("aria-expanded")==="true";fakeSets.forEach(closeFake);adjustFake.menu.hidden=open;adjustFake.trigger.setAttribute("aria-expanded",open?"false":"true");};adjustFake.opts.forEach(b=>b.onclick=()=>{adjustSide.value=b.dataset.value==="B"?"B":"A";adjustSide.dispatchEvent(new Event("change",{bubbles:true}));closeAdjust();});
   document.addEventListener("click",()=>{fakeSets.forEach(closeFake);closeAdjust();});document.addEventListener("keydown",e=>{if(e.key==="Escape"){fakeSets.forEach(closeFake);closeAdjust();}});
-  adjustSide&&(adjustSide.onchange=()=>{if(!canEdit())return;const a=getAdj();setAdj(adjustSide.value,a.amount);saveState("adjust-change");syncAdjust();updateSummary();});adjustAmount&&(adjustAmount.oninput=()=>{if(!canEdit())return;const a=getAdj();setAdj(a.side,Money.toNumber(adjustAmount.value,0));saveState("adjust-change");updateSummary();});
+  let adjustEditBaseline=null;
+  function beginAdjustEdit(){if(adjustEditBaseline===null)adjustEditBaseline=clone(getAdj());}
+  function finishAdjustEdit(){adjustEditBaseline=null;}
+  adjustSide&&(adjustSide.onchange=()=>{if(!canEdit())return;beginAdjustEdit();const a=getAdj();setAdj(adjustSide.value,a.amount);saveState("adjust-change");syncAdjust();updateSummary();});
+  adjustAmount&&(adjustAmount.oninput=()=>{if(!canEdit())return;beginAdjustEdit();const a=getAdj();setAdj(a.side,Money.toNumber(adjustAmount.value,0));saveState("adjust-change");updateSummary();});
+  adjustConfirmBtn&&(adjustConfirmBtn.onclick=()=>{if(!canEdit())return;finishAdjustEdit();syncAdjust();updateSummary();});
+  adjustCancelBtn&&(adjustCancelBtn.onclick=()=>{if(!canEdit())return;if(adjustEditBaseline!==null){setAdj(adjustEditBaseline.side,adjustEditBaseline.amount);finishAdjustEdit();saveState("adjust-cancel");}syncAdjust();updateSummary();});
   settleCurrency&&(settleCurrency.onchange=()=>{syncFake(fakeSets[0]);updateSummary();});applyBtn&&(applyBtn.onclick=async()=>{applyBtn.disabled=true;try{await refreshRate(settleCurrency.value||"TWD");}finally{applyBtn.disabled=false;updateSummary();}});
 
   /* ===== v2 Access / Root / Editor / Viewer ===== */

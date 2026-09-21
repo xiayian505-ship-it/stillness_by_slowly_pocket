@@ -365,7 +365,7 @@ button:disabled{ cursor:wait; opacity:.45; }
 
 .ledger-panel{
   display:grid;
-  grid-template-columns:1.05fr 1fr 1fr;
+  grid-template-columns:1fr 1fr;
   margin-top:28px;
   border-top:1px solid var(--line-strong);
   border-bottom:1px solid var(--line-strong);
@@ -413,16 +413,6 @@ button:disabled{ cursor:wait; opacity:.45; }
 
 .names input:focus{
   border-bottom:2px solid var(--main);
-}
-
-.paid-grid{
-  display:grid;
-  gap:10px;
-}
-
-.paid-note{
-  font-size:10px;
-  color:var(--muted);
 }
 
 .adjust-title{
@@ -526,6 +516,16 @@ select option{
   font-weight:800;
   letter-spacing:.01em;
   font-variant-numeric:tabular-nums;
+}
+
+.adjust-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+}
+
+.adjust-actions button{
+  min-width:72px;
 }
 
 /* number input 的 spinner 壓低存在感 */
