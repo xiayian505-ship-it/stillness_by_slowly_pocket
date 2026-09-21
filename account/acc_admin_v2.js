@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const bookEntryMenu=$("#bookEntryMenu"), enterLocalBookBtn=$("#enterLocalBookBtn"), enterCloudBookBtn=$("#enterCloudBookBtn"), enterAdminModeBtn=$("#enterAdminModeBtn"), cloudBookPanel=$("#cloudBookPanel"), adminLoginPanel=$("#adminLoginPanel"), adminToolsPanel=$("#adminToolsPanel");
   const adminLoginForm=$("#adminLoginForm"), adminEmail=$("#adminEmail"), adminPassword=$("#adminPassword"), adminLoginMessage=$("#adminLoginMessage"), adminStatus=$("#adminStatus"), leaveAdminModeBtn=$("#leaveAdminModeBtn");
   const adminBookSelect=$("#adminBookSelect"), adminBookMessage=$("#adminBookMessage"), adminReadonlyTools=$("#adminReadonlyTools");
+  const adminDataTools=$("#adminDataTools"), adminDataToolsStatus=$("#adminDataToolsStatus"), adminExportBtn=$("#adminExportBtn"), adminEnterBookBtn=$("#adminEnterBookBtn");
   const resetReadonlyLinkBtn=$("#resetReadonlyLinkBtn"), copyReadonlyLinkBtn=$("#copyReadonlyLinkBtn"), readonlyShareLink=$("#readonlyShareLink");
 
   const fakeSets=[
@@ -318,6 +319,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     if(panel==="cloud")setTimeout(()=>editorBookPassword?.focus(),0);
     if(panel==="admin-login")setTimeout(()=>adminEmail?.focus(),0);
   }
+  let adminBooksCache=new Map();
   async function loadAdminBooks(){
     if(!supabase||!adminBookSelect)return;
     adminBookSelect.innerHTML='<option value="">載入帳本中……</option>';
@@ -330,6 +332,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       const {data,error}=await supabase.rpc("list_admin_books");
       if(error)throw error;
       const books=data||[];
+      adminBooksCache=new Map(books.map(book=>[book.book_id,book]));
       adminBookSelect.innerHTML='<option value="">請選擇帳本</option>'+books.map(book=>{
         const names=book.state?.names||{};
         const title=[names.a||names.A,names.b||names.B].filter(Boolean).join("／")||"未命名帳本";
@@ -353,6 +356,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   adminBookSelect?.addEventListener("change",async()=>{
     const bookId=adminBookSelect.value;
     if(adminReadonlyTools)adminReadonlyTools.hidden=!bookId;
+    if(adminDataTools)adminDataTools.hidden=!bookId;
+    if(adminDataToolsStatus)adminDataToolsStatus.textContent=bookId?"匯出會下載管理模式目前選中的帳本；匯入與清空請先用共享密碼進入這本帳本。":"請先選擇帳本。";
     if(adminBookMessage)adminBookMessage.textContent=bookId?"已選擇管理帳本。":"請先選擇要管理的帳本。";
     if(readonlyShareLink)readonlyShareLink.textContent="";
     if(copyReadonlyLinkBtn){copyReadonlyLinkBtn.hidden=true;copyReadonlyLinkBtn.dataset.url="";}
@@ -455,6 +460,29 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         ?"這個網址沒有帳本識別碼（book）。"
         :`共享帳本驗證失敗${detail?`：${detail}`:"。"}`,"error");
     }finally{if(submit)submit.disabled=false;}
+  });
+  adminExportBtn&&(adminExportBtn.onclick=()=>{
+    const bookId=adminBookSelect?.value||"";
+    const book=adminBooksCache.get(bookId);
+    if(!book){if(adminDataToolsStatus)adminDataToolsStatus.textContent="請先選擇要匯出的帳本。";return;}
+    const state=normalize(book.state);
+    const payload=DataBackup.createPayload({
+      app:"sbs_duo_book",
+      version:"1.1",
+      data:{records:state.records,names:state.names,adjust:state.adjust,currencyBook:state.currencyBook},
+      extraMeta:{bookTitle:"管理模式匯出",mode:"cloud",bookId}
+    });
+    DataBackup.downloadJson(`sbs_duo_book_backup_${Timestamp.create()}.json`,payload);
+  });
+  adminEnterBookBtn&&(adminEnterBookBtn.onclick=()=>{
+    const bookId=adminBookSelect?.value||"";
+    if(!bookId){if(adminDataToolsStatus)adminDataToolsStatus.textContent="請先選擇要進入的帳本。";return;}
+    const nextUrl=new URL(location.href);
+    nextUrl.searchParams.set("book",bookId);
+    nextUrl.searchParams.delete("view");
+    history.replaceState(null,"",nextUrl);
+    setMessage("請輸入這本帳本的共享密碼。","info");
+    showManagePanel("cloud");
   });
   resetReadonlyLinkBtn&&(resetReadonlyLinkBtn.onclick=async()=>{
     const bookId=adminBookSelect?.value||"";

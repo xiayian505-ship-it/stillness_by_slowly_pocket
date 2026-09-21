@@ -316,6 +316,14 @@
           <select id="adminBookSelect" aria-label="選擇要管理的雲端帳本"></select>
           <div id="adminBookMessage" class="access-message" role="status" aria-live="polite"></div>
         </div>
+        <div id="adminDataTools" class="share-box" hidden>
+          <div class="ledger-label">帳本資料</div>
+          <p id="adminDataToolsStatus">先用共享密碼進入這本帳本，才能匯入或清空；匯出可直接下載目前管理模式選中的帳本。</p>
+          <div class="access-actions">
+            <button type="button" id="adminExportBtn">匯出備份</button>
+            <button type="button" id="adminEnterBookBtn">用共享密碼進入這本帳本</button>
+          </div>
+        </div>
         <div id="adminReadonlyTools" class="share-box" hidden>
           <div class="ledger-label">唯讀分享</div>
           <p id="readonlyShareStatus">唯讀網址會直接開啟目前帳本，不需要輸入共享密碼。</p>
