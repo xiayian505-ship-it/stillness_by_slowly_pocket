@@ -8,6 +8,7 @@
   <!-- Color 版自己的樣式 -->
   <link rel="stylesheet" href="./acc_admin_v2.css">
   <link rel="stylesheet" href="./acc_admin_v2_style.css">
+  <link rel="stylesheet" href="./acc_admin_v2_rule.css">
 </head>
 
 <body>
@@ -256,6 +257,7 @@
       </div>
     </section>
 
+    <div class="page-signature">慢 慢 | stillness by slowly</div>
   </main>
 
   <!-- 管理帳本：第一層選擇本機／雲端／管理模式 -->
@@ -318,7 +320,9 @@
         </div>
         <div id="cloudBookVerifySuccess" hidden>
           <p>Email 驗證完成<br>
-          請設定管理密碼</p>
+          請設定管理密碼<br>
+          管理密碼無法更改<br>
+          設定後自行保管</p>
           <form id="cloudBookVerifyPasswordForm" autocomplete="on">
             <label>
               <span>管理密碼</span>
@@ -436,7 +440,7 @@
           <p id="adminDataToolsStatus">先用共享密碼進入這本帳本，才能匯入或清空；匯出可直接下載目前管理模式選中的帳本。</p>
           <div class="access-actions">
             <button type="button" id="adminExportBtn">匯出備份</button>
-            <button type="button" id="adminEnterBookBtn">用共享密碼進入這本帳本</button>
+            <button type="button" id="adminEnterBookBtn">直接進入雲端帳本</button>
           </div>
         </div>
         <div id="adminReadonlyTools" class="share-box" hidden>
@@ -481,6 +485,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./acc_admin_v2_style.js"></script>
+  <script src="./acc_admin_v2_rule.js"></script>
   <script src="./acc_admin_v2.js"></script>
   <script src="./acc_admin_v2_access.js"></script>
   <script src="./acc_admin_v2_cloud_manage.js"></script>
