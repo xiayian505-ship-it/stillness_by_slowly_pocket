@@ -301,7 +301,7 @@
           </label>
           <label>
             <span>你誰</span>
-            <textarea id="cloudBookApplyRelation" maxlength="100" required placeholder="我不知道你誰就不通過，你最好誠實寫"></textarea>
+            <textarea id="cloudBookApplyRelation" maxlength="100" placeholder="我不知道你誰就不通過，你最好誠實寫"></textarea>
           </label>
           <div class="access-actions">
             <button type="button" id="cloudBookApplyBackBtn">返回</button>
@@ -318,9 +318,27 @@
         </div>
         <div id="cloudBookVerifySuccess" hidden>
           <p>Email 驗證完成<br>
-          可以開始建立雲端帳本</p>
-          <div class="access-actions">
-            <button type="button" id="cloudBookVerifyManageBtn">進入管理雲端帳本</button>
+          請設定管理密碼</p>
+          <form id="cloudBookVerifyPasswordForm" autocomplete="on">
+            <label>
+              <span>管理密碼</span>
+              <input id="cloudBookVerifyPassword" type="password" autocomplete="new-password" required>
+            </label>
+            <label>
+              <span>再次輸入管理密碼</span>
+              <input id="cloudBookVerifyPasswordConfirm" type="password" autocomplete="new-password" required>
+            </label>
+            <div class="access-actions">
+              <button type="submit" id="cloudBookVerifyPasswordBtn" class="btn-confirm">建立管理帳號</button>
+            </div>
+            <div id="cloudBookVerifyPasswordMessage" class="access-message" role="status" aria-live="polite"></div>
+          </form>
+          <div id="cloudBookVerifyComplete" hidden>
+            <p>設定完成<br>
+            可以開始建立雲端帳本</p>
+            <div class="access-actions">
+              <button type="button" id="cloudBookVerifyManageBtn">進入管理雲端帳本</button>
+            </div>
           </div>
         </div>
         <div id="cloudBookVerifyFailed" hidden>
@@ -330,7 +348,7 @@
       </section>
 
       <section id="adminLoginPanel" class="access-panel" hidden>
-        <div class="ledger-label">管理者登入</div>
+        <div class="ledger-label">管理模式登入</div>
         <form id="adminLoginForm" autocomplete="on">
           <label>
             <span>Email</span>
@@ -354,6 +372,7 @@
         <div class="cloud-manage-switch" role="group" aria-label="雲端帳本管理功能">
           <button type="button" id="manageCloudBooksBtn" class="cloud-manage-switch-btn is-active">管理雲端帳本</button>
           <button type="button" id="createCloudBookBtn" class="cloud-manage-switch-btn">建立雲端帳本</button>
+          <button type="button" id="viewCloudApplicationsBtn" class="cloud-manage-switch-btn">查看帳本申請</button>
         </div>
 
         <div id="manageCloudBooksPanel">
@@ -361,6 +380,13 @@
             <div class="ledger-label">選擇要管理的雲端帳本</div>
             <select id="adminBookSelect" aria-label="選擇要管理的雲端帳本"></select>
             <div id="adminBookMessage" class="access-message" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div id="cloudApplicationsPanel" class="share-box" hidden>
+          <div class="ledger-label">查看帳本申請</div>
+          <div id="cloudApplicationsList">
+            <div class="access-message">點開後讀取帳本申請</div>
           </div>
         </div>
 

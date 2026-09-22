@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const manageBookBtn=$("#manageBookBtn"), manageBookModal=$("#manageBookModal"), manageBookClose=$("#manageBookClose");
   const bookContext=$("#bookContext"), editorUnlockForm=$("#editorUnlockForm"), editorBookPassword=$("#editorBookPassword"), editorAccessMessage=$("#editorAccessMessage");
   const bookEntryMenu=$("#bookEntryMenu"), enterLocalBookBtn=$("#enterLocalBookBtn"), enterCloudBookBtn=$("#enterCloudBookBtn"), enterAdminModeBtn=$("#enterAdminModeBtn"), cloudBookPanel=$("#cloudBookPanel"), cloudBookApplyPanel=$("#cloudBookApplyPanel"), cloudBookVerifyPanel=$("#cloudBookVerifyPanel"), adminLoginPanel=$("#adminLoginPanel"), adminToolsPanel=$("#adminToolsPanel");
-  const adminLoginForm=$("#adminLoginForm"), adminEmail=$("#adminEmail"), adminPassword=$("#adminPassword"), adminLoginMessage=$("#adminLoginMessage"), adminStatus=$("#adminStatus"), leaveAdminModeBtn=$("#leaveAdminModeBtn");
+  const adminLoginForm=$("#adminLoginForm"), adminEmail=$("#adminEmail"), adminPassword=$("#adminPassword"), adminLoginMessage=$("#adminLoginMessage"), adminStatus=$("#adminStatus"), leaveAdminModeBtn=$("#leaveAdminModeBtn"), viewCloudApplicationsBtn=$("#viewCloudApplicationsBtn");
   const adminBookSelect=$("#adminBookSelect"), adminBookMessage=$("#adminBookMessage"), adminReadonlyTools=$("#adminReadonlyTools");
   const adminDataTools=$("#adminDataTools"), adminDataToolsStatus=$("#adminDataToolsStatus"), adminExportBtn=$("#adminExportBtn"), adminEnterBookBtn=$("#adminEnterBookBtn");
   const resetReadonlyLinkBtn=$("#resetReadonlyLinkBtn"), copyReadonlyLinkBtn=$("#copyReadonlyLinkBtn"), readonlyShareLink=$("#readonlyShareLink");
@@ -476,15 +476,33 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       showManagePanel("cloud");
     }
   });
-  enterAdminModeBtn&&(enterAdminModeBtn.onclick=async()=>{
-    if(!adminSupabase){if(adminLoginMessage)adminLoginMessage.textContent="目前無法連線到管理服務。";showManagePanel("admin-login");return;}
+  function applyManagementRole(user){
+    const isRoot=Boolean(user?.id&&ADMIN_UIDS.has(user.id));
+    if(viewCloudApplicationsBtn)viewCloudApplicationsBtn.hidden=!isRoot;
+    if(adminStatus)adminStatus.textContent=user?.email
+      ?`已登入：${user.email}${isRoot?"｜最高管理員":""}`
+      :"";
+    return isRoot;
+  }
+
+  async function enterManagementMode(){
+    if(!adminSupabase){
+      if(adminLoginMessage)adminLoginMessage.textContent="目前無法連線到管理服務。";
+      showManagePanel("admin-login");
+      return;
+    }
     const {data:{session}}=await adminSupabase.auth.getSession();
-    if(session?.user?.id&&ADMIN_UIDS.has(session.user.id)){
-      if(adminStatus)adminStatus.textContent=`已登入：${session.user.email||"管理者"}`;
+    if(session?.user?.id){
+      applyManagementRole(session.user);
       showManagePanel("admin-tools");
       await loadAdminBooks();
-    }else showManagePanel("admin-login");
-  });
+    }else{
+      showManagePanel("admin-login");
+    }
+  }
+  window.AccAdminV2={...(window.AccAdminV2||{}),enterManagementMode};
+
+  enterAdminModeBtn&&(enterAdminModeBtn.onclick=enterManagementMode);
   enterLocalBookBtn&&(enterLocalBookBtn.onclick=async()=>{
     await stopRealtime();
     activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local";
@@ -500,18 +518,15 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     try{
       const {data,error}=await adminSupabase.auth.signInWithPassword({email:adminEmail.value.trim(),password:adminPassword.value});
       if(error)throw error;
-      if(!data.user?.id||!ADMIN_UIDS.has(data.user.id)){
-        await adminSupabase.auth.signOut();
-        throw new Error("not admin");
-      }
+      if(!data.user?.id)throw new Error("missing user");
       adminPassword.value="";
       if(adminLoginMessage)adminLoginMessage.textContent="";
-      if(adminStatus)adminStatus.textContent=`已登入：${data.user.email||"管理者"}`;
+      applyManagementRole(data.user);
       showManagePanel("admin-tools");
       await loadAdminBooks();
     }catch(error){
-      console.error("[共付日常 v2] 管理者登入失敗",error);
-      if(adminLoginMessage)adminLoginMessage.textContent="管理者帳號或密碼不正確。";
+      console.error("[共付日常 v2] 管理模式登入失敗",error);
+      if(adminLoginMessage)adminLoginMessage.textContent="Email 或密碼不正確。";
     }finally{if(submit)submit.disabled=false;}
   });
   leaveAdminModeBtn&&(leaveAdminModeBtn.onclick=async()=>{

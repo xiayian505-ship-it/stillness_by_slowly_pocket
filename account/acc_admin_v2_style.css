@@ -1202,3 +1202,14 @@ select:focus,
   overflow-wrap:anywhere;
   user-select:text;
 }
+
+
+/* ===== Email 驗證完成：一般使用者設定管理密碼 ===== */
+#cloudBookVerifyPasswordForm{
+  display:grid;
+  gap:12px;
+}
+#cloudBookVerifyComplete{
+  display:grid;
+  gap:12px;
+}

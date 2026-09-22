@@ -9,8 +9,11 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   const manageBtn=document.querySelector("#manageCloudBooksBtn");
   const createBtn=document.querySelector("#createCloudBookBtn");
+  const applicationsBtn=document.querySelector("#viewCloudApplicationsBtn");
   const managePanel=document.querySelector("#manageCloudBooksPanel");
   const createPanel=document.querySelector("#createCloudBookPanel");
+  const applicationsPanel=document.querySelector("#cloudApplicationsPanel");
+  const applicationsList=document.querySelector("#cloudApplicationsList");
   const password=document.querySelector("#createCloudBookPassword");
   const confirm=document.querySelector("#createCloudBookPasswordConfirm");
   const cancelBtn=document.querySelector("#createCloudBookCancelBtn");
@@ -32,18 +35,144 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
 
   function show(mode){
+    const managing=mode==="manage";
     const creating=mode==="create";
-    managePanel.hidden=creating;
+    const applications=mode==="applications";
+    managePanel.hidden=!managing;
     createPanel.hidden=!creating;
-    manageBtn.classList.toggle("is-active",!creating);
+    if(applicationsPanel)applicationsPanel.hidden=!applications;
+    manageBtn.classList.toggle("is-active",managing);
     createBtn.classList.toggle("is-active",creating);
-    manageBtn.setAttribute("aria-pressed",String(!creating));
+    applicationsBtn?.classList.toggle("is-active",applications);
+    manageBtn.setAttribute("aria-pressed",String(managing));
     createBtn.setAttribute("aria-pressed",String(creating));
+    applicationsBtn?.setAttribute("aria-pressed",String(applications));
     if(creating)setTimeout(()=>password?.focus(),0);
   }
 
+  function escapeHtml(value){
+    return String(value??"")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function applicationStatusLabel(status){
+    if(status==="approved")return "已通過";
+    if(status==="rejected")return "未通過";
+    return "待審核";
+  }
+
+  async function sendVerificationEmail(applicationId){
+    const supabase=window.AccAdminV2?.adminSupabase;
+    if(!supabase)throw new Error("admin cloud unavailable");
+    const {data:{session},error:sessionError}=await supabase.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session?.access_token)throw new Error("admin session unavailable");
+
+    const response=await fetch("https://bkjqaetxwvcdciieevvs.supabase.co/functions/v1/acc-admin-mail-v1-2026",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${session.access_token}`,
+        "apikey":"sb_publishable_dAHoIimWgbGAF2wtIVSZfg_V8rzc200"
+      },
+      body:JSON.stringify({
+        action:"send",
+        template:"cloud_book_email_verification",
+        payload:{applicationId}
+      })
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result?.error||`mail function ${response.status}`);
+    return result;
+  }
+
+  async function loadApplications(){
+    if(!applicationsList)return;
+    const supabase=window.AccAdminV2?.adminSupabase;
+    if(!supabase){
+      applicationsList.innerHTML='<div class="access-message">雲端服務尚未初始化</div>';
+      return;
+    }
+
+    applicationsList.innerHTML='<div class="access-message">正在讀取申請</div>';
+
+    try{
+      const {data,error}=await supabase.rpc("list_cloud_applications");
+      if(error)throw error;
+
+      const rows=Array.isArray(data)?data:[];
+      if(!rows.length){
+        applicationsList.innerHTML='<div class="access-message">目前沒有帳本申請</div>';
+        return;
+      }
+
+      applicationsList.innerHTML=rows.map(row=>{
+        const pending=row.status==="pending";
+        return `
+          <div class="share-box cloud-application-item" data-application-id="${escapeHtml(row.id)}">
+            <div class="ledger-label">${applicationStatusLabel(row.status)}</div>
+            <p>${escapeHtml(row.email)}</p>
+            <div class="ledger-label">你誰</div>
+            <p>${escapeHtml(row.who_are_you)}</p>
+            ${pending?`
+              <div class="access-actions">
+                <button type="button" data-application-decision="rejected">不通過</button>
+                <button type="button" class="btn-confirm" data-application-decision="approved">通過</button>
+              </div>
+            `:""}
+            <div class="access-message" data-application-message></div>
+          </div>
+        `;
+      }).join("");
+    }catch(error){
+      console.error("load cloud applications failed",error);
+      applicationsList.innerHTML='<div class="access-message">帳本申請讀取失敗</div>';
+    }
+  }
+
+  applicationsList?.addEventListener("click",async event=>{
+    const button=event.target.closest("[data-application-decision]");
+    if(!button)return;
+
+    const item=button.closest("[data-application-id]");
+    const applicationId=item?.dataset.applicationId||"";
+    const decision=button.dataset.applicationDecision||"";
+    const message=item?.querySelector("[data-application-message]");
+    const supabase=window.AccAdminV2?.adminSupabase;
+
+    if(!applicationId||!supabase)return;
+
+    item.querySelectorAll("[data-application-decision]").forEach(btn=>btn.disabled=true);
+    if(message)message.textContent=decision==="approved"?"正在通過申請":"正在設為不通過";
+
+    try{
+      const {error}=await supabase.rpc("review_cloud_application",{
+        p_application_id:applicationId,
+        p_decision:decision
+      });
+      if(error)throw error;
+
+      if(decision==="approved"){
+        if(message)message.textContent="申請已通過 正在寄驗證信";
+        await sendVerificationEmail(applicationId);
+        if(message)message.textContent="申請已通過 驗證信已寄出";
+      }
+
+      await loadApplications();
+    }catch(error){
+      console.error("review cloud application failed",error);
+      if(message)message.textContent="審核失敗";
+      item.querySelectorAll("[data-application-decision]").forEach(btn=>btn.disabled=false);
+    }
+  });
+
   manageBtn.addEventListener("click",()=>show("manage"));
   createBtn.addEventListener("click",()=>{resetCreateForm();show("create");});
+  applicationsBtn?.addEventListener("click",()=>{show("applications");loadApplications();});
   cancelBtn?.addEventListener("click",()=>{resetCreateForm();show("manage");});
 
   submitBtn?.addEventListener("click",async()=>{
