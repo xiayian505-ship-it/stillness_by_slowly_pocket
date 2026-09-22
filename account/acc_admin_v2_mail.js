@@ -43,9 +43,17 @@ document.addEventListener("DOMContentLoaded",()=>{
     window.AccAdminV2?.showManagePanel?.("menu");
   }
 
-  function showVerifyState(state){
+  async function showVerifyState(state){
     if(!verifyPanel)return;
+
+    // acc_admin_v2.js 與本檔都在 DOMContentLoaded 啟動。
+    // 主檔為 async callback，showManagePanel 可能尚未掛到 AccAdminV2；
+    // 驗證連結進站時等待它就緒，避免驗證 UI 被安靜略過。
+    for(let i=0;i<50&&!window.AccAdminV2?.showManagePanel;i++){
+      await new Promise(resolve=>setTimeout(resolve,20));
+    }
     window.AccAdminV2?.showManagePanel?.("cloud-verify");
+
     if(verifyChecking)verifyChecking.hidden=state!=="checking";
     if(verifySuccess)verifySuccess.hidden=state!=="success";
     if(verifyFailed)verifyFailed.hidden=state!=="failed";
@@ -67,14 +75,14 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   async function checkVerifyToken(){
     if(!verifyToken)return;
-    showVerifyState("checking");
+    await showVerifyState("checking");
     try{
       await invokeMailAction("verify",{token:verifyToken});
-      showVerifyState("success");
+      await showVerifyState("success");
       setTimeout(()=>verifyPassword?.focus(),0);
     }catch(error){
       console.error("verify cloud application failed",error);
-      showVerifyState("failed");
+      await showVerifyState("failed");
     }
   }
 
