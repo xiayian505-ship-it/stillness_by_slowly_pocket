@@ -62,13 +62,15 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }) || null;
   window.AccAdminV2={...(window.AccAdminV2||{}),supabase,adminSupabase};
 
-  const activeBook={mode:"local",id:"",title:"本機帳本",role:"local"};
+  const activeBook={mode:"local",id:"",title:"本機帳本",role:"local",access:"local"};
   let records={},names={A:"A",B:"B"},adjust={},currencyBook={},saveQueue=Promise.resolve();
   let realtimeChannel=null;
+  let realtimeClient=null;
   const now=new Date(); let viewYear=now.getFullYear(),viewMonth=now.getMonth();
   const monthPrefix=()=>`${viewYear}-${pad(viewMonth+1)}-`, monthKey=()=>`${viewYear}-${pad(viewMonth+1)}`;
   const isCloud=()=>activeBook.mode==="cloud";
   const canEdit=()=>activeBook.role!=="viewer";
+  const activeCloudClient=()=>activeBook.access==="admin"?adminSupabase:supabase;
   const urlParams=()=>new URLSearchParams(location.search);
   const urlBookId=()=>urlParams().get("book")?.trim()||"";
   const urlViewToken=()=>urlParams().get("view")?.trim()||"";
@@ -82,8 +84,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 
   async function loadActive(){
     if(isCloud()){
-      if(!supabase||!activeBook.id)throw new Error("cloud unavailable");
-      const {data,error}=await supabase.from("books").select("state").eq("id",activeBook.id).single();
+      const client=activeCloudClient();
+      if(!client||!activeBook.id)throw new Error("cloud unavailable");
+      const {data,error}=await client.from("books").select("state").eq("id",activeBook.id).single();
       if(error)throw error;
       const s=normalize(data?.state);
       records=s.records; names=s.names; adjust=s.adjust; currencyBook=s.currencyBook;
@@ -99,7 +102,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const state=clone({records,names,adjust,currencyBook});
     saveQueue=saveQueue.catch(()=>{}).then(async()=>{
       if(isCloud()){
-        const {error}=await supabase.from("books").update({state}).eq("id",activeBook.id);
+        const client=activeCloudClient();
+        if(!client)throw new Error("cloud unavailable");
+        const {error}=await client.from("books").update({state}).eq("id",activeBook.id);
         if(error)throw error;
       }else{
         await localState.upsert({id:STATE_ID,...state});
@@ -113,18 +118,22 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
 
   async function stopRealtime(){
-    if(!realtimeChannel||!supabase)return;
+    if(!realtimeChannel)return;
     const channel=realtimeChannel;
+    const client=realtimeClient;
     realtimeChannel=null;
-    try{await supabase.removeChannel(channel);}catch(error){console.warn("[共付日常 v2] Realtime 關閉失敗",error);}
+    realtimeClient=null;
+    try{await client?.removeChannel(channel);}catch(error){console.warn("[共付日常 v2] Realtime 關閉失敗",error);}
   }
 
   async function startRealtime(){
     await stopRealtime();
-    if(!isCloud()||!supabase||!activeBook.id)return;
+    const client=activeCloudClient();
+    if(!isCloud()||!client||!activeBook.id)return;
 
     const bookId=activeBook.id;
-    realtimeChannel=supabase
+    realtimeClient=client;
+    realtimeChannel=client
       .channel(`book:${bookId}`)
       .on("postgres_changes",{
         event:"UPDATE",
@@ -206,7 +215,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   function validTime(value){const t=Date.parse(value);return Number.isFinite(t)?t:null;}
   async function persistImportedState(next){
     if(isCloud()){
-      const {error}=await supabase.from("books").update({state:clone(next)}).eq("id",activeBook.id);
+      const client=activeCloudClient();
+      if(!client)throw new Error("cloud unavailable");
+      const {error}=await client.from("books").update({state:clone(next)}).eq("id",activeBook.id);
       if(error)throw error;
     }else{
       await localState.upsert(clone({id:STATE_ID,...next}));
@@ -339,7 +350,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const {data,error}=await supabase.rpc("open_readonly_book",{p_book_id:bookId,p_view_token:token});
     if(error)throw error;
     const state=normalize(data);
-    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="唯讀帳本"; activeBook.role="viewer";
+    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="唯讀帳本"; activeBook.role="viewer"; activeBook.access="readonly";
     records=state.records; names=state.names; adjust=state.adjust; currencyBook=state.currencyBook;
     syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
     await startRealtime();
@@ -348,11 +359,11 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     const bookId=urlBookId();
     if(!bookId)throw new Error("missing book id");
     await ensureAnonymousSession();
-    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="共享帳本"; activeBook.role="editor";
+    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="共享帳本"; activeBook.role="editor"; activeBook.access="shared";
     try{
       await loadActive();
     }catch(error){
-      activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local";
+      activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local"; activeBook.access="local";
       throw error;
     }
     syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
@@ -369,11 +380,29 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     });
     const {error}=await supabase.rpc("open_shared_book",{p_book_id:bookId,p_password:password});
     if(error)throw error;
-    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="共享帳本"; activeBook.role="editor";
+    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="共享帳本"; activeBook.role="editor"; activeBook.access="shared";
     await loadActive();
     syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
     await startRealtime();
   }
+  async function enterAdminOwnedBook(bookId){
+    if(!bookId||!adminSupabase)throw new Error("admin cloud unavailable");
+    const {data:{session},error:sessionError}=await adminSupabase.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session?.user?.id)throw new Error("admin session unavailable");
+
+    await stopRealtime();
+    activeBook.mode="cloud"; activeBook.id=bookId; activeBook.title="管理帳本"; activeBook.role="editor"; activeBook.access="admin";
+    try{
+      await loadActive();
+    }catch(error){
+      activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local"; activeBook.access="local";
+      throw error;
+    }
+    syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
+    await startRealtime();
+  }
+
   const ADMIN_UIDS=new Set([
     "372c6a7f-4e6b-49fa-8228-183b46cbdede",
     "bd126b9b-aa23-42e0-85f5-4560cab8fc57",
@@ -505,7 +534,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   enterAdminModeBtn&&(enterAdminModeBtn.onclick=enterManagementMode);
   enterLocalBookBtn&&(enterLocalBookBtn.onclick=async()=>{
     await stopRealtime();
-    activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local";
+    activeBook.mode="local"; activeBook.id=""; activeBook.title="本機帳本"; activeBook.role="local"; activeBook.access="local";
     await loadActive(); syncNameInputs(); updateLabels(); renderCalendar(); renderAccessState();
     editorBookPassword.value="";setMessage("");closeManageBook();
   });
@@ -584,14 +613,14 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     nextUrl.searchParams.set("book",bookId);
     nextUrl.searchParams.delete("view");
     history.replaceState(null,"",nextUrl);
-    setMessage("正在確認這台裝置的帳本資格……","info");
+    if(adminDataToolsStatus)adminDataToolsStatus.textContent="正在進入管理帳本……";
     try{
-      await enterExistingSharedBook();
-      setMessage("");
+      await enterAdminOwnedBook(bookId);
+      if(adminDataToolsStatus)adminDataToolsStatus.textContent="";
       closeManageBook();
     }catch(error){
-      setMessage("請輸入這本帳本的共享密碼。","info");
-      showManagePanel("cloud");
+      console.error("[共付日常 v2] 管理帳本直接進入失敗",error);
+      if(adminDataToolsStatus)adminDataToolsStatus.textContent="無法直接進入這本帳本，請確認管理帳號權限。";
     }
   });
   resetReadonlyLinkBtn&&(resetReadonlyLinkBtn.onclick=async()=>{
