@@ -270,6 +270,7 @@
         <div class="access-actions manage-entry-actions">
           <button type="button" id="enterLocalBookBtn">進入本機帳本</button>
           <button type="button" id="enterCloudBookBtn">進入雲端帳本</button>
+          <button type="button" id="applyCloudBookBtn">申請雲端帳本</button>
           <button type="button" id="enterAdminModeBtn">進入管理模式</button>
         </div>
       </section>
@@ -287,6 +288,45 @@
           </div>
           <div id="editorAccessMessage" class="access-message" role="status" aria-live="polite"></div>
         </form>
+      </section>
+
+      <section id="cloudBookApplyPanel" class="access-panel" hidden>
+        <div class="ledger-label">申請雲端帳本</div>
+        <p>讓我知道你誰<br>
+        才寄驗證信</p>
+        <form id="cloudBookApplyForm" autocomplete="on">
+          <label>
+            <span>Email</span>
+            <input id="cloudBookApplyEmail" type="email" autocomplete="email" required>
+          </label>
+          <label>
+            <span>你誰</span>
+            <textarea id="cloudBookApplyRelation" maxlength="100" required placeholder="我不知道你誰就不通過，你最好誠實寫"></textarea>
+          </label>
+          <div class="access-actions">
+            <button type="button" id="cloudBookApplyBackBtn">返回</button>
+            <button type="submit">送出申請</button>
+          </div>
+          <div id="cloudBookApplyMessage" class="access-message" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section id="cloudBookVerifyPanel" class="access-panel" hidden>
+        <div class="ledger-label">Email 驗證</div>
+        <div id="cloudBookVerifyChecking">
+          <p>正在確認驗證資訊</p>
+        </div>
+        <div id="cloudBookVerifySuccess" hidden>
+          <p>Email 驗證完成<br>
+          可以開始建立雲端帳本</p>
+          <div class="access-actions">
+            <button type="button" id="cloudBookVerifyManageBtn">進入管理雲端帳本</button>
+          </div>
+        </div>
+        <div id="cloudBookVerifyFailed" hidden>
+          <p>無法完成 Email 驗證<br>
+          驗證連結可能已失效</p>
+        </div>
       </section>
 
       <section id="adminLoginPanel" class="access-panel" hidden>
@@ -418,5 +458,6 @@
   <script src="./acc_admin_v2.js"></script>
   <script src="./acc_admin_v2_access.js"></script>
   <script src="./acc_admin_v2_cloud_manage.js"></script>
+  <script src="./acc_admin_v2_mail.js"></script>
 </body>
 </html>

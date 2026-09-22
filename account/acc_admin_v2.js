@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   const settleCurrency=$("#settleCurrency"), applyBtn=$("#applyCurrencyBtn");
   const manageBookBtn=$("#manageBookBtn"), manageBookModal=$("#manageBookModal"), manageBookClose=$("#manageBookClose");
   const bookContext=$("#bookContext"), editorUnlockForm=$("#editorUnlockForm"), editorBookPassword=$("#editorBookPassword"), editorAccessMessage=$("#editorAccessMessage");
-  const bookEntryMenu=$("#bookEntryMenu"), enterLocalBookBtn=$("#enterLocalBookBtn"), enterCloudBookBtn=$("#enterCloudBookBtn"), enterAdminModeBtn=$("#enterAdminModeBtn"), cloudBookPanel=$("#cloudBookPanel"), adminLoginPanel=$("#adminLoginPanel"), adminToolsPanel=$("#adminToolsPanel");
+  const bookEntryMenu=$("#bookEntryMenu"), enterLocalBookBtn=$("#enterLocalBookBtn"), enterCloudBookBtn=$("#enterCloudBookBtn"), enterAdminModeBtn=$("#enterAdminModeBtn"), cloudBookPanel=$("#cloudBookPanel"), cloudBookApplyPanel=$("#cloudBookApplyPanel"), cloudBookVerifyPanel=$("#cloudBookVerifyPanel"), adminLoginPanel=$("#adminLoginPanel"), adminToolsPanel=$("#adminToolsPanel");
   const adminLoginForm=$("#adminLoginForm"), adminEmail=$("#adminEmail"), adminPassword=$("#adminPassword"), adminLoginMessage=$("#adminLoginMessage"), adminStatus=$("#adminStatus"), leaveAdminModeBtn=$("#leaveAdminModeBtn");
   const adminBookSelect=$("#adminBookSelect"), adminBookMessage=$("#adminBookMessage"), adminReadonlyTools=$("#adminReadonlyTools");
   const adminDataTools=$("#adminDataTools"), adminDataToolsStatus=$("#adminDataToolsStatus"), adminExportBtn=$("#adminExportBtn"), adminEnterBookBtn=$("#adminEnterBookBtn");
@@ -382,11 +382,14 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   function showManagePanel(panel="menu"){
     if(bookEntryMenu)bookEntryMenu.hidden=panel!=="menu";
     if(cloudBookPanel)cloudBookPanel.hidden=panel!=="cloud";
+    if(cloudBookApplyPanel)cloudBookApplyPanel.hidden=panel!=="cloud-apply";
+    if(cloudBookVerifyPanel)cloudBookVerifyPanel.hidden=panel!=="cloud-verify";
     if(adminLoginPanel)adminLoginPanel.hidden=panel!=="admin-login";
     if(adminToolsPanel)adminToolsPanel.hidden=panel!=="admin-tools";
     if(panel==="cloud")setTimeout(()=>editorBookPassword?.focus(),0);
     if(panel==="admin-login")setTimeout(()=>adminEmail?.focus(),0);
   }
+  window.AccAdminV2={...(window.AccAdminV2||{}),showManagePanel};
   let adminBooksCache=new Map();
   async function loadAdminBooks(){
     if(!adminSupabase||!adminBookSelect)return;
