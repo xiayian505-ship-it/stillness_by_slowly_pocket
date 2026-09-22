@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     for(let i=0;i<50&&!window.AccAdminV2?.showManagePanel;i++){
       await new Promise(resolve=>setTimeout(resolve,20));
     }
+    document.querySelector("#manageBookModal")?.classList.remove("hidden");
     window.AccAdminV2?.showManagePanel?.("cloud-verify");
 
     if(verifyChecking)verifyChecking.hidden=state!=="checking";
