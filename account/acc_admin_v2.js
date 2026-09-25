@@ -100,21 +100,28 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     prune();
     const op=Timestamp.create();
     const state=clone({records,names,adjust,currencyBook});
-    saveQueue=saveQueue.catch(()=>{}).then(async()=>{
-      if(isCloud()){
-        const client=activeCloudClient();
-        if(!client)throw new Error("cloud unavailable");
-        const {error}=await client.from("books").update({state}).eq("id",activeBook.id);
+    // Capture the destination when the edit occurs, not when the queued request runs.
+    const target={mode:activeBook.mode,id:activeBook.id,access:activeBook.access,role:activeBook.role};
+    const client=target.access==="admin"?adminSupabase:supabase;
+    const task=saveQueue.catch(()=>{}).then(async()=>{
+      if(target.mode==="cloud"){
+        if(target.role==="viewer")throw new Error("readonly book cannot be saved");
+        if(!client||!target.id)throw new Error("cloud unavailable");
+        const {data,error}=await client.from("books").update({state}).eq("id",target.id).select("id");
         if(error)throw error;
+        if(!data?.length)throw new Error("雲端帳本未更新任何資料，請確認目前登入身分與帳本寫入權限。");
       }else{
         await localState.upsert({id:STATE_ID,...state});
         bookChange.emit({type,collection:"state",operationId:op});
       }
-    }).catch(error=>{
-      console.error("[共付日常 v2] 儲存失敗",error);
-      alert(isCloud()?"共享帳本儲存失敗，請確認連線或重新輸入共享密碼。":"本機帳本儲存失敗，請確認瀏覽器儲存空間後再試。");
     });
-    return saveQueue;
+    // Keep the queue usable after a failure, but propagate failure to callers.
+    saveQueue=task.catch(()=>{});
+    task.catch(error=>{
+      console.error("[共付日常 v2] 儲存失敗",error);
+      alert(target.mode==="cloud"?`共享帳本儲存失敗：${error.message||"請確認連線與寫入權限。"}`:"本機帳本儲存失敗，請確認瀏覽器儲存空間後再試。");
+    });
+    return task;
   }
 
   async function stopRealtime(){
@@ -446,6 +453,20 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       if(adminBookMessage)adminBookMessage.textContent="目前無法載入可管理的雲端帳本。";
     }
   }
+  async function upgradeReadonlyToAdminBook(){
+    if(activeBook.mode!=="cloud"||activeBook.access!=="readonly")return false;
+    const bookId=activeBook.id;
+    // Only switch when the signed-in administrator can actually manage this book.
+    if(!adminBooksCache.has(bookId))return false;
+    await saveQueue;
+    await enterAdminOwnedBook(bookId);
+    const nextUrl=new URL(location.href);
+    nextUrl.searchParams.set("book",bookId);
+    nextUrl.searchParams.delete("view");
+    history.replaceState(null,"",nextUrl);
+    closeManageBook();
+    return true;
+  }
   window.AccAdminV2={...(window.AccAdminV2||{}),loadAdminBooks};
 
   function buildReadonlyShareUrl(bookId,token){
@@ -525,6 +546,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       applyManagementRole(session.user);
       showManagePanel("admin-tools");
       await loadAdminBooks();
+      await upgradeReadonlyToAdminBook();
     }else{
       showManagePanel("admin-login");
     }
@@ -553,6 +575,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       applyManagementRole(data.user);
       showManagePanel("admin-tools");
       await loadAdminBooks();
+      await upgradeReadonlyToAdminBook();
     }catch(error){
       console.error("[共付日常 v2] 管理模式登入失敗",error);
       if(adminLoginMessage)adminLoginMessage.textContent="Email 或密碼不正確。";
